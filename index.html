@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EOPour les nuls</title>
 <meta name="description" content="QCM et outils de révision P1 — sur téléphone comme sur PC.">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A6%B4%3C/text%3E%3C/svg%3E">
-<link rel="stylesheet" href="style.css?v=3">
+<meta name="theme-color" content="#ffffff">
+<script src="reglages.js?v=4"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icones/icone-192.png">
+<link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body class="app">
 
 <header class="topbar">
   <a class="logo" href="#accueil">EO<span>Pour les nuls</span></a>
   <button class="icon-btn" id="partager-site" type="button" aria-label="Partager le site">
-    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 10 14"/><path d="M21 3l-6.5 18-4.5-7-7-4.5z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 10 14"/><path d="M21 3l-6.5 18-4.5-7-7-4.5z"/></svg>
   </button>
 </header>
 
@@ -41,14 +43,21 @@
     <span class="tab-avatar" id="tab-avatar"></span>
     <span class="tab-label">Profil</span>
   </a>
+  <a class="tab tab-pc" href="#reglages" data-vue="reglages" aria-label="Réglages">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <span class="tab-label">Réglages</span>
+  </a>
 </nav>
 
 <main id="vue" class="vue"></main>
 <div id="toast" class="toast" role="status" hidden></div>
+<dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES } from "./outils.js?v=3";
-import * as C from "./compte.js?v=3";
+import { OUTILS, MATIERES } from "./outils.js?v=4";
+import * as C from "./compte.js?v=4";
+
+const R = window.Reglages;
 
 /* ---------- Outils ---------- */
 const $ = (s, r = document) => r.querySelector(s);
@@ -60,6 +69,7 @@ const teinte = (txt) => { let h = 0; for (const c of txt) h = (h * 31 + c.codePo
 const emojiMatiere = (m) => MATIERES[m] || OUTILS.find((o) => o.matiere === m)?.emoji || "📚";
 const initiale = (nom) => (Array.from(String(nom || "?").trim())[0] || "?").toUpperCase();
 const navigateurIntegre = /Instagram|FBAN|FBAV|FB_IAB|Snapchat|Line\/|TikTok|musical_ly|; wv\)/i.test(navigator.userAgent);
+const lienSite = () => new URL("./", location.href).href;
 
 const svg = (corps) => `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${corps}</svg>`;
 const ICONE = {
@@ -68,6 +78,9 @@ const ICONE = {
   loupe: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
   user: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/>'),
   grille: svg('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>'),
+  menu: svg('<path d="M4 7h16M4 12h16M4 17h16"/>'),
+  retour: svg('<path d="M15 5l-7 7 7 7"/>'),
+  fermer: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
 };
 
 let minuteurToast;
@@ -89,6 +102,8 @@ async function partager(titre, url) {
 }
 
 function avatar(u) {
+  const emoji = C.avatarSur(u?.avatar);
+  if (emoji) return `<span class="avatar-ring"><span class="avatar emoji">${emoji}</span></span>`;
   const photo = C.photoSure(u?.photo);
   const contenu = photo ? `<img src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`
     : u ? esc(initiale(u.nom)) : ICONE.user;
@@ -108,8 +123,38 @@ function grille(liste) {
   }).join("")}</div>`;
 }
 
+/* ---------- Fenêtre modale ---------- */
+const modal = $("#modal");
+function ouvrirModal(html, brancher) {
+  modal.innerHTML = `<div class="modal-corps">${html}</div>`;
+  modal.querySelectorAll("[data-fermer]").forEach((b) => (b.onclick = fermerModal));
+  brancher?.(modal);
+  if (!modal.open) modal.showModal();
+}
+function fermerModal() { if (modal.open) modal.close(); }
+modal.addEventListener("click", (e) => { if (e.target === modal) fermerModal(); }); // clic sur le fond
+
+function confirmer(titre, texte, libelle, action) {
+  ouvrirModal(`<h3>${esc(titre)}</h3><p>${esc(texte)}</p>
+    <div class="modal-btns">
+      <button class="btn btn-danger" type="button" data-ok>${esc(libelle)}</button>
+      <button class="btn" type="button" data-fermer>Annuler</button>
+    </div>`, (m) => {
+    $("[data-ok]", m).onclick = async () => { fermerModal(); await action(); };
+  });
+}
+
 /* ---------- Accueil : bulles des matières + fil ---------- */
 let filtre = "Tout";
+
+function carteBienvenue() {
+  try { if (localStorage.getItem("bienvenue-vue")) return ""; } catch {}
+  return `<div class="bienvenue" id="bienvenue" role="note">
+    <b>Bienvenue sur EOPour les nuls 👋</b>
+    <p>Touche un QCM pour t'entraîner, tape deux fois pour le garder en favori. Dans Profil, connecte-toi pour retrouver ta progression partout.</p>
+    <button class="icon-btn" type="button" id="fermer-bienvenue" aria-label="Masquer ce message">${ICONE.fermer}</button>
+  </div>`;
+}
 
 function vueAccueil() {
   const matieres = [...new Set(OUTILS.map((o) => o.matiere))];
@@ -123,8 +168,13 @@ function vueAccueil() {
           <span class="story-nom">${esc(m)}</span>
         </button>`).join("")}
     </div>
+    ${carteBienvenue()}
     <div class="feed">${liste.map(post).join("")}</div>`;
   vue.querySelectorAll(".story").forEach((b) => (b.onclick = () => { filtre = b.dataset.m; vueAccueil(); }));
+  $("#fermer-bienvenue")?.addEventListener("click", () => {
+    try { localStorage.setItem("bienvenue-vue", "1"); } catch {}
+    $("#bienvenue").remove();
+  });
   brancherPosts();
 }
 
@@ -220,12 +270,39 @@ function vueFavoris() {
 
 /* ---------- Profil + connexion ---------- */
 let modeInscription = false;
+const LETTRES_JOURS = ["D", "L", "M", "M", "J", "V", "S"];
 
 function statsLocales() {
   const faits = OUTILS.map((o) => C.scoreLocal(o.id)).filter(Boolean);
   const best = faits.reduce((a, s) => a + s.best, 0);
   const total = faits.reduce((a, s) => a + s.total, 0);
   return { faits: faits.length, reussite: total ? Math.round((best / total) * 100) : null, favoris: C.favorisLocaux().size };
+}
+
+function blocActivite() {
+  const a = C.activiteLocale();
+  const objectif = Number(R.lire().objectif) || 3;
+  const ajd = a[C.jourCle()] || 0;
+  const serie = C.serieJours(a);
+  const jours = [];
+  const d = new Date();
+  d.setDate(d.getDate() - 6);
+  for (let k = 0; k < 7; k++) {
+    jours.push({ n: a[C.jourCle(d)] || 0, lettre: LETTRES_JOURS[d.getDay()], ajd: k === 6 });
+    d.setDate(d.getDate() + 1);
+  }
+  const max = Math.max(1, ...jours.map((j) => j.n));
+  return `<div class="activite">
+    <div class="activite-haut">
+      <div class="serie">${serie ? "🔥" : "💤"} <b>${serie}</b> jour${serie > 1 ? "s" : ""} d'affilée</div>
+      <div class="objectif">Objectif du jour <b>${Math.min(ajd, objectif)}/${objectif}</b>${ajd >= objectif ? " ✅" : ""}
+        <span class="jauge"><i style="width:${Math.min(100, Math.round((ajd / objectif) * 100))}%"></i></span></div>
+    </div>
+    <div class="semaine" aria-label="QCM terminés ces 7 derniers jours">
+      ${jours.map((j) => `<div class="jour${j.n ? "" : " vide-jour"}${j.ajd ? " ajd" : ""}" title="${j.n} QCM">
+        <i style="height:${j.n ? Math.max(14, Math.round((j.n / max) * 100)) : 6}%"></i><span>${j.lettre}</span></div>`).join("")}
+    </div>
+  </div>`;
 }
 
 function vueProfil() {
@@ -239,40 +316,68 @@ function vueProfil() {
     </div>`;
   const mesQcm = `<h2 class="titre-section">${ICONE.grille} ${u ? "Mes QCM" : "Sur cet appareil"}</h2>`
     + (joues.length ? grille(joues) : `<p class="vide-mini">Fais un QCM : il apparaîtra ici avec ton meilleur score.</p>`);
+  const barre = `<div class="profil-barre"><b>Profil</b><a class="icon-btn" href="#reglages" aria-label="Réglages">${ICONE.menu}</a></div>`;
 
   if (!u) {
-    vue.innerHTML = `<div class="profil">
+    vue.innerHTML = `<div class="profil">${barre}
       ${C.comptesActifs ? formulaireConnexion() : `<div class="connexion"><span class="logo">EO<span>Pour les nuls</span></span><p>Les comptes arrivent très bientôt. En attendant, ta progression est gardée sur cet appareil.</p></div>`}
       <div class="profil-tete local">${avatar(null)}${stats}</div>
+      ${blocActivite()}
       ${mesQcm}
     </div>`;
     if (C.comptesActifs) brancherConnexion();
     return;
   }
 
-  vue.innerHTML = `<div class="profil">
+  vue.innerHTML = `<div class="profil">${barre}
     <div class="profil-tete">${avatar(u)}${stats}</div>
     <p class="profil-nom">${esc(u.nom)}</p>
     ${u.email ? `<p class="profil-mail">${esc(u.email)}</p>` : ""}
     <div class="profil-actions">
-      <button class="btn" type="button" id="btn-nom">Modifier le nom</button>
-      <button class="btn" type="button" id="btn-sortir">Se déconnecter</button>
+      <button class="btn" type="button" id="btn-modifier">Modifier le profil</button>
+      <a class="btn" href="#reglages">Réglages</a>
     </div>
-    <form id="form-nom" class="form-nom" hidden>
-      <input class="champ" name="nom" maxlength="40" aria-label="Nouveau nom" required>
-      <button class="btn btn-primary" type="submit">OK</button>
-    </form>
+    ${blocActivite()}
     ${mesQcm}
-    <p class="uid">ID du compte : <code>${esc(u.uid)}</code> <button class="lien" type="button" id="copier-uid">Copier</button></p>
   </div>`;
-  const formNom = $("#form-nom");
-  formNom.nom.value = u.nom;
-  $("#btn-nom").onclick = () => { formNom.hidden = false; formNom.nom.focus(); };
-  formNom.onsubmit = (e) => { e.preventDefault(); C.changerNom(formNom.nom.value); };
-  $("#btn-sortir").onclick = async () => { await C.deconnexion(); toast("Déconnecté"); };
-  $("#copier-uid").onclick = async () => {
-    try { await navigator.clipboard.writeText(u.uid); toast("ID copié"); } catch { toast(u.uid); }
-  };
+  $("#btn-modifier").onclick = modalProfil;
+}
+
+function modalProfil() {
+  const u = C.utilisateur();
+  if (!u) return;
+  let choix = C.avatarSur(u.avatar);
+  const photo = C.photoSure(u.photo);
+  ouvrirModal(`<h3>Modifier le profil</h3>
+    <form id="form-profil">
+      <label class="sub" for="champ-nom">Nom affiché</label>
+      <input class="champ" id="champ-nom" name="nom" maxlength="40" required>
+      <span class="sub">Avatar</span>
+      <div class="emojis" id="emojis">
+        <button type="button" class="texte-choix" data-a="" aria-pressed="${!choix}">${photo ? "Photo" : esc(initiale(u.nom))}</button>
+        ${C.AVATARS.map((e) => `<button type="button" data-a="${e}" aria-pressed="${choix === e}">${e}</button>`).join("")}
+      </div>
+      <div class="modal-btns">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <button class="btn" type="button" data-fermer>Annuler</button>
+      </div>
+    </form>`, (m) => {
+    $("#champ-nom", m).value = u.nom;
+    const boutons = m.querySelectorAll("#emojis button");
+    boutons.forEach((b) => (b.onclick = () => {
+      choix = b.dataset.a || null;
+      boutons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    }));
+    $("#form-profil", m).onsubmit = async (e) => {
+      e.preventDefault();
+      const nom = $("#champ-nom", m).value.trim();
+      const avant = C.avatarSur(u.avatar);
+      fermerModal();
+      if (nom && nom !== u.nom) await C.changerNom(nom);
+      if (choix !== avant) await C.majAvatar(choix);
+      toast("Profil mis à jour");
+    };
+  });
 }
 
 function formulaireConnexion() {
@@ -331,6 +436,174 @@ function brancherConnexion() {
   };
 }
 
+/* ---------- Réglages ---------- */
+let invitInstall = null;
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); invitInstall = e; });
+window.addEventListener("appinstalled", () => { invitInstall = null; toast("Appli installée ✓"); });
+const estInstallee = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const surIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+async function installer() {
+  if (estInstallee()) return toast("L'appli est déjà installée ✓");
+  if (invitInstall) {
+    invitInstall.prompt();
+    await invitInstall.userChoice.catch(() => {});
+    invitInstall = null;
+    return;
+  }
+  ouvrirModal(`<h3>Installer l'appli</h3>
+    <p>${surIOS
+      ? "Dans Safari, touche le bouton Partager (le carré avec une flèche), puis « Sur l'écran d'accueil »."
+      : "Ouvre le menu du navigateur (⋮), puis « Installer l'application » ou « Ajouter à l'écran d'accueil »."}</p>
+    <div class="modal-btns"><button class="btn btn-primary" type="button" data-fermer>OK</button></div>`);
+}
+
+function modalSuppression() {
+  const google = C.compteViaGoogle();
+  ouvrirModal(`<h3>Supprimer ton compte ?</h3>
+    <p>Ton compte et toute la progression enregistrée dessus seront effacés définitivement.
+      ${google ? "Google va te demander de confirmer que c'est bien toi." : "Entre ton mot de passe pour confirmer."}</p>
+    <form id="form-suppr">
+      ${google ? "" : `<input class="champ" name="mdp" type="password" placeholder="Mot de passe" autocomplete="current-password">`}
+      <p class="erreur" id="erreur-suppr" role="alert" hidden></p>
+      <div class="modal-btns">
+        <button class="btn btn-danger" type="submit">Supprimer définitivement</button>
+        <button class="btn" type="button" data-fermer>Annuler</button>
+      </div>
+    </form>`, (m) => {
+    const f = $("#form-suppr", m);
+    f.onsubmit = async (e) => {
+      e.preventDefault();
+      const bouton = f.querySelector('button[type="submit"]');
+      bouton.disabled = true;
+      try {
+        await C.supprimerCompte(f.mdp?.value);
+        fermerModal();
+        toast("Compte supprimé");
+        location.hash = "#profil";
+      } catch (err) {
+        const p = $("#erreur-suppr", m);
+        const msg = C.messageErreur(err);
+        p.textContent = msg;
+        p.hidden = !msg;
+        bouton.disabled = false;
+      }
+    };
+  });
+}
+
+const ACTIONS = {
+  profil: modalProfil,
+  uid: async () => {
+    const u = C.utilisateur();
+    try { await navigator.clipboard.writeText(u.uid); toast("ID copié"); } catch { toast(u.uid); }
+  },
+  sortir: async () => { await C.deconnexion(); toast("Déconnecté"); location.hash = "#profil"; },
+  reset: () => confirmer(
+    "Réinitialiser ta progression ?",
+    `Tes meilleurs scores et tes jours d'activité seront effacés${C.utilisateur() ? ", ici et sur ton compte" : ""}. Tes favoris sont conservés.`,
+    "Réinitialiser",
+    async () => {
+      const ok = await C.reinitialiserProgression();
+      toast(ok ? "Progression réinitialisée" : "Effacée sur cet appareil (compte injoignable)");
+      route();
+    }),
+  supprimer: modalSuppression,
+  installer,
+  partager: () => partager("EOPour les nuls", lienSite()),
+  defauts: () => { R.reinitialiser(); toast("Réglages par défaut remis"); route(); },
+};
+
+function vueReglages() {
+  const r = R.lire();
+  const u = C.utilisateur();
+  const seg = (cle, options) => `<div class="segmente" role="group">${options.map(([v, l]) =>
+    `<button type="button" data-reglage="${cle}" data-valeur="${esc(JSON.stringify(v))}" aria-pressed="${r[cle] === v}">${l}</button>`).join("")}</div>`;
+  const texte = (titre, detail) => `<span class="ligne-txt"><b>${titre}</b>${detail ? `<small>${detail}</small>` : ""}</span>`;
+  const inter = (cle, ico, titre, detail) => `<button class="ligne" type="button" role="switch" data-inter="${cle}" aria-checked="${r[cle] !== false}">
+      <span class="ligne-ico" aria-hidden="true">${ico}</span>${texte(titre, detail)}<span class="interrupteur"></span></button>`;
+  const action = (nom, ico, titre, detail, classe = "") => `<button class="ligne ${classe}" type="button" data-action="${nom}">
+      <span class="ligne-ico" aria-hidden="true">${ico}</span>${texte(titre, detail)}<span class="chevron" aria-hidden="true">›</span></button>`;
+
+  let compte;
+  if (u) {
+    compte = `<div class="ligne"><span class="ligne-ico" aria-hidden="true">👤</span>${texte(esc(u.nom), esc(u.email || ""))}</div>
+      ${action("profil", "✏️", "Modifier le profil", "Nom et avatar")}
+      ${action("uid", "🆔", "ID du compte", `${esc(u.uid)} · toucher pour copier`)}
+      ${action("sortir", "🚪", "Se déconnecter")}`;
+  } else if (C.comptesActifs) {
+    compte = `<a class="ligne" href="#profil"><span class="ligne-ico" aria-hidden="true">👤</span>${texte("Se connecter ou créer un compte", "Pour retrouver ta progression sur tous tes appareils")}<span class="chevron" aria-hidden="true">›</span></a>`;
+  } else {
+    compte = `<div class="ligne"><span class="ligne-ico" aria-hidden="true">👤</span>${texte("Comptes bientôt disponibles")}</div>`;
+  }
+
+  vue.innerHTML = `
+  <div class="profil-barre" style="margin: 0; padding: 0 8px 0 4px;">
+    <a class="icon-btn" href="#profil" aria-label="Retour au profil">${ICONE.retour}</a><b>Réglages</b><span style="width: 44px;"></span>
+  </div>
+  <div class="reglages">
+    <h2>Compte</h2>
+    <div class="groupe">${compte}</div>
+
+    <h2>Apparence</h2>
+    <div class="groupe">
+      <div class="ligne colonne">${texte("Thème")}${seg("theme", [["auto", "Auto"], ["clair", "Clair"], ["sombre", "Sombre"]])}</div>
+      <div class="ligne colonne">${texte("Taille du texte")}${seg("texte", [["normal", "Normale"], ["grand", "Grande"]])}</div>
+      ${inter("animations", "✨", "Animations")}
+    </div>
+
+    <h2>QCM</h2>
+    <div class="groupe">
+      <div class="ligne colonne">${texte("Correction", "« À la fin » = mode examen : tu découvres tout à la fin, avec la correction détaillée.")}
+        ${seg("correction", [["immediate", "Après chaque question"], ["fin", "À la fin"]])}</div>
+      <div class="ligne colonne">${texte("Chrono par question", "À zéro, la question est validée telle quelle.")}
+        ${seg("chrono", [[0, "Sans"], [30, "30 s"], [60, "60 s"], [90, "90 s"]])}</div>
+      ${inter("melangerQuestions", "🔀", "Mélanger les questions")}
+      ${inter("melangerChoix", "🔤", "Mélanger les propositions")}
+      ${inter("vibrations", "📳", "Vibrations", "Bonne ou mauvaise réponse (Android)")}
+    </div>
+
+    <h2>Objectif</h2>
+    <div class="groupe">
+      <div class="ligne colonne">${texte("QCM à terminer par jour", "Affiché dans ton profil, avec ta série de jours.")}
+        ${seg("objectif", [[1, "1"], [3, "3"], [5, "5"], [10, "10"]])}</div>
+    </div>
+
+    <h2>Progression</h2>
+    <div class="groupe">
+      ${action("reset", "↺", "Réinitialiser ma progression", `Scores et jours d'activité${u ? ", aussi sur ton compte" : ""}`, "danger")}
+      ${u ? action("supprimer", "🗑️", "Supprimer mon compte", "Compte et données, définitivement", "danger") : ""}
+    </div>
+
+    <h2>Application</h2>
+    <div class="groupe">
+      ${action("installer", "📲", "Installer l'appli", estInstallee() ? "Déjà installée ✓" : "Icône sur l'écran d'accueil, en plein écran")}
+      ${action("partager", "📤", "Partager le site")}
+      ${action("defauts", "⚙️", "Remettre les réglages par défaut")}
+    </div>
+
+    <h2>À propos</h2>
+    <div class="groupe">
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
+        "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 4 · site de révision entre étudiants")}</div>
+    </div>
+    <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
+  </div>`;
+
+  vue.querySelectorAll("[data-reglage]").forEach((b) => (b.onclick = () => {
+    const cle = b.dataset.reglage;
+    R.ecrire(cle, JSON.parse(b.dataset.valeur));
+    vue.querySelectorAll(`[data-reglage="${cle}"]`).forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  }));
+  vue.querySelectorAll("[data-inter]").forEach((b) => (b.onclick = () => {
+    const actif = b.getAttribute("aria-checked") !== "true";
+    R.ecrire(b.dataset.inter, actif);
+    b.setAttribute("aria-checked", String(actif));
+  }));
+  vue.querySelectorAll("[data-action]").forEach((b) => (b.onclick = () => ACTIONS[b.dataset.action]?.()));
+}
+
 /* ---------- Admin ---------- */
 const enMs = (t) => (t && typeof t.toMillis === "function" ? t.toMillis() : 0);
 
@@ -349,9 +622,10 @@ function ligneMembre(m) {
   const sc = Object.values(m.scores || {}).filter((s) => s && s.total > 0);
   const b = sc.reduce((a, s) => a + (s.best || 0), 0);
   const t = sc.reduce((a, s) => a + s.total, 0);
-  return `<li class="membre">${avatar({ nom: m.nom || "?", photo: m.photo })}
+  const serie = C.serieJours(m.activite && typeof m.activite === "object" ? m.activite : {});
+  return `<li class="membre">${avatar({ nom: m.nom || "?", photo: m.photo, avatar: m.avatar })}
     <div><b>${esc(m.nom || "Sans nom")}</b>
-    <small>${sc.length} QCM${t ? ` · ${Math.round((b / t) * 100)} % de réussite` : ""} · ${depuis(enMs(m.vuLe))}</small></div></li>`;
+    <small>${sc.length} QCM${t ? ` · ${Math.round((b / t) * 100)} % de réussite` : ""}${serie ? ` · 🔥 ${serie}` : ""} · ${depuis(enMs(m.vuLe))}</small></div></li>`;
 }
 
 async function vueAdmin() {
@@ -373,15 +647,17 @@ async function vueAdmin() {
 }
 
 /* ---------- Navigation ---------- */
-const VUES = { accueil: vueAccueil, recherche: vueRecherche, favoris: vueFavoris, profil: vueProfil, admin: vueAdmin };
+const VUES = { accueil: vueAccueil, recherche: vueRecherche, favoris: vueFavoris, profil: vueProfil, reglages: vueReglages, admin: vueAdmin };
 let rendu = 0;
 
 function route() {
   rendu++;
+  fermerModal();
   const nom = location.hash.slice(1) || "accueil";
   const cle = Object.prototype.hasOwnProperty.call(VUES, nom) ? nom : "accueil";
+  const onglet = cle === "reglages" && !matchMedia("(min-width: 1000px)").matches ? "profil" : cle;
   document.querySelectorAll(".tab").forEach((t) => {
-    const actif = t.dataset.vue === cle;
+    const actif = t.dataset.vue === onglet;
     t.classList.toggle("actif", actif);
     if (actif) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
   });
@@ -389,14 +665,16 @@ function route() {
 }
 
 function majOngletProfil(u) {
+  const emoji = C.avatarSur(u?.avatar);
   const photo = C.photoSure(u?.photo);
-  $("#tab-avatar").innerHTML = photo ? `<img src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`
+  $("#tab-avatar").innerHTML = emoji ? `<span class="emoji">${emoji}</span>`
+    : photo ? `<img src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`
     : u ? `<b>${esc(initiale(u.nom))}</b>` : ICONE.user;
 }
 
 window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); });
 window.addEventListener("pageshow", (e) => { if (e.persisted) route(); }); // retour d'un QCM : scores à jour
-$("#partager-site").onclick = () => partager("EOPour les nuls", new URL("./", location.href).href);
+$("#partager-site").onclick = () => partager("EOPour les nuls", lienSite());
 C.surChangement(async (u) => {
   majOngletProfil(u);
   route();
@@ -404,6 +682,9 @@ C.surChangement(async (u) => {
 });
 majOngletProfil(null);
 route();
+
+// Appli installable + hors-ligne (réseau d'abord)
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
 </body>
 </html>

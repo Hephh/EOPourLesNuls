@@ -1,11 +1,11 @@
 /* =====================================================================
    Comptes + progression
-   - Sans compte : scores et favoris gardés sur l'appareil (localStorage).
+   - Sans compte : scores, favoris et jours d'activité gardés sur l'appareil (localStorage).
    - Avec Firebase configuré : connexion Google ou e-mail, synchro entre
      appareils dans Firestore (un document par membre : users/{uid}).
    Les pages n'écrivent jamais directement dans Firestore : elles passent ici.
    ===================================================================== */
-import { FIREBASE_CONFIG } from "./firebase-config.js?v=3";
+import { FIREBASE_CONFIG } from "./firebase-config.js?v=4";
 
 const CDN = "https://www.gstatic.com/firebasejs/13.4.0/";
 
@@ -42,12 +42,43 @@ export function favorisLocaux() {
 }
 const ecrireFavoris = (set) => ecrire("favoris", [...set]);
 
+/* Activité : nombre de QCM terminés par jour, ex. { "2026-11-26": 2 } (120 derniers jours). */
+export const jourCle = (d = new Date()) => d.toLocaleDateString("sv-SE"); // AAAA-MM-JJ, heure locale
+export function activiteLocale() {
+  const a = lire("activite", {});
+  return a && typeof a === "object" && !Array.isArray(a) ? a : {};
+}
+function elaguer(a) {
+  const res = {};
+  for (const k of Object.keys(a).sort().slice(-120)) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(k) && Number.isFinite(a[k]) && a[k] > 0) res[k] = a[k];
+  }
+  return res;
+}
+/** Jours d'affilée avec au moins un QCM terminé (la série tient jusqu'à hier si rien aujourd'hui). */
+export function serieJours(a = activiteLocale()) {
+  const d = new Date();
+  if (!a[jourCle(d)]) d.setDate(d.getDate() - 1);
+  let n = 0;
+  while (a[jourCle(d)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function viderAppareil() {
+  try {
+    for (const cle of Object.keys(localStorage)) {
+      if (cle === "favoris" || cle === "activite" || cle.startsWith("score:outils/")) localStorage.removeItem(cle);
+    }
+  } catch {}
+}
+
 /* Seules les photos de profil Google sont acceptées (voir firestore.rules). */
 export const photoSure = (p) => (typeof p === "string" && /^https:\/\/lh\d\.googleusercontent\.com\//.test(p) && p.length <= 600 ? p : null);
+export const AVATARS = ["🦴", "🫀", "🧠", "🫁", "🩺", "💊", "🧬", "🔬", "📚", "☕", "🦊", "🐼", "🐸", "🦁", "🐙", "🌟", "🔥", "🍀"];
+export const avatarSur = (a) => (typeof a === "string" && AVATARS.includes(a) ? a : null);
 
 /* ---------- État du compte ---------- */
 let fb = null;            // { auth, db, A, F } une fois Firebase chargé
-let courant = null;       // { uid, nom, email, photo } ou null
+let courant = null;       // { uid, nom, email, photo, avatar } ou null
 let adminCache = null;
 let nomEnAttente = null;  // prénom saisi à l'inscription, appliqué dès la création du compte
 const abonnes = new Set();
@@ -80,6 +111,7 @@ async function demarrer() {
         nom: (nomEnAttente || u.displayName || (u.email || "").split("@")[0] || "Moi").slice(0, 40),
         email: u.email || null,
         photo: photoSure(u.photoURL),
+        avatar: null,
       } : null;
       if (u) {
         try { await synchroniser(); }
@@ -96,7 +128,8 @@ async function demarrer() {
 }
 demarrer();
 
-/* Fusionne l'appareil et le compte : meilleur score de chaque côté, union des favoris. */
+/* Fusionne l'appareil et le compte puis réécrit tout le document du membre.
+   ⚠️ Tout nouveau champ du document doit être ajouté ici (et dans firestore.rules). */
 async function synchroniser() {
   const { F, db } = fb;
   const u = courant;
@@ -104,6 +137,7 @@ async function synchroniser() {
   const snap = await F.getDoc(ref);
   const distant = snap.exists() ? snap.data() : {};
 
+  // Scores : on garde le meilleur de l'appareil et du compte
   const scores = {};
   for (const [id, s] of Object.entries(distant.scores || {})) {
     if (scoreValide(s)) scores[id] = { best: s.best, total: s.total };
@@ -114,15 +148,30 @@ async function synchroniser() {
   }
   for (const [id, s] of Object.entries(scores)) ecrire(cleScore(id), s);
 
+  // Favoris : union des deux
   const favoris = new Set([...(Array.isArray(distant.favoris) ? distant.favoris : []), ...favorisLocaux()]);
   ecrireFavoris(favoris);
 
+  // Activité : maximum par jour
+  const activite = { ...(distant.activite && typeof distant.activite === "object" ? distant.activite : {}) };
+  for (const [j, n] of Object.entries(activiteLocale())) activite[j] = Math.max(activite[j] || 0, n);
+  const act = elaguer(activite);
+  ecrire("activite", act);
+
   if (nomEnAttente) { u.nom = nomEnAttente; nomEnAttente = null; }
   else if (distant.nom) u.nom = String(distant.nom).slice(0, 40);
+  u.avatar = avatarSur(distant.avatar);
 
-  const maj = { nom: u.nom, photo: u.photo, favoris: [...favoris], scores, vuLe: F.serverTimestamp() };
-  if (!snap.exists()) maj.creeLe = F.serverTimestamp();
-  await F.setDoc(ref, maj, { merge: true });
+  await F.setDoc(ref, {
+    nom: u.nom,
+    photo: u.photo,
+    avatar: u.avatar,
+    favoris: [...favoris],
+    scores,
+    activite: act,
+    creeLe: distant.creeLe || F.serverTimestamp(),
+    vuLe: F.serverTimestamp(),
+  });
 }
 
 /* ---------- Progression ---------- */
@@ -145,6 +194,25 @@ export async function enregistrerScore(id, best, total) {
   }
 }
 
+/** À appeler à la fin de chaque partie (complète ou « refaire mes erreurs »). Renvoie le total du jour. */
+export async function noterActivite() {
+  const a = activiteLocale();
+  const j = jourCle();
+  a[j] = (a[j] || 0) + 1;
+  const res = elaguer(a);
+  ecrire("activite", res);
+  await pret;
+  if (fb && courant) {
+    const { F, db } = fb;
+    try {
+      await F.setDoc(F.doc(db, "users", courant.uid), { activite: { [j]: res[j] }, vuLe: F.serverTimestamp() }, { merge: true });
+    } catch (e) {
+      console.warn("Activité non synchronisée :", e.code || e.message);
+    }
+  }
+  return res[j];
+}
+
 /** Ajoute/retire un favori (forcer = true/false pour imposer l'état). Renvoie le nouvel état. */
 export function basculerFavori(id, forcer) {
   const fav = favorisLocaux();
@@ -157,6 +225,24 @@ export function basculerFavori(id, forcer) {
       .catch((e) => console.warn("Favori non synchronisé :", e.code || e.message));
   }
   return actif;
+}
+
+/** Efface scores et jours d'activité (favoris conservés), ici et sur le compte. false = compte injoignable. */
+export async function reinitialiserProgression() {
+  try {
+    for (const cle of Object.keys(localStorage)) {
+      if (cle === "activite" || cle.startsWith("score:outils/")) localStorage.removeItem(cle);
+    }
+  } catch {}
+  await pret;
+  if (!fb || !courant) return true;
+  try {
+    await fb.F.updateDoc(fb.F.doc(fb.db, "users", courant.uid), { scores: {}, activite: {} });
+    return true;
+  } catch (e) {
+    console.warn("Réinitialisation non synchronisée :", e.code || e.message);
+    return false;
+  }
 }
 
 /* ---------- Connexion ---------- */
@@ -190,12 +276,7 @@ export async function motDePasseOublie(email) {
 }
 export async function deconnexion() {
   if (!fb) return;
-  // La progression est dans le compte : on vide l'appareil pour ne pas la mélanger avec un autre compte.
-  try {
-    for (const cle of Object.keys(localStorage)) {
-      if (cle === "favoris" || cle.startsWith("score:outils/")) localStorage.removeItem(cle);
-    }
-  } catch {}
+  viderAppareil(); // la progression est dans le compte : on évite de la mélanger avec un autre compte
   await fb.A.signOut(fb.auth);
 }
 export async function changerNom(nom) {
@@ -210,6 +291,34 @@ export async function changerNom(nom) {
   } catch (e) {
     console.warn("Nom non synchronisé :", e.code || e.message);
   }
+}
+/** Avatar emoji (liste AVATARS) ou null pour revenir à la photo Google / l'initiale. */
+export async function majAvatar(emoji) {
+  exigerComptes();
+  if (!courant) return;
+  courant.avatar = avatarSur(emoji);
+  notifier();
+  try {
+    await fb.F.setDoc(fb.F.doc(fb.db, "users", courant.uid), { avatar: courant.avatar }, { merge: true });
+  } catch (e) {
+    console.warn("Avatar non synchronisé :", e.code || e.message);
+  }
+}
+export function compteViaGoogle() {
+  const user = fb?.auth.currentUser;
+  return !!user && (user.providerData || []).some((p) => p.providerId === "google.com");
+}
+/** Supprime définitivement le compte et ses données. Firebase exige de reconfirmer l'identité juste avant. */
+export async function supprimerCompte(motDePasse) {
+  exigerComptes();
+  const { A, F, auth, db } = fb;
+  const user = auth.currentUser;
+  if (!user) return;
+  if (compteViaGoogle()) await A.reauthenticateWithPopup(user, new A.GoogleAuthProvider());
+  else await A.reauthenticateWithCredential(user, A.EmailAuthProvider.credential(user.email, motDePasse || ""));
+  await F.deleteDoc(F.doc(db, "users", user.uid));
+  viderAppareil();
+  await A.deleteUser(user);
 }
 
 /* ---------- Admin ---------- */
@@ -238,7 +347,7 @@ export async function membres() {
 /* ---------- Messages d'erreur ---------- */
 const MESSAGES = {
   "auth/invalid-credential": "E-mail ou mot de passe incorrect.",
-  "auth/wrong-password": "E-mail ou mot de passe incorrect.",
+  "auth/wrong-password": "Mot de passe incorrect.",
   "auth/user-not-found": "E-mail ou mot de passe incorrect.",
   "auth/invalid-email": "Adresse e-mail invalide.",
   "auth/missing-email": "Entre ton adresse e-mail.",
@@ -252,6 +361,9 @@ const MESSAGES = {
   "auth/web-storage-unsupported": "Connexion Google impossible ici : ouvre le site dans Chrome ou Safari, ou utilise ton e-mail.",
   "auth/unauthorized-domain": "Ce site n'est pas encore autorisé dans Firebase (domaine à ajouter).",
   "auth/operation-not-allowed": "Ce mode de connexion n'est pas encore activé dans Firebase.",
+  "auth/requires-recent-login": "Pour ta sécurité, reconnecte-toi puis réessaie.",
+  "auth/user-mismatch": "Ce n'est pas le compte Google connecté au site.",
+  "permission-denied": "Action refusée par les règles de sécurité.",
   "app/email-requis": "Entre ton e-mail, puis touche « Mot de passe oublié ? ».",
   "app/nom-requis": "Choisis un prénom ou un pseudo.",
   "app/comptes-indisponibles": "Les comptes ne sont pas disponibles pour le moment.",

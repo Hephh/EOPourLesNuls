@@ -13,13 +13,15 @@ service cloud.firestore {
     }
 
     function profilValide(d) {
-      return d.keys().hasOnly(['nom', 'photo', 'favoris', 'scores', 'creeLe', 'vuLe'])
+      return d.keys().hasOnly(['nom', 'photo', 'avatar', 'favoris', 'scores', 'activite', 'creeLe', 'vuLe'])
         && (!('nom' in d) || (d.nom is string && d.nom.size() > 0 && d.nom.size() <= 40))
         && (!('photo' in d) || d.photo == null
             || (d.photo is string && d.photo.size() <= 600
                 && d.photo.matches('https://lh[0-9][.]googleusercontent[.]com/.*')))
+        && (!('avatar' in d) || d.avatar == null || (d.avatar is string && d.avatar.size() <= 16))
         && (!('favoris' in d) || (d.favoris is list && d.favoris.size() <= 500))
         && (!('scores' in d) || (d.scores is map && d.scores.size() <= 500))
+        && (!('activite' in d) || (d.activite is map && d.activite.size() <= 400))
         && (!('creeLe' in d) || d.creeLe is timestamp)
         && (!('vuLe' in d) || d.vuLe is timestamp);
     }
