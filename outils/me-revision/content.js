@@ -8,7 +8,7 @@ chapters:[
  {id:'poignet',name:'Poignet et main',short:'Poignet-main',fig:'condylienne',src:'ME poignet-main'},
  {id:'thorax',name:'Rachis thoracique',short:'Rachis thoracique',fig:'fryette',src:'Modèle explicatif du rachis thoracique'},
  {id:'cotes',name:'Côtes',fig:'cotes_axes',src:'Annales seulement : pas de cours sur les côtes dans tes fichiers'},
- {id:'bases',name:'Bases d\'arthrologie',short:'Bases',fig:'arthrodie',src:'Rappels ajoutés par Claude pour comprendre le vocabulaire'}
+ {id:'bases',name:'Bases d\'arthrologie',short:'Bases',fig:'arthrodie',src:'Rappels pour comprendre le vocabulaire des cours'}
 ],
 
 images:{},

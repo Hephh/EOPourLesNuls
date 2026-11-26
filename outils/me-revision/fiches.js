@@ -56,7 +56,7 @@ epaule:`
 <tr><td>[[sst|Scapulo-serrato-thoracique]]</td><td colspan="2">6 dysfonctions = les 6 mouvements de la scapula, dues à des hypertonies et/ou une scoliose</td><td>Muscles moteurs de chaque mouvement</td></tr>
 </tbody></table></div>
 <div class="box ret"><h4>À retenir</h4><ul><li>[[cinetique-balistique|Cinétique]] = trop vite ; balistique = trop loin.</li><li>PRÉsternale = en avant ; SUPRAsternale = en haut.</li><li>Rotation antérieure : grand pectoral, conoïde tendu. Rotation postérieure : deltoïde postérieur, trapézoïde tendu.</li></ul></div>
-<div class="box ast"><h4>Pas d'annale sur l'épaule</h4><p>Tes deux sujets n'ont aucune question d'épaule : ce chapitre ne contient que des QCM écrits par Claude.</p></div>
+<div class="box ast"><h4>Pas d'annale sur l'épaule</h4><p>Tes deux sujets n'ont aucune question d'épaule : ce chapitre ne contient que des questions d'entraînement tirées du cours.</p></div>
 `,
 
 poignet:`
@@ -141,7 +141,7 @@ cotes:`
 `,
 
 bases:`
-<div class="box ast"><h4>Rappels ajoutés par Claude</h4><p>Ce chapitre n'est pas un cours de ton CC : il explique le vocabulaire que tes cours utilisent sans le définir (arthrodie, condylienne, toroïde…).</p></div>
+<div class="box ast"><h4>Rappels de vocabulaire</h4><p>Ce chapitre n'est pas un cours de ton CC : il explique le vocabulaire que tes cours utilisent sans le définir (arthrodie, condylienne, toroïde…).</p></div>
 <h3>Les types d'articulations de ton cours</h3>
 <div class="scroll"><table class="stack"><thead><tr><th>Type</th><th>Surfaces</th><th>Axes</th><th>Dans ton cours</th></tr></thead><tbody>
 <tr><td>[[arthrodie|Arthrodie]]</td><td>Planes</td><td>Glissements</td><td>Os du carpe, médio-carpienne externe, acromio-claviculaire</td></tr>

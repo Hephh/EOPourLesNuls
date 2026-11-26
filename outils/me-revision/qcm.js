@@ -1,4 +1,5 @@
-/* QCM. src : 'an' = annale (texte et corrigé d'origine), 'va' = variante d'une annale écrite par Claude, 'cl' = QCM écrit par Claude.
+/* QCM. src : 'an' = annale (texte et corrigé d'origine), 'va' = variante d'une annale (son inverse ou son complément : côté,
+   mouvement ou cas opposé ; « of » = annale d'origine), 'cl' = entraînement, seulement pour les chapitres sans annale.
    o : [texte, 1 si juste, explication]. ref : place de la question dans les sujets A et B du 15/03/2022. */
 window.CONTENT.qcm=[
 /* ================= ANNALES (sujets ME P2 A et B, 15/03/2022) ================= */
@@ -102,7 +103,7 @@ window.CONTENT.qcm=[
  ['aucune réponse n\'est correcte',0,'B et D sont justes.']],
  ex:"Le croisement à retenir : tonique → RE ; détendu → RI.",t:['tr-post','ligament-annulaire']},
 
-/* ================= VARIANTES D'ANNALES (écrites par Claude) ================= */
+/* ================= VARIANTES D'ANNALES ================= */
 {id:'v01',src:'va',of:'a01',ch:'coude',q:"Pronation douloureuse de l'enfant, à propos du mécanisme :",o:[
  ['le coude est en extension',1,'Oui, bras tendu.'],
  ['l\'avant-bras est en supination forcée',0,'Pronation forcée.'],
@@ -197,62 +198,122 @@ window.CONTENT.qcm=[
  ['une RI du coude, ligament annulaire détendu',0,'C\'est la tête postérieure qui va avec ce couple.'],
  ['aucune réponse n\'est correcte',0,'A et B sont justes.']],ex:"Tête antérieure : tonique → RI ; détendu → RE. L'inverse exact de la tête postérieure.",t:['tr-ant','ligament-annulaire']},
 
-/* ================= QCM CLAUDE ================= */
+/* ===== Variantes ajoutées : l'inverse ou le complément d'une annale (côté, mouvement ou cas opposé) ===== */
+{id:'v17',src:'va',of:'a06',ch:'thorax',q:"La dysfonction d'une vertèbre thoracique en ERS gauche :",o:[
+ ['induit une rotation gauche',1,'2e loi de Fryette : rotation et side du même côté, ici à gauche.'],
+ ['induit une inclinaison droite',0,'Le side est du même côté que la rotation : à gauche.'],
+ ['est souvent plurisegmentaire',0,'Une ERS touche une seule vertèbre (unisegmentaire).'],
+ ['est souvent d\'origine primaire traumatique, en extension',1,'Comme la FRS, c\'est une dysfonction primaire traumatique ; ici le traumatisme se fait en extension.'],
+ ['est souvent adaptative',0,'Adaptative, c\'est la NSR (scoliose). L\'ERS est traumatique.']],
+ ex:"Annale inversée : FRS droite → ERS gauche. Même logique (2e loi, une vertèbre, traumatique), mais en extension et côté gauche.",t:['ers','fryette-2']},
+{id:'v18',src:'va',of:'a06',ch:'thorax',q:"Une vertèbre thoracique en FRS droite :",o:[
+ ['a une divergence facettaire maximale à gauche',1,'FRS : divergence maximale du côté opposé à la dysfonction.'],
+ ['répond à la 1re loi de Fryette',0,'Flexion + side et rotation du même côté : 2e loi.'],
+ ['est fixée par le multifide homolatéral et les intercostaux',1,'Fixateurs de la FRS au cours.'],
+ ['est fixée par les érecteurs du rachis, de façon bilatérale',0,'Ce sont les fixateurs de l\'extension bilatérale.'],
+ ['peut s\'accompagner d\'une entorse',1,'Dysfonction traumatique : entorse possible.']],
+ ex:"Complément de l'annale FRS droite : où se fait la divergence, et quels muscles la fixent.",t:['frs','fryette-2']},
+{id:'v19',src:'va',of:'a07',ch:'thorax',q:"T6 en dysfonction de FRS gauche :",o:[
+ ['répond à la 2e loi de Fryette',1,'Flexion, side et rotation du même côté.'],
+ ['répond à la 1re loi de Fryette',0,'La 1re loi, c\'est la NSR (neutre, en groupe).'],
+ ['est souvent traumatique',1,'FRS = primaire traumatique, en flexion.'],
+ ['induit une rotation droite',0,'Rotation gauche : même côté que le side.'],
+ ['est plurisegmentaire',0,'Une seule vertèbre.']],
+ ex:"Annale « T6 en NSR gauche » retournée : même vertèbre, mais FRS. Tout ce qui était faux pour la NSR devient juste, et inversement.",t:['frs','fryette-2']},
+{id:'v20',src:'va',of:'a07',ch:'thorax',q:"Une dysfonction thoracique en NSR gauche :",o:[
+ ['est fixée par le multifide du côté du side, donc à gauche',1,'Fixateur de la NSR : multifide du côté du side.'],
+ ['est souvent secondaire adaptative, par exemple à une scoliose',1,'C\'est la dysfonction adaptative type.'],
+ ['touche une seule vertèbre',0,'1re loi : en groupe, plurisegmentaire.'],
+ ['associe side gauche et rotation gauche',0,'Neutre : side et rotation opposés, donc rotation droite.'],
+ ['aucune réponse n\'est correcte',0,'A et B sont justes.']],
+ ex:"Complément de l'annale NSR gauche : fixateur et origine.",t:['nsr','fryette-1']},
+{id:'v21',src:'va',of:'a08',ch:'thorax',q:"La dysfonction thoracique en flexion bilatérale :",o:[
+ ['est plurisegmentaire',1,'Dysfonction sagittale, sur plusieurs segments.'],
+ ['est souvent secondaire à une hyperlordose lombaire ou à une grossesse',1,'Causes secondaires du cours.'],
+ ['est fixée par les expirateurs, le psoas et la pesanteur',1,'Fixateurs du cours.'],
+ ['est fixée par les érecteurs du rachis',0,'Ce sont les fixateurs de l\'extension bilatérale.'],
+ ['est une dysfonction en inspiration',0,'Flexion bilatérale = dysfonction en expiration.']],
+ ex:"Complément de l'annale « T4 en flexion bilatérale favorise l'expiration ». La plus basse des vertèbres en flexion est la moins mobile.",t:['flexion-bilat']},
+{id:'v22',src:'va',of:'a14',ch:'cotes',q:"La dysfonction de T7 en FRS gauche sera préférentiellement associée à :",o:[
+ ['K7 gauche en PL',1,'Même règle que l\'annale : côte du côté de la dysfonction en PL.'],
+ ['K7 droite en ASI',1,'Et côte opposée en anse de seau inspiratoire.'],
+ ['K7 droite en PL',0,'La PL est du côté de la FRS (gauche).'],
+ ['K7 gauche en ASI',0,'L\'ASI est du côté opposé.'],
+ ['aucune réponse n\'est correcte',0,'A et B sont justes.']],
+ ex:"Même raisonnement que l'annale « T5 en FRS gauche », transposé à un autre niveau. Lecture du corrigé : PL du même côté, ASI en face.",t:['frs','cote-pl']},
+{id:'v23',src:'va',of:'a03',ch:'coude',q:"Dysfonction d'abduction du coude, conséquences :",o:[
+ ['le radius est abaissé : le poignet part en adduction',1,'Coude et poignet se croisent : coude en ABD → poignet en ADD.'],
+ ['le poignet part en abduction',0,'C\'est l\'adduction du coude qui met le poignet en ABD.'],
+ ['le capitulum et la tête radiale sont comprimés',1,'Le côté latéral est pincé.'],
+ ['elle est fixée par les épicondyliens',1,'Fixateurs de l\'abduction.'],
+ ['le ligament collatéral latéral est tendu',0,'Il est détendu : c\'est le LLI qui se tend.']],
+ ex:"Complément de l'annale sur l'abduction du coude : ce qu'elle entraîne au poignet et qui la fixe.",t:['abd-coude','valgus']},
+{id:'v24',src:'va',of:'a03',ch:'coude',q:"Dysfonction d'adduction du coude :",o:[
+ ['primaire : traction du membre tendu (porter une charge bras tendu)',1,'Cause primaire du cours.'],
+ ['secondaire : épicondylite',0,'Secondaire à une épitrochléite. L\'épicondylite, c\'est l\'abduction.'],
+ ['elle met le tendon distal du biceps en tension',1,'Conséquence citée au cours.'],
+ ['elle s\'accompagne d\'un poignet en abduction',1,'Coude en ADD → poignet en ABD.'],
+ ['elle est fixée par les épicondyliens',0,'Par les épitrochléens.']],
+ ex:"Inverse de l'annale sur l'abduction : tout se retourne (côté pincé, ligament tendu, fixateurs, poignet).",t:['add-coude']},
+{id:'v25',src:'va',of:'a15',ch:'coude',q:"Dysfonction de rotation interne (RI) du coude :",o:[
+ ['primaire : pronation forcée, l\'ulna bascule en dedans',1,'Mécanisme du cours.'],
+ ['secondaire : souvent un coude en abduction',1,'L\'abduction favorise la pronation.'],
+ ['fixée par le carré pronateur et le rond pronateur',1,'Fixateurs de la RI.'],
+ ['supination exagérée',0,'C\'est la RE. En RI, la pronation est exagérée et la supination limitée.'],
+ ['aucune réponse n\'est correcte',0,'A, B et C sont justes.']],
+ ex:"Complément de l'annale « tête radiale postérieure + RI » : ce qu'est la RI elle-même. Risque : compression du nerf médian.",t:['ri-coude']},
+{id:'v26',src:'va',of:'a15',ch:'coude',q:"Dysfonction de rotation externe (RE) du coude :",o:[
+ ['primaire : supination forcée ou prolongée',1,'Mécanisme du cours.'],
+ ['secondaire : souvent un coude en adduction',1,'L\'adduction perturbe la pronation.'],
+ ['fixée par le supinateur, le brachio-radial et le biceps',1,'Fixateurs de la RE.'],
+ ['fixée par le carré pronateur',0,'Fixateur de la RI.'],
+ ['elle limite la supination',0,'Elle l\'exagère.']],
+ ex:"Inverse de la RI. Retiens le croisement : RI ↔ coude en ABD ; RE ↔ coude en ADD.",t:['re-coude']},
+{id:'v27',src:'va',of:'a13',ch:'coude',q:"Tête radiale en postériorité, ligament annulaire tonique (normal) :",o:[
+ ['primaire : extension rapide et forcée, chute',1,'Cause primaire du cours.'],
+ ['secondaire : supination, donc RE du coude',1,'Avec un ligament tonique, la RE postériorise la tête.'],
+ ['elle a un fixateur direct, le biceps',0,'Pas de fixateur direct. Le biceps fixe la tête antérieure.'],
+ ['elle est toujours d\'origine traumatique',0,'Faux, comme dans l\'annale : elle peut être secondaire.'],
+ ['aucune réponse n\'est correcte',0,'A et B sont justes.']],
+ ex:"Complément de l'annale « toujours traumatique ? Faux » : voici justement ses causes primaire et secondaire.",t:['tr-post','ligament-annulaire']},
+{id:'v28',src:'va',of:'a15',ch:'coude',q:"Tête radiale en postériorité, ligament annulaire détendu (lâche) :",o:[
+ ['la tête recule en supination comme en pronation',1,'Elle n\'a plus d\'appui sur l\'ulna.'],
+ ['elle s\'associe à une RI du coude',1,'Ligament détendu → RI (le croisement de l\'annale).'],
+ ['elle s\'associe à une RE du coude',0,'RE avec un ligament tonique, pas détendu.'],
+ ['elle est fixée par les fixateurs de la RI',1,'Carré et rond pronateurs.'],
+ ['aucune réponse n\'est correcte',0,'A, B et D sont justes.']],
+ ex:"Inverse du cas « ligament tonique » : tonique → RE ; détendu → RI.",t:['tr-post','ligament-annulaire','ri-coude']},
+{id:'v29',src:'va',of:'a04',ch:'poignet',q:"La dysfonction de la radio-carpienne en flexion :",o:[
+ ['primaire : chute en hyperflexion',1,'Cause primaire du cours.'],
+ ['secondaire : épitrochléite',1,'Flexion du poignet ↔ épitrochléite.'],
+ ['secondaire : épicondylite',0,'L\'épicondylite va avec l\'extension du poignet.'],
+ ['fixée par FRC, FUC, long palmaire, FCS et FCP',1,'Les fléchisseurs.'],
+ ['primaire : chute paume au sol',0,'C\'est la cause de l\'extension.']],
+ ex:"Complément de l'annale sur l'adduction du poignet : même tableau (primaire, secondaire, fixateurs) pour la flexion.",t:['rc-flexion','epitrochleite']},
+{id:'v30',src:'va',of:'a04',ch:'poignet',q:"La dysfonction de la radio-carpienne en extension :",o:[
+ ['primaire : chute paume au sol',1,'Cause primaire du cours.'],
+ ['secondaire : épicondylite',1,'Extension du poignet ↔ épicondylite.'],
+ ['fixée par ERC, EUC et l\'extenseur commun',1,'Les extenseurs.'],
+ ['fixée par le fléchisseur ulnaire du carpe et le long palmaire',0,'Fixateurs de la flexion.'],
+ ['aucune réponse n\'est correcte',0,'A, B et C sont justes.']],
+ ex:"Inverse de la flexion : fléchisseurs ↔ extenseurs, épitrochléite ↔ épicondylite.",t:['rc-extension','epicondylite']},
+{id:'v31',src:'va',of:'a11',ch:'cotes',q:"À propos de K1 en supériorité :",o:[
+ ['elle est maintenue par le scalène moyen',1,'Réponse du corrigé.'],
+ ['le scalène postérieur s\'insère sur K2, pas sur K1',1,'C\'est pour ça qu\'il ne fixe pas K1.'],
+ ['c\'est uniquement une élévation de l\'arc antérieur',0,'Le corrigé refuse le « uniquement ».'],
+ ['elle est maintenue par le scalène postérieur',0,'Il s\'insère sur K2.'],
+ ['aucune réponse n\'est correcte',0,'A et B sont justes.']],
+ ex:"Complément de l'annale K1 : pourquoi le scalène moyen et pas le postérieur.",t:['k1-sup']},
+{id:'v32',src:'va',of:'a09',ch:'cotes',q:"Bras de pompe et anse de seau :",o:[
+ ['le bras de pompe concerne surtout les côtes hautes',1,'L\'extrémité antérieure monte et avance.'],
+ ['l\'anse de seau concerne surtout les côtes basses',1,'La partie latérale monte.'],
+ ['une côte en BPI est bloquée en inspiration',1,'I = inspiration, E = expiration.'],
+ ['une côte en ASE est bloquée en inspiration',0,'ASE = anse de seau bloquée en expiration.'],
+ ['aucune réponse n\'est correcte',0,'A, B et C sont justes.']],
+ ex:"Complément des annales sur le bras de pompe : les deux mouvements et leurs abréviations.",t:['bras-de-pompe','anse-de-seau','cote-inspi-expi']},
+
+/* ================= ENTRAÎNEMENT (chapitres sans annale : épaule, bases) ================= */
 /* coude */
-{id:'c01',src:'cl',ch:'coude',q:"Modèle explicatif du coude :",o:[
- ['le fonctionnement du coude dépend de celui de l\'épaule',1,'L\'épaule positionne tout le membre supérieur.'],
- ['on associe souvent flexion-supination et extension-pronation',0,'On associe flexion-pronation et extension-supination.'],
- ['l\'abduction-adduction est un mouvement actif volontaire',0,'C\'est un mouvement passif.'],
- ['l\'abduction-adduction n\'est possible que coude déverrouillé',1,'Elle est limitée par les ligaments périphériques.'],
- ['aucune réponse n\'est correcte',0,'A et D sont justes.']],ex:"",t:['valgus']},
-{id:'c02',src:'cl',ch:'coude',q:"L'articulation huméro-ulnaire :",o:[
- ['est une trochléenne',1,'Flexion-extension.'],
- ['permet la prono-supination',0,'C\'est la radio-ulnaire supérieure.'],
- ['porte un valgus physiologique dû à la forme de la tête radiale',0,'Le valgus vient de l\'orientation de la gorge de la trochlée.'],
- ['plus le valgus est faible, plus la névralgie ulnaire est fréquente',0,'C\'est l\'inverse : un valgus marqué expose le nerf ulnaire.'],
- ['est le siège de la pronation douloureuse',0,'C\'est l\'huméro-radiale (capitulum et tête radiale).']],ex:"",t:['humero-ulnaire','valgus']},
-{id:'c03',src:'cl',ch:'coude',q:"Motifs de consultation du coude :",o:[
- ['l\'épicondylite est la tendinite la plus fréquente du coude',1,'Le tennis elbow.'],
- ['l\'hygroma est une bursite',1,'De la bourse en avant du tendon du triceps.'],
- ['la névralgie médiane est la compression nerveuse la plus fréquente du coude',0,'C\'est la névralgie ulnaire.'],
- ['l\'épitrochléite est associée au syndrome du canal carpien',1,'Et à une tendinite du poignet.'],
- ['l\'épicondylite n\'a aucun lien avec le poignet',0,'Elle est souvent associée à des troubles du poignet.']],ex:"",t:['epicondylite','epitrochleite','hygroma']},
-{id:'c04',src:'cl',ch:'coude',q:"Rotation interne du coude :",o:[
- ['correspond à une pronation exagérée avec restriction de supination',1,'Définition du cours.'],
- ['est fixée par le biceps brachial',0,'Fixée par le carré pronateur et le rond pronateur.'],
- ['peut comprimer le nerf médian',1,'Risque cité dans le cours.'],
- ['est secondaire à un coude en adduction',0,'Secondaire à un coude en abduction.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['ri-coude']},
-{id:'c05',src:'cl',ch:'coude',q:"Rotation externe du coude :",o:[
- ['est souvent secondaire à une adduction du coude',1,'L\'adduction pince dedans et ouvre dehors.'],
- ['est fixée par le rond pronateur',0,'Fixée par le supinateur, le brachio-radial et le biceps.'],
- ['peut venir d\'une supination prolongée dans le temps',1,'Ou d\'une supination forcée.'],
- ['correspond à une pronation exagérée',0,'C\'est une supination exagérée.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['re-coude']},
-{id:'c06',src:'cl',ch:'coude',q:"Dysfonction d'adduction du coude :",o:[
- ['primaire : traction du membre supérieur tendu',1,'Porter souvent une charge bras tendu.'],
- ['fixée par les muscles épicondyliens',0,'Fixée par les épitrochléens.'],
- ['favorise une dysfonction en ABD du poignet',1,'Le croisement coude-poignet.'],
- ['détend la membrane interosseuse',0,'Elle la met en tension (cisaillement radius-ulna).'],
- ['secondaire : épicondylite',0,'Secondaire à une épitrochléite.']],ex:"",t:['add-coude']},
-{id:'c07',src:'cl',ch:'coude',q:"Tête radiale postérieure avec un ligament annulaire normal :",o:[
- ['peut être primaire après une extension rapide et forcée',1,'Souvent lors d\'une chute.'],
- ['peut être secondaire à une supination (RE)',1,'La supination postériorise la tête.'],
- ['est fixée directement par le biceps',0,'Pas de fixateur direct : les dysfonctions associées la maintiennent.'],
- ['ne s\'associe jamais à un coude en abduction',0,'Une chute peut associer tête postérieure et coude en abduction.'],
- ['aucune réponse n\'est correcte',0,'A et B sont justes.']],ex:"",t:['tr-post']},
-{id:'c08',src:'cl',ch:'coude',q:"Dans la dysfonction d'abduction du coude :",o:[
- ['le radius s\'abaisse légèrement par rapport à l\'ulna',1,'Par compression entre capitulum et tête radiale.'],
- ['elle est associée à un poignet en abduction',0,'À un poignet en adduction.'],
- ['le LLE est tendu',0,'Le LLE est détendu, le LLI tendu.'],
- ['une chute sur le membre tendu doit faire penser à une fracture de la tête radiale',1,'Mise en garde du cours.'],
- ['l\'interligne huméro-ulnaire externe est ouvert',0,'Il est pincé.']],ex:"",t:['abd-coude']},
-{id:'c09',src:'cl',ch:'coude',q:"Articulation huméro-radiale :",o:[
- ['met en rapport le capitulum et la tête radiale',1,'Oui.'],
- ['présente de nombreuses dysfonctions ostéopathiques propres',0,'Pas de dysfonction à proprement parler.'],
- ['est le siège de la pronation douloureuse de l\'enfant',1,'Le ligament annulaire s\'y interpose.'],
- ['est une trochléenne',0,'La trochléenne du coude est l\'huméro-ulnaire.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['humero-radiale']},
 
 /* épaule */
 {id:'c10',src:'cl',ch:'epaule',q:"Le complexe articulaire de l'épaule :",o:[
@@ -311,154 +372,10 @@ window.CONTENT.qcm=[
  ['aucune réponse n\'est correcte',0,'A, B et C sont justes.']],ex:"",t:['sst','syssarcose']},
 
 /* poignet-main */
-{id:'c19',src:'cl',ch:'poignet',q:"Articulation radio-carpienne :",o:[
- ['est une condylienne',1,'Condyle carpien dans la glène antébrachiale.'],
- ['est une arthrodie',0,'L\'arthrodie, c\'est la partie externe de la médio-carpienne.'],
- ['le radius répond au scaphoïde et au lunatum',1,'Oui.'],
- ['le ligament triangulaire répond au trapèze',0,'Il répond au triquetrum.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['radio-carpienne']},
-{id:'c20',src:'cl',ch:'poignet',q:"Articulation médio-carpienne :",o:[
- ['unit les deux rangées du carpe',1,'Oui.'],
- ['sa partie externe est une condylienne',0,'Externe : arthrodie ; interne : condylienne.'],
- ['fait l\'essentiel de la flexion du poignet',0,'L\'essentiel de l\'extension.'],
- ['est une condylienne sur toute sa largeur',0,'Partie externe en arthrodie, interne en condylienne.'],
- ['aucune réponse n\'est correcte',0,'A est juste.']],ex:"",t:['medio-carpienne']},
-{id:'c21',src:'cl',ch:'poignet',q:"Axes et amplitudes du poignet :",o:[
- ['l\'abduction-adduction se fait dans un plan frontal',1,'Autour d\'un axe sagittal.'],
- ['l\'axe de flexion-extension passe entre lunatum et capitatum',1,'Au niveau du petit rayon du condyle.'],
- ['l\'adduction fait environ 15°',0,'Environ 45°. L\'abduction fait environ 15°.'],
- ['l\'axe d\'abduction-adduction passe par le petit rayon de courbure',0,'Par le grand rayon.'],
- ['aucune réponse n\'est correcte',0,'A et B sont justes.']],ex:"",t:['axes-poignet','amplitudes-poignet']},
-{id:'c22',src:'cl',ch:'poignet',q:"Ténosynovite de De Quervain :",o:[
- ['touche le court extenseur et le long abducteur du pouce',1,'Oui.'],
- ['est une inflammation du tendon seul',0,'Tendon ET gaine synoviale.'],
- ['ses tendons forment la limite interne de la tabatière anatomique',0,'La limite externe.'],
- ['se teste par le test de Finkelstein',1,'Inclinaison ulnaire + abduction du pouce contre résistance.'],
- ['est rare au poignet',0,'C\'est la plus fréquente du poignet et de la main.']],ex:"",t:['de-quervain','finkelstein']},
-{id:'c23',src:'cl',ch:'poignet',q:"Fractures du poignet :",o:[
- ['Pouteau-Colles : déplacement postérieur',1,'Par hyperextension.'],
- ['Goyrand-Smith : par hyperextension',0,'Par hyperflexion, déplacement antérieur.'],
- ['elles touchent l\'extrémité inférieure du radius',1,'Oui.'],
- ['Pouteau-Colles : déplacement antérieur',0,'Postérieur.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['pouteau-colles','goyrand-smith']},
-{id:'c24',src:'cl',ch:'poignet',q:"Pathologies de la main et du poignet :",o:[
- ['Dupuytren touche surtout le pouce et l\'index',0,'Surtout les deux derniers doigts.'],
- ['la polyarthrite rhumatoïde donne une déviation ulnaire en coup de vent',1,'Avec une carpite.'],
- ['le kyste synovial est le plus souvent à la face dorsale',1,'Oui.'],
- ['le canal carpien comprime le nerf ulnaire',0,'Le nerf médian.'],
- ['aucune réponse n\'est correcte',0,'B et C sont justes.']],ex:"",t:['dupuytren','polyarthrite','kyste-synovial','canal-carpien']},
-{id:'c25',src:'cl',ch:'poignet',q:"Trapézo-métacarpienne (TMC) :",o:[
- ['est une toroïde (en selle)',1,'Oui.'],
- ['est une sphéroïde',0,'Toroïde.'],
- ['donne l\'opposition du pouce',1,'Oui.'],
- ['sa dysfonction en ADD est surtout primaire traumatique',0,'Surtout secondaire : arthrose, hypertonie des thénariens.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['tmc','selle']},
-{id:'c26',src:'cl',ch:'poignet',q:"Opposition du pouce :",o:[
- ['nécessite une TMC libre (antépulsion et ADD de M1)',1,'1er temps.'],
- ['nécessite la flexion de M1 sur P1',1,'2e temps.'],
- ['nécessite la rotation axiale de P1 sur M1',1,'3e temps.'],
- ['dépend surtout de la mobilité de P2 sur P1',0,'Elle compte peu.'],
- ['aucune réponse n\'est correcte',0,'A, B et C sont justes.']],ex:"",t:['opposition']},
-{id:'c27',src:'cl',ch:'poignet',q:"Dysfonctions de la radio-carpienne :",o:[
- ['flexion : secondaire à une épitrochléite',1,'Oui.'],
- ['extension : secondaire à une épitrochléite',0,'À une épicondylite.'],
- ['ABD : fixée par FUC et EUC',0,'FUC et EUC fixent l\'ADD.'],
- ['ADD : souvent secondaire à un coude en ABD',1,'Le croisement coude-poignet.'],
- ['flexion : fixée par les extenseurs radiaux du carpe',0,'Par FRC, FUC, long palmaire, FCS, FCP.']],ex:"",t:['rc-flexion','rc-extension','rc-add']},
-{id:'c28',src:'cl',ch:'poignet',q:"TMC en adduction :",o:[
- ['correspond à un manque d\'ouverture de la 1re commissure',1,'Oui.'],
- ['est fixée surtout par le court adducteur du pouce',1,'Parmi les thénariens.'],
- ['est fixée par les lombricaux',0,'Les lombricaux fixent les MCP.'],
- ['est le plus souvent primaire',0,'Le plus souvent secondaire.'],
- ['aucune réponse n\'est correcte',0,'A et B sont justes.']],ex:"",t:['tmc']},
-{id:'c29',src:'cl',ch:'poignet',q:"Os du carpe, carpo-métacarpiennes et doigts :",o:[
- ['les articulations carpiennes sont surtout des arthrodies',1,'D\'où les glissements ant. ou post.'],
- ['les MCP sont fixées par les interosseux et les lombricaux',1,'Oui.'],
- ['les dysfonctions des inter-phalangiennes sont surtout primaires',0,'Surtout secondaires (tendons qui tirent d\'un côté).'],
- ['les os du carpe s\'articulent en trochoïde',0,'En arthrodies.'],
- ['aucune réponse n\'est correcte',0,'A et B sont justes.']],ex:"",t:['carpe-ant-post','arthrodie']},
 
 /* rachis thoracique */
-{id:'c30',src:'cl',ch:'thorax',q:"UFS et UFM :",o:[
- ['l\'UFM va de T6 à L3',1,'Oui.'],
- ['l\'UFS va de C0 à T12',0,'De C0 à T6.'],
- ['T6 appartient aux deux',1,'Il faut examiner les deux.'],
- ['la partie moyenne de l\'UFS va de C0 à T2',1,'En lien avec les scalènes.'],
- ['l\'UFM commence à T1',0,'À T6.']],ex:"",t:['ufs','ufm']},
-{id:'c31',src:'cl',ch:'thorax',q:"Chaînes mécaniques du rachis thoracique :",o:[
- ['T1–T6 : surtout des chaînes descendantes',1,'Tête, cou et épaules.'],
- ['T6–T12 : surtout des chaînes descendantes',0,'Surtout montantes.'],
- ['T12 est une charnière avec des adaptations du bas vers le haut',1,'Oui.'],
- ['le haut de la cyphose ne dépend pas de la position de la tête',0,'Il s\'y adapte en permanence.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['chaines']},
-{id:'c32',src:'cl',ch:'thorax',q:"Vertèbres thoraciques clés :",o:[
- ['T1 : centre cilio-spinal de Budge et ganglion stellaire',1,'Et dômes pleuraux.'],
- ['T4 : relation avec l\'estomac',0,'C\'est T5. T4 : circulation, carène.'],
- ['T6 : apex de la cyphose dorsale',1,'Oui.'],
- ['T10 : centre de rotation des ceintures',0,'T7 à T9.'],
- ['T11 et T12 : moins mobiles que les autres',0,'Plus mobiles (côtes flottantes).']],ex:"",t:['t1','t4','t5','t6','t7-t9','t11-t12']},
-{id:'c33',src:'cl',ch:'thorax',q:"Nerfs splanchniques :",o:[
- ['grand splanchnique : T6 à T9',1,'Oui.'],
- ['petit splanchnique : T10 et T11',1,'Oui.'],
- ['ils appartiennent au parasympathique',0,'Au sympathique viscéral abdominal.'],
- ['une dysfonction du foie peut donner une dysfonction dorsale basse',1,'Réaction viscéro-somatique.'],
- ['aucune réponse n\'est correcte',0,'A, B et D sont justes.']],ex:"",t:['splanchniques']},
-{id:'c34',src:'cl',ch:'thorax',q:"Mouvements simples du rachis thoracique :",o:[
- ['en flexion, les facettes divergent',1,'Oui.'],
- ['en extension, les facettes divergent',0,'Elles convergent.'],
- ['l\'extension est limitée par la tension des intercostaux',1,'Écartement des arcs antérieurs.'],
- ['l\'axe de rotation passe par les processus épineux',0,'Par les corps vertébraux.'],
- ['la rotation crée une convergence du même côté que la rotation',0,'Du côté opposé.']],ex:"",t:['convergence-divergence']},
-{id:'c35',src:'cl',ch:'thorax',q:"En inclinaison thoracique droite :",o:[
- ['les facettes convergent à droite',1,'Du côté de l\'inclinaison.'],
- ['les facettes convergent à gauche',0,'À gauche, elles divergent.'],
- ['les arcs costaux moyens se rapprochent à droite',1,'Ce qui limite l\'inclinaison.'],
- ['les intercostaux gauches se détendent',0,'Ils se tendent (écartement à gauche).'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['convergence-divergence']},
-{id:'c36',src:'cl',ch:'thorax',q:"Lois de Fryette :",o:[
- ['1re loi : side et rotation opposés',1,'Type 1, en groupe.'],
- ['2e loi : concerne les NSR',0,'Elle concerne FRS et ERS.'],
- ['3e loi : un mouvement combiné modifie l\'amplitude des autres',1,'Oui.'],
- ['2e loi : side et rotation de côtés opposés',0,'Du même côté.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['fryette-1','fryette-2','fryette-3']},
-{id:'c37',src:'cl',ch:'thorax',q:"Dysfonction en flexion bilatérale :",o:[
- ['se fait uniquement dans le plan sagittal',1,'Oui.'],
- ['la vertèbre la moins mobile est la plus haute',0,'La plus basse.'],
- ['est aussi appelée dysfonction en inspiration',0,'En expiration.'],
- ['est fréquente chez la femme enceinte',1,'Secondaire adaptative.'],
- ['est fixée par les érecteurs du rachis',0,'Par les expirateurs, le psoas, la pesanteur.']],ex:"",t:['flexion-bilat']},
-{id:'c38',src:'cl',ch:'thorax',q:"Dysfonctions en FRS et ERS :",o:[
- ['elles sont unisegmentaires',1,'Oui.'],
- ['FRS : divergence maximale du côté de la dysfonction',0,'Du côté opposé.'],
- ['ERS : convergence maximale du côté de la dysfonction',1,'Oui.'],
- ['elles s\'accompagnent de dysfonctions costales',1,'Et parfois d\'une entorse vertébrale.'],
- ['elles sont souvent secondaires à une scoliose',0,'Primaires traumatiques.']],ex:"",t:['frs','ers']},
-{id:'c39',src:'cl',ch:'thorax',q:"Scoliose et Scheuermann :",o:[
- ['la scoliose est une déformation dans les 3 plans',1,'Déviation frontale + rotation.'],
- ['elle se mesure par l\'angle de Cobb',1,'Oui.'],
- ['en ostéopathie, on supprime toutes les compensations',0,'On les respecte.'],
- ['Scheuermann est une épiphysite de croissance vertébrale',1,'Avec hypercyphose.'],
- ['Scheuermann donne une hypolordose cervicale isolée',0,'Hypercyphose dorsale.']],ex:"",t:['scoliose','scheuermann']},
-{id:'c40',src:'cl',ch:'thorax',q:"Vertèbre thoracique :",o:[
- ['le corps porte des facettes costales supérieure et inférieure',1,'Oui.'],
- ['le trou de conjugaison est surtout formé par la vertèbre sous-jacente',0,'Par la vertèbre sus-jacente.'],
- ['le processus transverse ne porte aucune facette',0,'Il porte une facette costale à sa face antérieure.'],
- ['le processus épineux est horizontal',0,'Oblique en bas et en arrière.'],
- ['aucune réponse n\'est correcte',0,'A est juste.']],ex:"",t:['vertebre-thoracique']},
 
 /* côtes */
-{id:'c41',src:'cl',ch:'cotes',q:"Bras de pompe et anse de seau :",o:[
- ['le bras de pompe prédomine sur les côtes hautes',1,'Oui.'],
- ['l\'anse de seau prédomine sur les côtes hautes',0,'Sur les côtes basses.'],
- ['ASI signifie anse de seau en inspiration',1,'Oui.'],
- ['BPE signifie bras de pompe en extension',0,'En expiration.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['bras-de-pompe','anse-de-seau','cote-inspi-expi']},
-{id:'c42',src:'cl',ch:'cotes',q:"Scalènes et 1re côte :",o:[
- ['le scalène moyen s\'insère sur K1',1,'Oui.'],
- ['le scalène postérieur s\'insère sur K1',0,'Sur K2.'],
- ['le scalène antérieur s\'insère sur K1',1,'Oui.'],
- ['K1 en supériorité est fixée par le scalène postérieur',0,'Par le scalène moyen.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['k1-sup']},
 
 /* bases */
 {id:'c43',src:'cl',ch:'bases',q:"Types d'articulations de ton cours :",o:[

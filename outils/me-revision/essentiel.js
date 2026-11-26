@@ -12,7 +12,7 @@ epaule:[
  '<b>PRÉsternale</b> = en avant (trapèze moyen, rhomboïdes). <b>SUPRAsternale</b> = en haut (grand dorsal, subclavier, SCOM).',
  '<b>Cinétique</b> = trop vite ; <b>balistique</b> = trop loin.',
  'AC en <b>rotation antérieure</b> : grand pectoral, conoïde tendu. <b>Postérieure</b> : deltoïde postérieur, trapézoïde tendu.',
- 'Aucune annale sur l\'épaule : ce sont des QCM écrits par Claude.'
+ 'Aucune annale sur l\'épaule : ce sont des questions d\'entraînement tirées du cours.'
 ],
 poignet:[
  '<b>Radio-carpienne</b> = condylienne, entre condyle carpien et glène antébrachiale.',
