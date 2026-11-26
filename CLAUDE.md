@@ -70,6 +70,14 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   (`{ annees, matieres, outils, masques, majLe }`, lu par tous, écrit par l'admin seul) via `chargerCatalogue()` /
   `enregistrerCatalogue()` de `compte.js`. Tant que rien n'est publié, l'accueil suit `ANNEES` et `OUTILS` de `outils.js`.
   Un nouvel outil (nouvelle page) s'ajoute toujours dans `outils.js` ; l'admin choisit ensuite où il s'affiche.
+- Social (membres connectés seulement, tout passe par `compte.js`) :
+  - `profils/{uid}` = `{ nom, photo, avatar, majLe }` : profil public (pas d'e-mail ni de progression), tenu à jour
+    par `synchroniser()`, `changerNom()`, `majAvatar()`, effacé avec le compte.
+  - Commentaires d'un outil : `commentaires/{outil}/liste/{id}` = `{ de, nom, photo, avatar, texte (≤ 500), le }` ;
+    bouton bulle sur chaque ligne d'outil ; l'auteur ou l'admin supprime.
+  - Messagerie privée : `conversations/{uidA_uidB triés}` = `{ membres, dernier { texte, de }, majLe, lu { uid: date } }`
+    + `messages/{id}` = `{ de, texte (≤ 1000), le }`. Seuls les deux membres lisent (pas l'admin).
+    Vues `#messages` et `#dm-<uid>` ; pastille des non-lus dans la barre du haut et la barre latérale.
 - Taille du texte : réglage `texte` (85 à 140 %) → variable CSS `--texte` posée par `reglages.js` sur `<html>`.
 
 ## Mise en ligne
