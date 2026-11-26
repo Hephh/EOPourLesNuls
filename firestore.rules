@@ -1,14 +1,15 @@
 rules_version = '2';
 
-// Règles de sécurité Firestore d'« EO pour les nuls ».
+// Règles de sécurité Firestore d'« EOPour les nuls ».
 // Elles ne s'appliquent qu'une fois collées dans la console Firebase :
 // Firestore Database → onglet Règles → tout remplacer par ce fichier → Publier.
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // Admins : UID copiés depuis le profil du site (ou Authentication → Utilisateurs).
+    // 2WA3n1y7a0O103qDwYrqB5y2nTp2 = Sébastien (propriétaire)
     function estAdmin() {
-      return request.auth != null && request.auth.uid in [];
+      return request.auth != null && request.auth.uid in ['2WA3n1y7a0O103qDwYrqB5y2nTp2'];
     }
 
     function profilValide(d) {
