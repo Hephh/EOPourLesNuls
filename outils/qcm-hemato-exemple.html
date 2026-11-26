@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QCM Hématologie — exemple · Révisions P1</title>
+<meta name="theme-color" content="#4f46e5">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="../style.css">
+<style>
+  .haut { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 16px 0 8px; color: var(--muted); font-size: .9rem; font-weight: 600; }
+  .piste { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; margin-bottom: 14px; }
+  #barre { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  .consigne { margin: 0 0 6px; font-size: .8rem; color: var(--muted); }
+  #question { margin: 0 0 14px; font-size: 1.12rem; font-weight: 650; line-height: 1.4; }
+  #options { display: grid; gap: 10px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 12px 14px;
+    text-align: left; border: 2px solid var(--line); border-radius: 12px;
+    background: var(--surface); color: var(--text); font: inherit; cursor: pointer;
+    transition: border-color .12s, background .12s;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--accent); }
+  .opt:disabled { cursor: default; }
+  .lettre {
+    flex: none; display: grid; place-items: center; width: 30px; height: 30px;
+    border-radius: 8px; background: var(--bg); font-weight: 700; font-size: .85rem;
+  }
+  .txt { flex: 1; }
+  .etat { flex: none; width: 1.2em; text-align: center; font-weight: 800; }
+  .opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .opt[aria-pressed="true"] .lettre { background: var(--accent); color: var(--accent-text); }
+  /* Correction (après les états "coché" pour passer devant) */
+  .opt.ok { border-color: var(--ok); background: var(--ok-soft); }
+  .opt.ko { border-color: var(--ko); background: var(--ko-soft); }
+  .opt.manque { border-color: var(--ok); border-style: dashed; }
+  .opt.ok .etat, .opt.manque .etat { color: var(--ok); }
+  .opt.ko .etat { color: var(--ko); }
+  .verdict { margin: 14px 0 0; font-weight: 700; }
+  .verdict.ok { color: var(--ok); }
+  .verdict.ko { color: var(--ko); }
+  #explication {
+    margin: 8px 0 0; padding: 12px 14px; border-radius: 12px; border-left: 4px solid var(--accent);
+    background: var(--bg); font-size: .95rem;
+  }
+  #verdict, #explication { scroll-margin-bottom: 96px; } /* reste visible au-dessus du bouton collant */
+  .actions {
+    position: sticky; bottom: 0; margin-top: 4px;
+    padding: 14px 0 max(14px, env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--bg) 75%, transparent);
+  }
+  .actions .btn { width: 100%; }
+  #fin { margin-top: 16px; text-align: center; }
+  #score { margin: 6px 0; font-size: 3rem; font-weight: 800; line-height: 1; }
+  #msg { margin: 12px 0 4px; font-weight: 600; }
+  .fin-btns { display: grid; gap: 10px; margin-top: 18px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="../index.html">← Accueil</a>
+  <h1>🩸 QCM Hématologie — exemple</h1>
+  <p class="sub">Une ou plusieurs réponses exactes par question.</p>
+
+  <div id="jeu">
+    <div class="haut"><span id="compteur"></span></div>
+    <div class="piste" aria-hidden="true"><div id="barre"></div></div>
+    <section class="panel">
+      <p class="consigne">Coche toutes les propositions exactes, puis valide.</p>
+      <p id="question"></p>
+      <div id="options"></div>
+      <p id="verdict" class="verdict" role="status" hidden></p>
+      <p id="explication" hidden></p>
+    </section>
+    <div class="actions"><button id="action" class="btn btn-primary" type="button">Valider</button></div>
+  </div>
+
+  <section id="fin" class="panel" hidden>
+    <p class="sub">Résultat</p>
+    <p id="score"></p>
+    <p id="pct" class="sub"></p>
+    <p id="msg"></p>
+    <p id="record" class="sub"></p>
+    <div class="fin-btns">
+      <button id="refaire" class="btn btn-primary" type="button"></button>
+      <button id="recommencer" class="btn" type="button">Recommencer tout le QCM</button>
+      <a class="btn" href="../index.html">← Retour à l'accueil</a>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ===================== QUESTIONS — remplace par les tiennes =====================
+   bonnes : numéros des bonnes propositions (0 = la 1re). Plusieurs possibles.
+   L'ordre des questions et des propositions est mélangé à chaque partie.        */
+const QUESTIONS = [
+  {
+    q: "Durée de vie moyenne d'une hématie (globule rouge) :",
+    choix: ["8 jours", "30 jours", "120 jours", "1 an"],
+    bonnes: [2],
+    explication: "≈ 120 jours. Les hématies vieillies sont ensuite détruites par les macrophages, surtout dans la rate."
+  },
+  {
+    q: "Concernant les plaquettes :",
+    choix: [
+      "Elles proviennent de la fragmentation des mégacaryocytes",
+      "Ce sont des cellules nucléées",
+      "Valeurs normales : 150 à 400 G/L",
+      "Leur durée de vie est d'environ 120 jours"
+    ],
+    bonnes: [0, 2],
+    explication: "Fragments cytoplasmiques anucléés issus des mégacaryocytes de la moelle ; 150–400 G/L ; durée de vie ≈ 7 à 10 jours."
+  },
+  {
+    q: "L'hémophilie A est due à un déficit en :",
+    choix: ["Facteur VII", "Facteur VIII", "Facteur IX", "Facteur XII"],
+    bonnes: [1],
+    explication: "Hémophilie A = facteur VIII ; hémophilie B = facteur IX. Transmission récessive liée à l'X."
+  },
+  {
+    q: "Transfusion de concentrés de globules rouges (CGR) :",
+    choix: [
+      "Un receveur de groupe O peut recevoir des CGR de groupe A",
+      "O négatif est le donneur « universel » de CGR",
+      "AB positif est le receveur « universel » de CGR",
+      "Un receveur Rh négatif peut toujours recevoir du Rh positif"
+    ],
+    bonnes: [1, 2],
+    explication: "Les hématies O– ne portent ni A, ni B, ni D. Le plasma d'un sujet AB n'a ni anti-A ni anti-B, alors qu'un sujet O possède des anti-A et anti-B naturels. Chez un receveur Rh–, on transfuse du Rh– (risque d'allo-immunisation anti-D), surtout chez la femme en âge de procréer."
+  },
+  {
+    q: "Le plasma représente environ quelle part du volume sanguin ?",
+    choix: ["10 %", "25 %", "55 %", "90 %"],
+    bonnes: [2],
+    explication: "Plasma ≈ 55 % ; éléments figurés ≈ 45 %, essentiellement les hématies (cf. hématocrite). Le plasma lui-même contient environ 90 % d'eau."
+  },
+  {
+    q: "Hémostase primaire :",
+    choix: [
+      "Elle débute par une vasoconstriction réflexe",
+      "Le facteur Willebrand permet l'adhésion des plaquettes au sous-endothélium",
+      "Elle aboutit directement à la formation d'un caillot de fibrine",
+      "Elle aboutit à la formation du clou plaquettaire"
+    ],
+    bonnes: [0, 1, 3],
+    explication: "Temps vasculaire (vasoconstriction) puis temps plaquettaire : adhésion (vWF – GPIb), activation, agrégation (fibrinogène – GPIIb/IIIa) → clou plaquettaire (thrombus blanc). La fibrine relève de la coagulation."
+  },
+  {
+    q: "Chez l'adulte, l'érythropoïétine (EPO) est principalement produite par :",
+    choix: ["Le foie", "Le rein", "La moelle osseuse", "La rate"],
+    bonnes: [1],
+    explication: "≈ 90 % rénale, en réponse à l'hypoxie. Le foie est le principal site de production chez le fœtus."
+  },
+];
+/* ================================================================================= */
+
+const MELANGER_QUESTIONS = true;
+const MELANGER_CHOIX = true;
+
+// Clé du meilleur score, lue par l'accueil : "score:outils/<nom>.html"
+const nomFichier = (location.pathname.split("/").pop() || "").replace(/\.html$/, "");
+const CLE_SCORE = "score:outils/" + nomFichier + ".html";
+
+const $ = (s) => document.querySelector(s);
+const melanger = (arr) => {
+  const a = [...arr];
+  for (let k = a.length - 1; k > 0; k--) {
+    const j = Math.floor(Math.random() * (k + 1));
+    [a[k], a[j]] = [a[j], a[k]];
+  }
+  return a;
+};
+
+let serie = [];     // questions de la partie en cours
+let i = 0;          // question affichée
+let score = 0;
+let erreurs = [];   // questions ratées (pour « Refaire mes erreurs »)
+let choisis = new Set();
+let corrige = false;
+
+function preparer(q) {
+  const opts = q.choix.map((texte, k) => ({ texte, bonne: q.bonnes.includes(k) }));
+  return { ...q, opts: MELANGER_CHOIX ? melanger(opts) : opts, source: q };
+}
+
+function demarrer(liste) {
+  serie = (MELANGER_QUESTIONS ? melanger(liste) : [...liste]).map(preparer);
+  i = 0;
+  score = 0;
+  erreurs = [];
+  $("#fin").hidden = true;
+  $("#jeu").hidden = false;
+  afficher();
+  window.scrollTo({ top: 0 });
+}
+
+function afficher() {
+  const q = serie[i];
+  choisis = new Set();
+  corrige = false;
+  $("#compteur").textContent = `Question ${i + 1} / ${serie.length}`;
+  $("#barre").style.width = `${(i / serie.length) * 100}%`;
+  $("#question").textContent = q.q;
+  const box = $("#options");
+  box.innerHTML = "";
+  q.opts.forEach((o, k) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt";
+    b.setAttribute("aria-pressed", "false");
+    b.innerHTML = `<span class="lettre">${"ABCDEFGH"[k]}</span><span class="txt"></span><span class="etat" aria-hidden="true"></span>`;
+    b.querySelector(".txt").textContent = o.texte;
+    b.onclick = () => basculer(k, b);
+    box.appendChild(b);
+  });
+  $("#verdict").hidden = true;
+  $("#explication").hidden = true;
+  const btn = $("#action");
+  btn.textContent = "Valider";
+  btn.disabled = true;
+}
+
+function basculer(k, b) {
+  if (corrige) return;
+  if (choisis.has(k)) choisis.delete(k); else choisis.add(k);
+  b.setAttribute("aria-pressed", String(choisis.has(k)));
+  $("#action").disabled = choisis.size === 0;
+}
+
+function corriger() {
+  const q = serie[i];
+  corrige = true;
+  let juste = true;
+  [...$("#options").children].forEach((b, k) => {
+    const o = q.opts[k];
+    const coche = choisis.has(k);
+    b.disabled = true;
+    if (o.bonne && coche) b.classList.add("ok");
+    else if (!o.bonne && coche) { b.classList.add("ko"); juste = false; }
+    else if (o.bonne && !coche) { b.classList.add("manque"); juste = false; }
+    b.querySelector(".etat").textContent = o.bonne ? "✓" : (coche ? "✗" : "");
+  });
+  if (juste) score++; else erreurs.push(q.source);
+  const v = $("#verdict");
+  v.hidden = false;
+  v.className = "verdict " + (juste ? "ok" : "ko");
+  v.textContent = juste ? "Juste ✓" : "Faux ✗ — les bonnes réponses sont marquées ✓";
+  const e = $("#explication");
+  e.textContent = q.explication || "";
+  e.hidden = !q.explication;
+  (q.explication ? e : v).scrollIntoView({ block: "nearest", behavior: "smooth" }); // sur mobile, la correction peut être sous le pli
+  const btn = $("#action");
+  btn.textContent = i + 1 < serie.length ? "Question suivante →" : "Voir mon résultat";
+  btn.disabled = false;
+}
+
+function terminer() {
+  const total = serie.length;
+  const pct = Math.round((score / total) * 100);
+  $("#barre").style.width = "100%";
+  $("#jeu").hidden = true;
+  $("#fin").hidden = false;
+  $("#score").textContent = `${score} / ${total}`;
+  $("#pct").textContent = `${pct} % de bonnes réponses`;
+  $("#msg").textContent = pct >= 80 ? "Excellent 🔥" : pct >= 50 ? "Pas mal — encore un tour pour fixer 💪" : "On refait les erreurs ? C'est comme ça qu'on retient 📚";
+
+  let record = null;
+  if (total === QUESTIONS.length) { // le record ne compte que sur le QCM complet
+    try {
+      record = JSON.parse(localStorage.getItem(CLE_SCORE));
+      if (!record || score > record.best) {
+        record = { best: score, total };
+        localStorage.setItem(CLE_SCORE, JSON.stringify(record));
+      }
+    } catch {}
+  }
+  $("#record").textContent = record ? `Meilleur score : ${record.best} / ${record.total}` : "";
+
+  const r = $("#refaire");
+  r.hidden = erreurs.length === 0;
+  r.textContent = `Refaire mes erreurs (${erreurs.length})`;
+  $("#recommencer").classList.toggle("btn-primary", erreurs.length === 0);
+  window.scrollTo({ top: 0 });
+}
+
+$("#action").onclick = () => {
+  if (!corrige) return corriger();
+  i++;
+  if (i < serie.length) afficher(); else terminer();
+};
+$("#refaire").onclick = () => demarrer(erreurs);
+$("#recommencer").onclick = () => demarrer(QUESTIONS);
+
+demarrer(QUESTIONS);
+</script>
+</body>
+</html>

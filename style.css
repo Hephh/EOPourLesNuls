@@ -1,0 +1,103 @@
+/* Thème partagé — clair/sombre automatique. Réutiliser ces variables partout. */
+:root {
+  --bg: #f5f6fa;
+  --surface: #ffffff;
+  --text: #14161f;
+  --muted: #5b6275;
+  --line: #e2e5ee;
+  --accent: #4f46e5;
+  --accent-text: #ffffff;
+  --accent-soft: #eceeff;
+  --ok: #15803d;
+  --ok-soft: #e6f6ec;
+  --ko: #b91c1c;
+  --ko-soft: #fdeaea;
+  --radius: 16px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06);
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1016;
+    --surface: #171a23;
+    --text: #eceef5;
+    --muted: #9aa1b4;
+    --line: #2a2e3b;
+    --accent: #8b93ff;
+    --accent-text: #0e1016;
+    --accent-soft: #232644;
+    --ok: #4ade80;
+    --ok-soft: #14301f;
+    --ko: #f87171;
+    --ko-soft: #3a1717;
+    --shadow: none;
+  }
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.wrap {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 16px 48px;
+}
+
+a { color: var(--accent); }
+
+h1 { font-size: 1.55rem; line-height: 1.2; margin: 6px 0 4px; }
+.sub { margin: 0; color: var(--muted); }
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+}
+.back:hover { color: var(--text); }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.btn:focus-visible, .chip:focus-visible, .card:focus-visible, .opt:focus-visible, .back:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+footer { margin-top: 36px; color: var(--muted); font-size: .82rem; text-align: center; }
