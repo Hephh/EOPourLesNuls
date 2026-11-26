@@ -26,6 +26,20 @@ service cloud.firestore {
         && (!('vuLe' in d) || d.vuLe is timestamp);
     }
 
+    // Catalogue du site (années, matières, place des outils) : tout le monde le lit, seul l'admin l'écrit.
+    function catalogueValide(d) {
+      return d.keys().hasOnly(['annees', 'matieres', 'outils', 'masques', 'majLe'])
+        && d.annees is list && d.annees.size() <= 40
+        && d.matieres is list && d.matieres.size() <= 400
+        && d.outils is map && d.outils.size() <= 1000
+        && (!('masques' in d) || (d.masques is map && d.masques.size() <= 1000))
+        && (!('majLe' in d) || d.majLe is timestamp);
+    }
+    match /site/catalogue {
+      allow read: if true;
+      allow write: if estAdmin() && catalogueValide(request.resource.data);
+    }
+
     // Chaque membre lit et écrit uniquement son profil ; l'admin peut tout lire.
     match /users/{uid} {
       allow read: if request.auth != null && (request.auth.uid == uid || estAdmin());

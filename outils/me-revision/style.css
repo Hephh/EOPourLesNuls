@@ -547,3 +547,10 @@ details.orig p{margin:6px 0}
 .fl-f h2{font-size:clamp(30px,7.5vw,46px);line-height:1.08;overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto}
 .fl-f .tap{position:absolute;left:16px;right:16px;bottom:18px;margin:0}
 .fl-card{min-height:min(52vh,460px)}
+
+/* ---------- taille du texte (curseur des réglages) ---------- */
+#view,.sheet>*:not(.grab):not(.sh-top){zoom:var(--texte,1)}
+.tsz{display:flex;align-items:center;gap:10px}
+.tsz input{flex:1;min-width:0;height:44px;accent-color:var(--pri)}
+.tsz output{min-width:3.4em;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+:root{font-size:100%}

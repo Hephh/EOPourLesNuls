@@ -5,7 +5,7 @@
      appareils dans Firestore (un document par membre : users/{uid}).
    Les pages n'écrivent jamais directement dans Firestore : elles passent ici.
    ===================================================================== */
-import { FIREBASE_CONFIG } from "./firebase-config.js?v=5";
+import { FIREBASE_CONFIG } from "./firebase-config.js?v=6";
 
 const CDN = "https://www.gstatic.com/firebasejs/13.4.0/";
 
@@ -344,6 +344,47 @@ export async function membres() {
   return snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
 }
 
+/* ---------- Catalogue du site (modifiable par l'admin) ----------
+   Document public site/catalogue = { annees: [{ id, nom, sous, verrou }],
+   matieres: [{ id, annee, nom, emoji, complet, prof }], outils: { <id>: { annee, matiere, cache } },
+   masques: { <id d'outil>: [catégories masquées] } }. Absent : l'accueil suit outils.js. */
+const CLE_CATALOGUE = "catalogue";
+function catalogueSur(c) {
+  if (!c || typeof c !== "object" || !Array.isArray(c.annees)) return null;
+  return {
+    annees: c.annees.filter((a) => a && typeof a.id === "string"),
+    matieres: Array.isArray(c.matieres) ? c.matieres.filter((m) => m && typeof m.id === "string") : [],
+    outils: c.outils && typeof c.outils === "object" ? c.outils : {},
+    masques: c.masques && typeof c.masques === "object" ? c.masques : {},
+  };
+}
+/** Dernier catalogue connu sur cet appareil (affichage immédiat, hors ligne). */
+export function catalogueLocal() { return catalogueSur(lire(CLE_CATALOGUE, null)); }
+/** Catalogue publié par l'admin, ou null s'il n'a jamais été publié. */
+export async function chargerCatalogue() {
+  await pret;
+  if (!fb) return catalogueLocal();
+  try {
+    const { F, db } = fb;
+    const snap = await F.getDoc(F.doc(db, "site", "catalogue"));
+    const c = snap.exists() ? catalogueSur(snap.data()) : null;
+    if (c) ecrire(CLE_CATALOGUE, c); else { try { localStorage.removeItem(CLE_CATALOGUE); } catch {} }
+    return c;
+  } catch (e) {
+    console.warn("Catalogue illisible :", e.code || e.message);
+    return catalogueLocal();
+  }
+}
+/** Admin : publie le catalogue pour tout le monde. */
+export async function enregistrerCatalogue(c) {
+  exigerComptes();
+  const propre = catalogueSur(c);
+  const { F, db } = fb;
+  await F.setDoc(F.doc(db, "site", "catalogue"), { ...propre, majLe: F.serverTimestamp() });
+  ecrire(CLE_CATALOGUE, propre);
+  return propre;
+}
+
 /* ---------- Messages d'erreur ---------- */
 const MESSAGES = {
   "auth/invalid-credential": "E-mail ou mot de passe incorrect.",
@@ -363,7 +404,7 @@ const MESSAGES = {
   "auth/operation-not-allowed": "Ce mode de connexion n'est pas encore activé dans Firebase.",
   "auth/requires-recent-login": "Pour ta sécurité, reconnecte-toi puis réessaie.",
   "auth/user-mismatch": "Ce n'est pas le compte Google connecté au site.",
-  "permission-denied": "Action refusée par les règles de sécurité.",
+  "permission-denied": "Action refusée par les règles de sécurité (as-tu publié les dernières règles Firestore ?).",
   "app/email-requis": "Entre ton e-mail, puis touche « Mot de passe oublié ? ».",
   "app/nom-requis": "Choisis un prénom ou un pseudo.",
   "app/comptes-indisponibles": "Les comptes ne sont pas disponibles pour le moment.",

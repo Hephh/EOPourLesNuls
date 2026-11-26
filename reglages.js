@@ -7,7 +7,7 @@
 (function () {
   var DEFAUTS = {
     theme: "auto",            // auto | clair | sombre
-    texte: "normal",          // normal | grand
+    texte: 100,               // taille du texte en %, de 85 à 140
     animations: true,
     correction: "immediate",  // immediate | fin (mode examen)
     chrono: 0,                // secondes par question (0 = sans chrono)
@@ -23,6 +23,9 @@
     try { r = JSON.parse(localStorage.getItem("reglages")) || {}; } catch (e) {}
     var res = {};
     for (var k in DEFAUTS) res[k] = Object.prototype.hasOwnProperty.call(r, k) ? r[k] : DEFAUTS[k];
+    // ancienne valeur « normal / grand » → pourcentage
+    if (res.texte === "grand") res.texte = 112; else if (typeof res.texte !== "number") res.texte = 100;
+    res.texte = Math.min(140, Math.max(85, Math.round(res.texte)));
     return res;
   }
 
@@ -31,7 +34,7 @@
     var d = document.documentElement;
     var sombre = r.theme === "sombre" || (r.theme !== "clair" && !!(sombreSysteme && sombreSysteme.matches));
     d.setAttribute("data-theme", sombre ? "dark" : "light");
-    if (r.texte === "grand") d.setAttribute("data-texte", "grand"); else d.removeAttribute("data-texte");
+    d.style.setProperty("--texte", String(r.texte / 100));
     if (r.animations === false) d.setAttribute("data-anim", "off"); else d.removeAttribute("data-anim");
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", sombre ? "#000000" : "#ffffff");
@@ -39,6 +42,7 @@
 
   function ecrire(cle, valeur) {
     var r = lire();
+    if (cle === "texte") valeur = Math.min(140, Math.max(85, Math.round(Number(valeur) || 100)));
     r[cle] = valeur;
     try { localStorage.setItem("reglages", JSON.stringify(r)); } catch (e) {}
     appliquer(r);

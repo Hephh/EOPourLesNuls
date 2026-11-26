@@ -11,12 +11,16 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const now=()=>Date.now();
 const fr=n=>(Math.round(n*10)/10).toLocaleString('fr-FR');
 const CH=Object.fromEntries(C.chapters.map(c=>[c.id,c]));
-const ALL=C.chapters.map(c=>c.id);
+let ALL=C.chapters.map(c=>c.id);
+function masquer(ids){const h=new Set(ids||[]);ALL=C.chapters.filter(c=>!h.has(c.id)).map(c=>c.id);if(!ALL.length)ALL=C.chapters.map(c=>c.id)}
+try{const c=JSON.parse(localStorage.getItem('catalogue')||'null');if(c&&c.masques)masquer(c.masques[ID])}catch(e){}
+window.addEventListener('catalogue',e=>{const c=e.detail;masquer(c&&c.masques?c.masques[ID]:[]);CARD=null;render()});
 const TERM=Object.fromEntries(C.terms.map(t=>[t.id,t]));
 const QS=C.qcm,QID=Object.fromEntries(QS.map(q=>[q.id,q]));
 const chName=id=>(CH[id]&&(CH[id].short||CH[id].name))||id;
 const L5='ABCDEFGH';
 const R=window.Reglages;
+const tpct=()=>{try{return R?R.lire().texte:100}catch(e){return 100}};
 
 /* ---------- icônes ---------- */
 const I={
@@ -55,9 +59,9 @@ let P=load();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(P))}catch(e){}}
 
 /* ---------- catégories sélectionnées ---------- */
-const custom=()=>P.prefs.topics.filter(id=>CH[id]).length>0;
+const custom=()=>P.prefs.topics.filter(id=>ALL.includes(id)).length>0;
 const sel=()=>custom()?ALL.filter(id=>P.prefs.topics.includes(id)):ALL.slice();
-function toggleTopic(id){let t=P.prefs.topics.filter(x=>CH[x]);const i=t.indexOf(id);if(i>=0)t.splice(i,1);else t.push(id);if(t.length===ALL.length)t=[];P.prefs.topics=t;save();if(LEX.term&&TERM[LEX.term]&&!sel().includes(TERM[LEX.term].ch))LEX.term=null;CARD=null;render()}
+function toggleTopic(id){let t=P.prefs.topics.filter(x=>ALL.includes(x));const i=t.indexOf(id);if(i>=0)t.splice(i,1);else t.push(id);if(t.length===ALL.length)t=[];P.prefs.topics=t;save();if(LEX.term&&TERM[LEX.term]&&!sel().includes(TERM[LEX.term].ch))LEX.term=null;CARD=null;render()}
 const inSel=(q,s)=>s.includes(q.ch)||(q.ch2&&s.includes(q.ch2));
 const srcOk=(q,src)=>src==='an'?q.src==='an':src==='cl'?q.src!=='an':true;
 const pool=(src,s)=>QS.filter(q=>inSel(q,s||sel())&&srcOk(q,src));
@@ -67,7 +71,7 @@ const wrongIds=s=>QS.filter(q=>inSel(q,s||sel())&&P.q[q.id]&&P.q[q.id][0]<=1).ma
 function topicLabel(){return custom()?sel().map(chName).join(', '):'toutes les catégories'}
 function counts(ch){const qs=QS.filter(q=>q.ch===ch||q.ch2===ch);return{an:qs.filter(q=>q.src==='an').length,q:qs.length,t:C.terms.filter(t=>t.ch===ch).length}}
 function bubbles(small){const isC=custom();
- return `<div class="bubbles${small?' sm':''}" role="group" aria-label="Catégories à réviser"><button class="bub" data-act="alltopics" aria-pressed="${!isC}"><span class="ring${!isC?' on':''}"><span class="face">${ic('grid','ico')}</span></span><span class="bl">Tout</span><span class="bn">${QS.length} QCM</span></button>${C.chapters.map(c=>{const on=!isC||P.prefs.topics.includes(c.id);return `<button class="bub" data-act="topic" data-id="${c.id}" aria-pressed="${isC&&on}"><span class="ring${on?' on':''}"><span class="face">${thumb(c.fig)}</span></span><span class="bl">${esc(c.short||c.name)}</span><span class="bn">${counts(c.id).q} QCM</span></button>`}).join('')}</div>`}
+ return `<div class="bubbles${small?' sm':''}" role="group" aria-label="Catégories à réviser"><button class="bub" data-act="alltopics" aria-pressed="${!isC}"><span class="ring${!isC?' on':''}"><span class="face">${ic('grid','ico')}</span></span><span class="bl">Tout</span><span class="bn">${QS.filter(q=>ALL.includes(q.ch)).length} QCM</span></button>${C.chapters.filter(c=>ALL.includes(c.id)).map(c=>{const on=!isC||P.prefs.topics.includes(c.id);return `<button class="bub" data-act="topic" data-id="${c.id}" aria-pressed="${isC&&on}"><span class="ring${on?' on':''}"><span class="face">${thumb(c.fig)}</span></span><span class="bl">${esc(c.short||c.name)}</span><span class="bn">${counts(c.id).q} QCM</span></button>`}).join('')}</div>`}
 
 /* ---------- fiches découpées en blocs ---------- */
 const BL={};
@@ -239,8 +243,7 @@ function orderIds(list,order){
  return list.map(q=>{const r=P.q[q.id];let p;if(!r)p=1+(q.src==='an'?0:.4);else if(r[0]<=1)p=0;else{const due=r[3]+iv[Math.min(r[0],5)]*864e5;p=due<=t?2:3+(due-t)/864e5}return[p+Math.random()*.3,q.id]}).sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
 function startQuiz(ids,title,corr){if(!ids.length){toast('Aucune question pour cette sélection');return}Q={ids,i:0,ans:{},val:{},t0:now(),corr:corr||P.prefs.corr,title:title||'Entraînement',fin:false,rev:null};go('qcm')}
 function launch(src){const p=pool(src);let ids=orderIds(p,P.prefs.order);if(P.prefs.n)ids=ids.slice(0,P.prefs.n);startQuiz(ids,src==='an'?'Annales':src==='cl'?'QCM Claude':'Annales + Claude')}
-function scoreQ(q,s){const set=new Set(s||[]);let good=0,bad=0,nOk=0;q.o.forEach((o,i)=>{if(o[1])nOk++;if(set.has(i)){if(o[1])good++;else bad++}});const perfect=good===nOk&&bad===0;
- if(P.prefs.bareme==='tor')return{pts:perfect?1:0,max:1,perfect,good,bad,nOk};return{pts:good-.5*bad,max:nOk,perfect,good,bad,nOk}}
+function scoreQ(q,s){const set=new Set(s||[]);let good=0,bad=0,nOk=0;q.o.forEach((o,i)=>{if(o[1])nOk++;if(set.has(i)){if(o[1])good++;else bad++}});const perfect=good===nOk&&bad===0;return{pts:good-.5*bad,max:nOk,perfect,good,bad,nOk}}
 function record(q,res){const r=P.q[q.id]||[0,0,0,0,0];P.q[q.id]=[res.perfect?Math.max(2,Math.min(5,r[0]+1)):1,r[1]+1,r[2]+(res.perfect?1:0),now(),res.perfect?1:0];save()}
 function vibrer(ok){try{if(R&&R.lire().vibrations!==false&&navigator.vibrate)navigator.vibrate(ok?30:[60,40,60])}catch(e){}}
 function verdict(res){const v=res.perfect?1:res.pts>0?2:3;return `<div class="verdict v${v}">${ic(v===1?'check':v===2?'half':'x')}${v===1?'Tout juste':v===2?'Partiellement juste':'Faux'}<span>${res.pts>0&&P.prefs.bareme!=='tor'?'+':''}${fr(res.pts)} / ${fr(res.max)} pt${res.max>1?'s':''}</span></div>`}
@@ -283,9 +286,9 @@ function closeSheet(){$('#sheet').classList.remove('on');$('#scrim').classList.r
 let resetArm=false;
 function settingsHtml(){const seg=(k,opts)=>`<div class="seg" role="group">${opts.map(([v,l])=>`<button data-act="pref" data-k="${k}" data-v="${v}" aria-pressed="${P.prefs[k]===v}">${l}</button>`).join('')}</div>`;
  return `<h2 style="font-size:1.6rem;margin-bottom:16px">Réglages de M.E.</h2>
+ <div class="field"><label for="tsize">Taille du texte</label><div class="tsz"><span aria-hidden="true">A</span><input type="range" id="tsize" min="85" max="140" step="5" value="${tpct()}"><span aria-hidden="true" style="font-size:1.4em">A</span><output id="tsval">${tpct()} %</output></div></div>
  <div class="field"><label for="cc">Date du CC de M.E.</label><input type="date" id="cc" value="${esc(P.prefs.cc)}"></div>
- <div class="field"><span class="lab">Barème</span>${seg('bareme',[['evalbox','Comme ton sujet'],['tor','Tout ou rien']])}<small class="muted">Ton sujet : +1 par bonne réponse cochée, −0,5 par mauvaise.</small></div>
- <p class="muted">Thème, taille du texte et vibrations : dans les Réglages du site. Ta progression dans cet outil (blocs, cartes, QCM) est gardée sur cet appareil ; ton meilleur score et tes jours d'activité suivent ton compte.</p>
+ <p class="muted">Thème et vibrations : dans les Réglages du site. Ta progression dans cet outil (blocs, cartes, QCM) est gardée sur cet appareil ; ton meilleur score et tes jours d'activité suivent ton compte.</p>
  <button class="mb nob wide" data-act="reset">${resetArm?'Confirmer : tout effacer':'Effacer ma progression dans M.E.'}</button>`}
 let toastT=0;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
 
@@ -340,7 +343,7 @@ document.addEventListener('click',e=>{
  case'reset':if(!resetArm){resetArm=true;openSheet(settingsHtml())}else{const prefs=P.prefs;P=clone(DEF);P.prefs=prefs;save();resetArm=false;closeSheet();Q=null;CARD=null;render();toast('Progression effacée')}break;
  }
 });
-document.addEventListener('input',e=>{if(e.target.id==='lexq'){LEX.q=e.target.value;$('#terms').innerHTML=lexList()}});
+document.addEventListener('input',e=>{if(e.target.id==='tsize'){const v=R?R.ecrire('texte',+e.target.value).texte:+e.target.value;const o=$('#tsval');if(o)o.textContent=v+' %';return}if(e.target.id==='lexq'){LEX.q=e.target.value;$('#terms').innerHTML=lexList()}});
 document.addEventListener('change',e=>{if(e.target.id==='cc'){P.prefs.cc=e.target.value;save();if(sub==='parcours')render()}});
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'&&$('#sheet').classList.contains('on')){closeSheet();return}

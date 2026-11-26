@@ -63,7 +63,14 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
 - Données : `users/{uid}` = `{ nom, photo, avatar, favoris[], scores{ <id>: {best, total} },
   activite{ "AAAA-MM-JJ": n }, creeLe, vuLe }`.
 - Admin = UID listé dans `estAdmin()` de `firestore.rules`. L'onglet Admin s'affiche quand les règles
-  autorisent la lecture de tous les profils.
+  autorisent la lecture de tous les profils. Il a deux parties : Organisation et Membres.
+- Organisation (Admin ▸ Organisation) : années (ajouter, renommer, monter, verrouiller, supprimer), matières d'une
+  année (nom, emoji, nom complet, enseignant), place et visibilité de chaque outil, catégories internes masquées
+  (champ `categories` d'un outil dans `outils.js`). Tout est publié dans le document public `site/catalogue`
+  (`{ annees, matieres, outils, masques, majLe }`, lu par tous, écrit par l'admin seul) via `chargerCatalogue()` /
+  `enregistrerCatalogue()` de `compte.js`. Tant que rien n'est publié, l'accueil suit `ANNEES` et `OUTILS` de `outils.js`.
+  Un nouvel outil (nouvelle page) s'ajoute toujours dans `outils.js` ; l'admin choisit ensuite où il s'affiche.
+- Taille du texte : réglage `texte` (85 à 140 %) → variable CSS `--texte` posée par `reglages.js` sur `<html>`.
 
 ## Mise en ligne
 Site : https://eopourlesnuls.web.app (Firebase Hosting, config `firebase.json`).

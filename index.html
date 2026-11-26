@@ -6,11 +6,11 @@
 <title>EOPour les nuls</title>
 <meta name="description" content="QCM et outils de révision ostéo, de P1 à P5 — sur téléphone comme sur PC.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=5"></script>
+<script src="reglages.js?v=6"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body class="app">
 
@@ -54,8 +54,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=5";
-import * as C from "./compte.js?v=5";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=6";
+import * as C from "./compte.js?v=6";
 
 const R = window.Reglages;
 
@@ -66,7 +66,6 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const sansAccents = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const TEINTES = [174, 199, 228, 256, 282, 322, 350, 18, 146];
 const teinte = (txt) => { let h = 0; for (const c of txt) h = (h * 31 + c.codePointAt(0)) >>> 0; return TEINTES[h % TEINTES.length]; };
-const emojiMatiere = (m) => MATIERES[m] || OUTILS.find((o) => o.matiere === m)?.emoji || "📚";
 const initiale = (nom) => (Array.from(String(nom || "?").trim())[0] || "?").toUpperCase();
 const navigateurIntegre = /Instagram|FBAN|FBAV|FB_IAB|Snapchat|Line\/|TikTok|musical_ly|; wv\)/i.test(navigator.userAgent);
 const lienSite = () => new URL("./", location.href).href;
@@ -144,12 +143,48 @@ function confirmer(titre, texte, libelle, action) {
   });
 }
 
-/* ---------- Accueil : choisir son année ---------- */
-const ANNEE = Object.fromEntries(ANNEES.map((a) => [a.id, a]));
-const outilsAnnee = (a) => OUTILS.filter((o) => (o.annee || "").toLowerCase() === a.id);
-const matieresAnnee = (a) => [...new Set(outilsAnnee(a).map((o) => o.matiere))];
+/* ---------- Catalogue : années, matières, place des outils ----------
+   L'admin le publie depuis Admin ▸ Organisation (compte.js, site/catalogue) ; sinon on le déduit de outils.js. */
+const slug = (s) => sansAccents(String(s || "")).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "x";
+function catalogueDeBase() {
+  const annees = ANNEES.map((a) => ({ id: a.id, nom: a.nom, sous: a.sous || "", verrou: !!a.verrou }));
+  const matieres = [], outils = {};
+  for (const o of OUTILS) {
+    const an = (o.annee || "").toLowerCase();
+    let m = matieres.find((x) => x.annee === an && x.nom === o.matiere);
+    if (!m) {
+      const info = INFOS_MATIERES[o.matiere] || {};
+      m = { id: "m-" + slug(an + "-" + o.matiere), annee: an, nom: o.matiere, emoji: MATIERES[o.matiere] || o.emoji || "📚", complet: info.nom || "", prof: info.prof || "" };
+      matieres.push(m);
+    }
+    outils[o.id] = { annee: an, matiere: m.id, cache: false };
+  }
+  return { annees, matieres, outils, masques: {} };
+}
+let CAT = catalogueDeBase();
+let catPublie = false; // true = l'admin a déjà publié une organisation
+function appliquerCatalogue(c) {
+  catPublie = !!c;
+  const base = catalogueDeBase();
+  CAT = c ? { annees: c.annees, matieres: c.matieres, outils: { ...base.outils, ...c.outils }, masques: c.masques || {} } : base;
+}
+const anneeDe = (id) => CAT.annees.find((a) => a.id === id) || null;
+const matiereDe = (id) => CAT.matieres.find((m) => m.id === id) || null;
+/** Où l'outil s'affiche : année, matière (ou null = « Autres »), caché ou non. */
+function place(o) {
+  const p = CAT.outils[o.id] || {};
+  const annee = p.annee || (o.annee || "").toLowerCase();
+  let m = matiereDe(p.matiere);
+  if (p.matiere !== null && (!m || m.annee !== annee)) m = CAT.matieres.find((x) => x.annee === annee && x.nom === o.matiere) || null;
+  if (m && m.annee !== annee) m = null;
+  return { annee, matiere: m, cache: !!p.cache };
+}
+const outilsVisibles = () => OUTILS.filter((o) => !place(o).cache);
+const outilsAnnee = (a) => outilsVisibles().filter((o) => place(o).annee === a.id);
+const matieresAnnee = (a) => CAT.matieres.filter((m) => m.annee === a.id);
 const ICONE_VERROU = svg('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>');
 
+/* ---------- Accueil : choisir son année ---------- */
 function carteBienvenue() {
   try { if (localStorage.getItem("bienvenue-vue")) return ""; } catch {}
   return `<div class="bienvenue" id="bienvenue" role="note">
@@ -160,7 +195,7 @@ function carteBienvenue() {
 }
 
 function dernierOutil() {
-  try { return OUTILS.find((o) => o.id === localStorage.getItem("dernier-outil")) || null; } catch { return null; }
+  try { return outilsVisibles().find((o) => o.id === localStorage.getItem("dernier-outil")) || null; } catch { return null; }
 }
 
 function vueAccueil() {
@@ -171,10 +206,10 @@ function vueAccueil() {
     <div class="accueil-tete"><h1>${prenom ? "Salut " + esc(prenom) : "Salut"}</h1><p class="sub">Choisis ton année, puis ta matière.</p></div>
     ${carteBienvenue()}
     <div class="annees" role="list">
-      ${ANNEES.map((a) => {
+      ${CAT.annees.map((a) => {
         const n = matieresAnnee(a).length;
         const etat = a.verrou ? " verrou" : n ? "" : " vide-annee";
-        return `<a class="annee${etat}" role="listitem" href="#${a.id}"${a.verrou ? ` aria-label="${esc(a.nom)}, verrouillé"` : ""}>
+        return `<a class="annee${etat}" role="listitem" href="#${esc(a.id)}"${a.verrou ? ` aria-label="${esc(a.nom)}, verrouillé"` : ""}>
           <span class="annee-ring"><span class="annee-bulle">${esc(a.nom)}</span>${a.verrou ? `<span class="annee-cadenas">${ICONE_VERROU}</span>` : ""}</span>
           <b>${esc(a.sous)}</b>
           <small>${a.verrou ? "Verrouillé" : n ? `${n} matière${n > 1 ? "s" : ""}` : "Aucune matière"}</small>
@@ -191,37 +226,39 @@ function vueAccueil() {
 
 /* ---------- Une année : ses matières (bulles), puis les outils de la matière ---------- */
 const matiereChoisie = {};
+const AUTRES = { id: "_autres", nom: "Autres", emoji: "📦", complet: "Autres outils", prof: "" };
 
 function vueAnnee(id) {
-  const a = ANNEE[id];
+  const a = anneeDe(id);
   const retour = `<div class="profil-barre" style="margin: 0; padding: 0 8px 0 4px;">
-    <a class="icon-btn" href="#accueil" aria-label="Retour aux années">${ICONE.retour}</a><b>${esc(a.nom)} · ${esc(a.sous)}</b><span style="width: 44px;"></span></div>`;
+    <a class="icon-btn" href="#accueil" aria-label="Retour aux années">${ICONE.retour}</a><b>${esc(a.nom)}${a.sous ? " · " + esc(a.sous) : ""}</b><span style="width: 44px;"></span></div>`;
   if (a.verrou) {
     vue.innerHTML = retour + `<div class="vide">${ICONE_VERROU}<h2>${esc(a.nom)} est verrouillé</h2><p>Ce parcours ouvrira plus tard.</p></div>`;
     return;
   }
-  const matieres = matieresAnnee(a);
+  const outils = outilsAnnee(a);
+  const matieres = matieresAnnee(a).slice();
+  if (outils.some((o) => !place(o).matiere)) matieres.push(AUTRES);
   if (!matieres.length) {
     vue.innerHTML = retour + vide(ICONE.grille, `Pas encore de matière en ${a.nom}`, "Les matières s'ajouteront ici au fil des cours.");
     return;
   }
-  let m = matiereChoisie[id];
-  if (!matieres.includes(m)) m = matiereChoisie[id] = matieres[0];
-  const info = INFOS_MATIERES[m] || {};
-  const liste = outilsAnnee(a).filter((o) => o.matiere === m);
+  let m = matieres.find((x) => x.id === matiereChoisie[id]) || matieres[0];
+  matiereChoisie[id] = m.id;
+  const liste = outils.filter((o) => (place(o).matiere?.id || AUTRES.id) === m.id);
   vue.innerHTML = retour + `
     <div class="stories" role="group" aria-label="Matières de ${esc(a.nom)}">
       ${matieres.map((x) => `
-        <button class="story${x === m ? " actif" : ""}" type="button" data-m="${esc(x)}" aria-pressed="${x === m}">
-          <span class="story-ring"><span class="story-bulle">${emojiMatiere(x)}</span></span>
-          <span class="story-nom">${esc(x)}</span>
+        <button class="story${x.id === m.id ? " actif" : ""}" type="button" data-m="${esc(x.id)}" aria-pressed="${x.id === m.id}">
+          <span class="story-ring"><span class="story-bulle">${esc(x.emoji || "📚")}</span></span>
+          <span class="story-nom">${esc(x.nom)}</span>
         </button>`).join("")}
     </div>
     <div class="matiere-tete">
-      <span class="mini-ring grand"><span>${emojiMatiere(m)}</span></span>
-      <div><h1>${esc(info.nom || m)}</h1><p class="sub">${[info.nom ? m : "", info.prof, `${liste.length} outil${liste.length > 1 ? "s" : ""}`].filter(Boolean).map(esc).join(" · ")}</p></div>
+      <span class="mini-ring grand"><span>${esc(m.emoji || "📚")}</span></span>
+      <div><h1>${esc(m.complet || m.nom)}</h1><p class="sub">${[m.complet ? m.nom : "", m.prof, `${liste.length} outil${liste.length > 1 ? "s" : ""}`].filter(Boolean).map(esc).join(" · ")}</p></div>
     </div>
-    <div class="lignes">${liste.map(ligneOutil).join("")}</div>`;
+    ${liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>` : `<p class="vide-mini">Pas encore d'outil dans cette matière.</p>`}`;
   vue.querySelectorAll(".story").forEach((b) => (b.onclick = () => { matiereChoisie[id] = b.dataset.m; vueAnnee(id); }));
   brancherLignes();
 }
@@ -270,7 +307,7 @@ function vueRecherche() {
   const maj = () => {
     recherche = champ.value;
     const q = sansAccents(recherche.trim());
-    const liste = OUTILS.filter((o) => !q || sansAccents(`${o.titre} ${o.matiere} ${o.description}`).includes(q));
+    const liste = outilsVisibles().filter((o) => !q || sansAccents(`${o.titre} ${o.matiere} ${o.description}`).includes(q));
     $("#resultats").innerHTML = liste.length ? grille(liste) : vide(ICONE.loupe, "Aucun résultat", "Essaie un autre mot-clé.");
   };
   champ.addEventListener("input", maj);
@@ -281,7 +318,7 @@ function vueRecherche() {
 /* ---------- Favoris ---------- */
 function vueFavoris() {
   const fav = C.favorisLocaux();
-  const liste = OUTILS.filter((o) => fav.has(o.id));
+  const liste = outilsVisibles().filter((o) => fav.has(o.id));
   vue.innerHTML = `<h1 class="titre-vue">Favoris</h1>` + (liste.length ? grille(liste)
     : vide(ICONE.coeur, "Aucun favori", "Touche ♡ ou tape deux fois sur un QCM pour le retrouver ici."));
 }
@@ -566,7 +603,8 @@ function vueReglages() {
     <h2>Apparence</h2>
     <div class="groupe">
       <div class="ligne colonne">${texte("Thème")}${seg("theme", [["auto", "Auto"], ["clair", "Clair"], ["sombre", "Sombre"]])}</div>
-      <div class="ligne colonne">${texte("Taille du texte")}${seg("texte", [["normal", "Normale"], ["grand", "Grande"]])}</div>
+      <div class="ligne colonne">${texte("Taille du texte", "Glisse pour agrandir ou réduire tout le texte du site.")}
+        <div class="curseur"><span aria-hidden="true" style="font-size: .8rem;">A</span><input type="range" id="taille-texte" min="85" max="140" step="5" value="${r.texte}" aria-label="Taille du texte"><span aria-hidden="true" style="font-size: 1.35rem;">A</span><output id="taille-val">${r.texte} %</output></div></div>
       ${inter("animations", "✨", "Animations")}
     </div>
 
@@ -604,7 +642,7 @@ function vueReglages() {
     <div class="groupe">
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
         "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 5 · site de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 6 · site de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div>`;
@@ -614,6 +652,10 @@ function vueReglages() {
     R.ecrire(cle, JSON.parse(b.dataset.valeur));
     vue.querySelectorAll(`[data-reglage="${cle}"]`).forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   }));
+  $("#taille-texte").addEventListener("input", (e) => {
+    const v = R.ecrire("texte", Number(e.target.value)).texte;
+    $("#taille-val").textContent = v + " %";
+  });
   vue.querySelectorAll("[data-inter]").forEach((b) => (b.onclick = () => {
     const actif = b.getAttribute("aria-checked") !== "true";
     R.ecrire(b.dataset.inter, actif);
@@ -646,6 +688,9 @@ function ligneMembre(m) {
     <small>${sc.length} QCM${t ? ` · ${Math.round((b / t) * 100)} % de réussite` : ""}${serie ? ` · 🔥 ${serie}` : ""} · ${depuis(enMs(m.vuLe))}</small></div></li>`;
 }
 
+let ongletAdmin = "organisation";
+let anneeAdmin = null;
+
 async function vueAdmin() {
   const r = rendu;
   vue.innerHTML = `<h1 class="titre-vue">Admin</h1><p class="vide-mini">Chargement…</p>`;
@@ -653,15 +698,231 @@ async function vueAdmin() {
     if (r === rendu) location.hash = "#accueil";
     return;
   }
-  let html;
-  try {
-    const liste = (await C.membres()).sort((a, b) => enMs(b.vuLe) - enMs(a.vuLe));
-    html = `<h1 class="titre-vue">Admin · ${liste.length} membre${liste.length > 1 ? "s" : ""}</h1>
-      <ul class="membres">${liste.map(ligneMembre).join("")}</ul>`;
-  } catch (e) {
-    html = `<h1 class="titre-vue">Admin</h1><p class="erreur vide-mini">Lecture impossible (${esc(e.code || e.message)}).</p>`;
+  if (r !== rendu) return;
+  const onglets = `<div class="segmente admin-onglets" role="group" aria-label="Partie de l'admin">
+    ${[["organisation", "Organisation"], ["membres", "Membres"]].map(([v, l]) => `<button type="button" data-onglet="${v}" aria-pressed="${ongletAdmin === v}">${l}</button>`).join("")}</div>`;
+  if (ongletAdmin === "organisation") {
+    vueOrganisation(onglets);
+  } else {
+    vue.innerHTML = `<h1 class="titre-vue">Admin</h1>${onglets}<p class="vide-mini">Chargement…</p>`;
+    let html;
+    try {
+      const liste = (await C.membres()).sort((a, b) => enMs(b.vuLe) - enMs(a.vuLe));
+      html = `<h1 class="titre-vue">Admin · ${liste.length} membre${liste.length > 1 ? "s" : ""}</h1>${onglets}
+        <ul class="membres">${liste.map(ligneMembre).join("")}</ul>`;
+    } catch (e) {
+      html = `<h1 class="titre-vue">Admin</h1>${onglets}<p class="erreur vide-mini">Lecture impossible (${esc(e.code || e.message)}).</p>`;
+    }
+    if (r !== rendu) return;
+    vue.innerHTML = html;
   }
-  if (r === rendu) vue.innerHTML = html;
+  vue.querySelectorAll("[data-onglet]").forEach((b) => (b.onclick = () => { ongletAdmin = b.dataset.onglet; vueAdmin(); }));
+}
+
+/* ---------- Admin ▸ Organisation : années, matières, place des outils, catégories ---------- */
+const copieCat = () => JSON.parse(JSON.stringify({ annees: CAT.annees, matieres: CAT.matieres, outils: CAT.outils, masques: CAT.masques }));
+
+/** Publie une nouvelle organisation : visible tout de suite par tout le monde. */
+async function publierCat(c, message) {
+  try {
+    const propre = await C.enregistrerCatalogue(c);
+    appliquerCatalogue(propre);
+    toast(message || "Enregistré");
+  } catch (e) {
+    toast(C.messageErreur(e) || "Enregistrement impossible");
+  }
+  if (location.hash === "#admin") vueAdmin();
+}
+
+function vueOrganisation(onglets) {
+  if (!anneeDe(anneeAdmin)) anneeAdmin = CAT.annees[0]?.id || null;
+  const a = anneeDe(anneeAdmin);
+  const btn = (act, id, ico, label, classe = "") => `<button class="icon-btn adm-ico ${classe}" type="button" data-adm="${act}" data-id="${esc(id)}" aria-label="${esc(label)}" title="${esc(label)}">${ico}</button>`;
+  const ICO = {
+    crayon: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>'),
+    poubelle: svg('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
+    haut: svg('<path d="m6 15 6-6 6 6"/>'),
+    plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  };
+  const matieres = a ? matieresAnnee(a) : [];
+  const ligneMat = (m, i) => `<div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${esc(m.emoji || "📚")}</span>
+      <span class="ligne-txt"><b>${esc(m.nom)}</b><small>${esc([m.complet, m.prof].filter(Boolean).join(" · ") || "—")} · ${OUTILS.filter((o) => place(o).matiere?.id === m.id).length} outil(s)</small></span>
+      ${i ? btn("monter-mat", m.id, ICO.haut, "Monter " + m.nom) : ""}${btn("modifier-mat", m.id, ICO.crayon, "Modifier " + m.nom)}${btn("suppr-mat", m.id, ICO.poubelle, "Supprimer " + m.nom, "danger")}</div>`;
+  const optAnnees = (sel) => CAT.annees.map((x) => `<option value="${esc(x.id)}"${x.id === sel ? " selected" : ""}>${esc(x.nom)}</option>`).join("") + `<option value="-"${sel === "-" ? " selected" : ""}>Aucune (hors accueil)</option>`;
+  const optMat = (an, sel) => `<option value="">Autres</option>` + CAT.matieres.filter((m) => m.annee === an).map((m) => `<option value="${esc(m.id)}"${m.id === sel ? " selected" : ""}>${esc(m.emoji || "")} ${esc(m.nom)}</option>`).join("");
+  const ligneOut = (o) => {
+    const p = place(o);
+    return `<div class="ligne colonne adm-outil" data-outil="${esc(o.id)}">
+      <span class="ligne-txt"><b>${o.emoji || "📝"} ${esc(o.titre)}</b><small>${esc(o.fichier)}</small></span>
+      <div class="adm-choix">
+        <label>Année<select class="champ" data-champ="annee">${optAnnees(p.annee)}</select></label>
+        <label>Matière<select class="champ" data-champ="matiere"${p.annee === "-" ? " disabled" : ""}>${optMat(p.annee, p.matiere?.id || "")}</select></label>
+      </div>
+      <button class="ligne adm-inter" type="button" role="switch" data-champ="visible" aria-checked="${!p.cache}"><span class="ligne-txt"><b>Visible</b><small>${p.cache ? "Caché : n'apparaît nulle part" : "Affiché sur l'accueil et la recherche"}</small></span><span class="interrupteur"></span></button>
+      ${(o.categories || []).length ? `<span class="sub adm-cat-titre">Catégories de l'outil (touche pour masquer ou afficher)</span>
+      <div class="adm-cats">${o.categories.map(([cid, nom]) => { const off = (CAT.masques[o.id] || []).includes(cid); return `<button type="button" class="adm-cat${off ? " off" : ""}" data-cat="${esc(cid)}" aria-pressed="${!off}">${esc(nom)}</button>`; }).join("")}</div>` : ""}
+    </div>`;
+  };
+
+  vue.innerHTML = `<h1 class="titre-vue">Admin</h1>${onglets}
+  <div class="reglages admin-org">
+    <p class="note adm-note">${catPublie ? "Chaque changement est publié tout de suite pour tous les membres." : "Organisation tirée de outils.js : ton premier changement la publiera pour tous les membres."}</p>
+
+    <h2>Années</h2>
+    <div class="stories adm-annees" role="group" aria-label="Choisir l'année à organiser">
+      ${CAT.annees.map((x) => `<button class="story${x.id === anneeAdmin ? " actif" : ""}" type="button" data-adm="voir-annee" data-id="${esc(x.id)}" aria-pressed="${x.id === anneeAdmin}">
+        <span class="story-ring"><span class="story-bulle adm-bulle">${esc(x.nom)}</span></span><span class="story-nom">${x.verrou ? "🔒 " : ""}${esc(x.sous || x.nom)}</span></button>`).join("")}
+      <button class="story" type="button" data-adm="ajout-annee" data-id=""><span class="story-ring adm-plus"><span class="story-bulle">${ICO.plus}</span></span><span class="story-nom">Ajouter</span></button>
+    </div>
+    ${a ? `<div class="groupe">
+      <div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${a.verrou ? "🔒" : "📅"}</span>
+        <span class="ligne-txt"><b>${esc(a.nom)}</b><small>${esc(a.sous || "")}${a.verrou ? " · verrouillée" : ""}</small></span>
+        ${CAT.annees.indexOf(a) ? btn("monter-annee", a.id, ICO.haut, "Monter " + a.nom) : ""}${btn("modifier-annee", a.id, ICO.crayon, "Modifier " + a.nom)}${btn("suppr-annee", a.id, ICO.poubelle, "Supprimer " + a.nom, "danger")}</div>
+      <button class="ligne" type="button" role="switch" data-adm="verrou" data-id="${esc(a.id)}" aria-checked="${!!a.verrou}"><span class="ligne-ico" aria-hidden="true">🔒</span><span class="ligne-txt"><b>Verrouiller</b><small>Bulle grisée avec un cadenas, la page ne s'ouvre pas</small></span><span class="interrupteur"></span></button>
+    </div>
+
+    <h2>Matières de ${esc(a.nom)}</h2>
+    <div class="groupe">
+      ${matieres.map(ligneMat).join("") || `<div class="ligne"><span class="ligne-txt"><small>Aucune matière pour l'instant.</small></span></div>`}
+      <button class="ligne" type="button" data-adm="ajout-mat" data-id="${esc(a.id)}"><span class="ligne-ico" aria-hidden="true">${ICO.plus}</span><span class="ligne-txt"><b>Ajouter une matière</b></span><span class="chevron" aria-hidden="true">›</span></button>
+    </div>` : ""}
+
+    <h2>Outils</h2>
+    <div class="groupe">${OUTILS.map(ligneOut).join("")}</div>
+    <p class="note">Un nouvel outil (une nouvelle page) s'ajoute toujours dans outils.js ; ici tu choisis où il s'affiche.</p>
+  </div>`;
+
+  vue.querySelectorAll("[data-adm]").forEach((b) => (b.onclick = () => actionAdmin(b.dataset.adm, b.dataset.id)));
+  vue.querySelectorAll(".adm-outil").forEach((el) => {
+    const id = el.dataset.outil;
+    const o = OUTILS.find((x) => x.id === id);
+    const maj = (change, msg) => { const c = copieCat(); const p = { ...place(o), ...{} }; c.outils[id] = { annee: p.annee, matiere: p.matiere ? p.matiere.id : null, cache: p.cache, ...change(c) }; publierCat(c, msg); };
+    $('[data-champ="annee"]', el).onchange = (e) => maj(() => ({ annee: e.target.value, matiere: null }), "Outil déplacé");
+    $('[data-champ="matiere"]', el).onchange = (e) => maj(() => ({ matiere: e.target.value || null }), "Outil déplacé");
+    $('[data-champ="visible"]', el).onclick = () => maj(() => ({ cache: !place(o).cache }), place(o).cache ? "Outil affiché" : "Outil caché");
+    el.querySelectorAll("[data-cat]").forEach((b) => (b.onclick = () => {
+      const c = copieCat();
+      const liste = new Set(c.masques[id] || []);
+      const cid = b.dataset.cat;
+      if (liste.has(cid)) liste.delete(cid); else liste.add(cid);
+      if (liste.size >= (o.categories || []).length) return toast("Garde au moins une catégorie visible");
+      c.masques[id] = [...liste];
+      publierCat(c, liste.has(cid) ? "Catégorie masquée" : "Catégorie affichée");
+    }));
+  });
+}
+
+/* Formulaires (fenêtre maison) */
+function formAnnee(a) {
+  ouvrirModal(`<h3>${a ? "Modifier l'année" : "Ajouter une année"}</h3>
+    <form id="form-annee" class="adm-form">
+      <label class="sub" for="an-nom">Nom court (dans la bulle)</label>
+      <input class="champ" id="an-nom" maxlength="8" required placeholder="ex. P6">
+      <label class="sub" for="an-sous">Sous-titre</label>
+      <input class="champ" id="an-sous" maxlength="30" placeholder="ex. 6e année">
+      <div class="modal-btns">
+        <button class="btn btn-primary" type="submit">${a ? "Enregistrer" : "Ajouter"}</button>
+        <button class="btn" type="button" data-fermer>Annuler</button>
+      </div>
+    </form>`, (m) => {
+    $("#an-nom", m).value = a?.nom || "";
+    $("#an-sous", m).value = a?.sous || "";
+    $("#form-annee", m).onsubmit = (e) => {
+      e.preventDefault();
+      const nom = $("#an-nom", m).value.trim(), sous = $("#an-sous", m).value.trim();
+      if (!nom) return;
+      const c = copieCat();
+      if (a) Object.assign(c.annees.find((x) => x.id === a.id), { nom, sous });
+      else {
+        let id = slug(nom), n = 2;
+        while (c.annees.some((x) => x.id === id) || ["accueil", "recherche", "favoris", "profil", "reglages", "admin"].includes(id)) id = slug(nom) + "-" + n++;
+        c.annees.push({ id, nom, sous, verrou: false });
+        anneeAdmin = id;
+      }
+      fermerModal();
+      publierCat(c, a ? "Année modifiée" : "Année ajoutée");
+    };
+  });
+}
+
+function formMatiere(m, annee) {
+  ouvrirModal(`<h3>${m ? "Modifier la matière" : "Ajouter une matière"}</h3>
+    <form id="form-mat" class="adm-form">
+      <label class="sub" for="mt-nom">Nom court (sous la bulle)</label>
+      <input class="champ" id="mt-nom" maxlength="24" required placeholder="ex. Viscéral">
+      <label class="sub" for="mt-emoji">Emoji de la bulle</label>
+      <input class="champ" id="mt-emoji" maxlength="8" placeholder="ex. 🫁">
+      <div class="emojis adm-emojis">${["🦴", "🫀", "🧠", "🫁", "🩺", "🩸", "🧬", "💪", "🦵", "🖐️", "👶", "📚"].map((e) => `<button type="button" data-e="${e}">${e}</button>`).join("")}</div>
+      <label class="sub" for="mt-complet">Nom complet (facultatif)</label>
+      <input class="champ" id="mt-complet" maxlength="60" placeholder="ex. Ostéopathie viscérale">
+      <label class="sub" for="mt-prof">Enseignant (facultatif)</label>
+      <input class="champ" id="mt-prof" maxlength="40" placeholder="ex. M. Dupont">
+      <div class="modal-btns">
+        <button class="btn btn-primary" type="submit">${m ? "Enregistrer" : "Ajouter"}</button>
+        <button class="btn" type="button" data-fermer>Annuler</button>
+      </div>
+    </form>`, (f) => {
+    $("#mt-nom", f).value = m?.nom || "";
+    $("#mt-emoji", f).value = m?.emoji || "📚";
+    $("#mt-complet", f).value = m?.complet || "";
+    $("#mt-prof", f).value = m?.prof || "";
+    f.querySelectorAll("[data-e]").forEach((b) => (b.onclick = () => { $("#mt-emoji", f).value = b.dataset.e; }));
+    $("#form-mat", f).onsubmit = (e) => {
+      e.preventDefault();
+      const v = { nom: $("#mt-nom", f).value.trim(), emoji: $("#mt-emoji", f).value.trim() || "📚", complet: $("#mt-complet", f).value.trim(), prof: $("#mt-prof", f).value.trim() };
+      if (!v.nom) return;
+      const c = copieCat();
+      if (m) Object.assign(c.matieres.find((x) => x.id === m.id), v);
+      else c.matieres.push({ id: "m-" + Date.now().toString(36), annee, ...v });
+      fermerModal();
+      publierCat(c, m ? "Matière modifiée" : "Matière ajoutée");
+    };
+  });
+}
+
+function monter(liste, i) { if (i > 0) [liste[i - 1], liste[i]] = [liste[i], liste[i - 1]]; }
+
+function actionAdmin(act, id) {
+  const c = copieCat();
+  switch (act) {
+    case "voir-annee": anneeAdmin = id; vueAdmin(); break;
+    case "ajout-annee": formAnnee(null); break;
+    case "modifier-annee": formAnnee(anneeDe(id)); break;
+    case "monter-annee": monter(c.annees, c.annees.findIndex((x) => x.id === id)); publierCat(c, "Ordre des années modifié"); break;
+    case "verrou": { const a = c.annees.find((x) => x.id === id); a.verrou = !a.verrou; publierCat(c, a.verrou ? `${a.nom} verrouillée` : `${a.nom} déverrouillée`); break; }
+    case "suppr-annee": {
+      const a = anneeDe(id);
+      confirmer(`Supprimer ${a.nom} ?`, `Ses matières sont supprimées aussi. Ses outils ne sont pas effacés : ils restent dans la recherche et tu pourras les replacer (Outils ▸ Année).`, "Supprimer", async () => {
+        const d = copieCat();
+        d.annees = d.annees.filter((x) => x.id !== id);
+        d.matieres = d.matieres.filter((m) => m.annee !== id);
+        for (const o of OUTILS) { const p = place(o); if (p.annee === id) d.outils[o.id] = { annee: "-", matiere: null, cache: p.cache }; }
+        anneeAdmin = null;
+        await publierCat(d, `${a.nom} supprimée`);
+      });
+      break;
+    }
+    case "ajout-mat": formMatiere(null, id); break;
+    case "modifier-mat": formMatiere(matiereDe(id), null); break;
+    case "monter-mat": {
+      const m = matiereDe(id);
+      const memes = c.matieres.filter((x) => x.annee === m.annee);
+      const i = memes.findIndex((x) => x.id === id);
+      if (i > 0) { const a = c.matieres.indexOf(memes[i - 1]), b = c.matieres.indexOf(memes[i]); [c.matieres[a], c.matieres[b]] = [c.matieres[b], c.matieres[a]]; }
+      publierCat(c, "Ordre des matières modifié");
+      break;
+    }
+    case "suppr-mat": {
+      const m = matiereDe(id);
+      confirmer(`Supprimer ${m.nom} ?`, `Ses outils ne sont pas effacés : ils passent dans « Autres » de la même année, et tu peux les replacer.`, "Supprimer", async () => {
+        const d = copieCat();
+        d.matieres = d.matieres.filter((x) => x.id !== id);
+        for (const o of OUTILS) { const p = place(o); if (p.matiere?.id === id) d.outils[o.id] = { annee: p.annee, matiere: null, cache: p.cache }; }
+        await publierCat(d, `${m.nom} supprimée`);
+      });
+      break;
+    }
+  }
 }
 
 /* ---------- Navigation ---------- */
@@ -672,7 +933,7 @@ function route() {
   rendu++;
   fermerModal();
   const nom = location.hash.slice(1) || "accueil";
-  const annee = Object.prototype.hasOwnProperty.call(ANNEE, nom) ? nom : null;
+  const annee = anneeDe(nom) ? nom : null;
   const cle = annee ? "accueil" : Object.prototype.hasOwnProperty.call(VUES, nom) ? nom : "accueil";
   const onglet = cle === "reglages" && !matchMedia("(min-width: 1000px)").matches ? "profil" : cle;
   if (annee) {
@@ -707,8 +968,10 @@ C.surChangement(async (u) => {
   route();
   $('.tab[data-vue="admin"]').hidden = !(await C.estAdmin());
 });
+appliquerCatalogue(C.catalogueLocal());
 majOngletProfil(null);
 route();
+C.chargerCatalogue().then((c) => { appliquerCatalogue(c); if (location.hash !== "#admin") route(); });
 
 // Appli installable + hors-ligne (réseau d'abord)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

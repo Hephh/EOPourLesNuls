@@ -4,7 +4,9 @@
    - id      : nom du fichier sans « .html » (clé des scores et favoris)
    - annee   : "P1" … "P5" (l'année dont la page l'affiche)
    - matiere : même orthographe pour tous les outils d'une matière
-   - fichier : chemin relatif depuis l'accueil                         */
+   - fichier : chemin relatif depuis l'accueil
+   - categories (facultatif) : [id, nom] des catégories internes de l'outil,
+     que l'admin peut masquer depuis Admin ▸ Organisation                 */
 export const OUTILS = [
   {
     id: "qcm-hemato-exemple",
@@ -24,11 +26,13 @@ export const OUTILS = [
     type: "Fiche, cartes, 78 QCM",
     description: "Coude, épaule, poignet-main, rachis thoracique, côtes : coche les catégories à réviser, puis suis le parcours.",
     fichier: "outils/me-revision.html",
-    emoji: "🦴"
+    emoji: "🦴",
+    categories: [["coude", "Coude"], ["epaule", "Épaule"], ["poignet", "Poignet-main"], ["thorax", "Rachis thoracique"], ["cotes", "Côtes"], ["bases", "Bases d'arthrologie"]]
   },
 ];
 
-/* Années affichées sur l'accueil, dans l'ordre. verrou : true = bulle grisée avec un cadenas. */
+/* Années affichées sur l'accueil, dans l'ordre. verrou : true = bulle grisée avec un cadenas.
+   Valeurs de départ : dès que l'admin publie l'organisation (Admin ▸ Organisation), c'est elle qui compte. */
 export const ANNEES = [
   { id: "p1", nom: "P1", sous: "1re année" },
   { id: "p2", nom: "P2", sous: "2e année" },

@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Révision M.E. · EOPour les nuls</title>
 <meta name="theme-color" content="#ffffff">
-<script src="../reglages.js?v=5"></script>
+<script src="../reglages.js?v=6"></script>
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icones/icone-192.png">
-<link rel="stylesheet" href="../style.css?v=5">
-<link rel="stylesheet" href="me-revision/style.css?v=1">
+<link rel="stylesheet" href="../style.css?v=6">
+<link rel="stylesheet" href="me-revision/style.css?v=2">
 </head>
 <body>
 <div id="defs"></div>
@@ -25,18 +25,20 @@
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Détail" tabindex="-1"></div>
 <div class="mtoast" id="toast" role="status" aria-live="polite"></div>
-<script src="me-revision/content.js?v=1"></script>
-<script src="me-revision/fiches.js?v=1"></script>
-<script src="me-revision/qcm.js?v=1"></script>
-<script src="me-revision/schemas.js?v=1"></script>
-<script src="me-revision/anim.js?v=1"></script>
-<script src="me-revision/essentiel.js?v=1"></script>
-<script src="me-revision/notions.js?v=1"></script>
-<script src="me-revision/app.js?v=1"></script>
+<script src="me-revision/content.js?v=2"></script>
+<script src="me-revision/fiches.js?v=2"></script>
+<script src="me-revision/qcm.js?v=2"></script>
+<script src="me-revision/schemas.js?v=2"></script>
+<script src="me-revision/anim.js?v=2"></script>
+<script src="me-revision/essentiel.js?v=2"></script>
+<script src="me-revision/notions.js?v=2"></script>
+<script src="me-revision/app.js?v=2"></script>
 <script type="module">
 // Comptes du site : score des séries et activité du jour (objectif, série 🔥).
-import * as Compte from "../compte.js?v=5";
+import * as Compte from "../compte.js?v=6";
 window.Compte = Compte;
+// Catégories masquées par l'admin (Admin ▸ Organisation)
+Compte.chargerCatalogue().then((c) => window.dispatchEvent(new CustomEvent("catalogue", { detail: c })));
 </script>
 </body>
 </html>
