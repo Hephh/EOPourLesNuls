@@ -1,13 +1,15 @@
 # EOPour les nuls — consignes pour Claude
 
-Site statique de révision P1 façon réseau social, partagé entre étudiants.
+Site statique de révision ostéo (P1 à P5) façon réseau social, partagé entre étudiants.
 HTML/CSS/JS pur (modules ES) : pas de build, pas de npm, pas de framework, pas de serveur.
 Le propriétaire débute : réponds en français et résume en une phrase ce que tu as changé.
 
 ## Structure
-- `index.html` — l'appli : Accueil (bulles des matières + fil de QCM), Recherche, Favoris, Profil
+- `index.html` — l'appli : Accueil (bulles des années P1…P5, SOPK verrouillé), page d'une année `#p1`…`#p5`
+  (bulles des matières, puis les outils de la matière en lignes), Recherche, Favoris, Profil
   (série 🔥, objectif du jour, 7 derniers jours), Réglages, Admin. Navigation par `#hash`.
-- `outils.js` — **liste des outils** (`OUTILS`) et emoji des matières (`MATIERES`). Seul endroit à modifier pour qu'un outil apparaisse.
+- `outils.js` — **liste des outils** (`OUTILS`, avec leur `annee`), années (`ANNEES`), emoji des matières (`MATIERES`),
+  nom complet et enseignant d'une matière (`INFOS_MATIERES`). Seul endroit à modifier pour qu'un outil apparaisse.
 - `style.css` — thème partagé (clair/sombre via `data-theme`, dégradé de la marque, composants). À réutiliser partout.
 - `reglages.js` — réglages de l'appareil (thème, taille du texte, animations, options des QCM, objectif).
   Script **classique** chargé dans le `<head>` de chaque page, juste après `<meta name="theme-color">` :
@@ -22,14 +24,21 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
 - `404.html` — page d'erreur ; seule exception à la règle des chemins relatifs (chemins absolus depuis la racine `/…`).
 - `outils/<id>.html` — un outil = une page (CSS/JS en ligne + `../reglages.js` + `../style.css` + `../compte.js`).
 - `outils/qcm-hemato-exemple.html` — modèle de QCM à copier (mode examen, chrono, vibrations déjà gérés).
+- `outils/me-revision.html` + dossier `outils/me-revision/` — révision M.E. (P2, M. Boucherat) : parcours, fiche en blocs,
+  cartes, QCM (annales + Claude), lexique ; catégories à cocher (coude, épaule…). Exception à « CSS/JS en ligne » :
+  le contenu est trop gros, il vit dans le dossier (`content.js` lexique, `fiches.js`, `qcm.js`, `schemas.js` schémas SVG,
+  `anim.js` schémas animés, `notions.js` mots-clés → lexique pour les notions cliquables, `essentiel.js`, `app.js`, `style.css`).
+  Progression détaillée sur l'appareil (localStorage `me-revision`) ; score des séries et activité via `compte.js`.
+  Pas d'image tirée des PDF de la fac (site public) : seulement des schémas redessinés.
 - `.nojekyll` — ne pas supprimer (GitHub Pages sert les fichiers tels quels).
 
 ## Ajouter un outil
 1. Créer `outils/<id>.html` (minuscules, tirets, sans accents ni espaces).
    Pour un QCM : copier le modèle, changer le titre et l'emoji de l'en-tête, remplacer seulement `QUESTIONS`.
    Garder dans le `<head>` : `<meta name="theme-color">` puis `<script src="../reglages.js?v=N"></script>`.
-2. Ajouter son entrée dans `OUTILS` (`outils.js`) : `id` (= nom du fichier sans .html), `titre`, `matiere`,
-   `type`, `description`, `fichier`, `emoji`. Réutiliser exactement l'orthographe d'une `matiere` existante.
+2. Ajouter son entrée dans `OUTILS` (`outils.js`) : `id` (= nom du fichier sans .html), `titre`, `annee` ("P1"…"P5"),
+   `matiere`, `type`, `description`, `fichier`, `emoji`. Réutiliser exactement l'orthographe d'une `matiere` existante
+   (nouvelle matière : son emoji dans `MATIERES`, et si besoin son nom complet et son enseignant dans `INFOS_MATIERES`).
 3. En fin de partie : `noterActivite()` (chaque partie) et `enregistrerScore(id, bonnes, total)` (partie complète),
    tous deux de `../compte.js` (déjà fait dans le modèle).
 

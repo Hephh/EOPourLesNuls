@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EOPour les nuls</title>
-<meta name="description" content="QCM et outils de révision P1 — sur téléphone comme sur PC.">
+<meta name="description" content="QCM et outils de révision ostéo, de P1 à P5 — sur téléphone comme sur PC.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=4"></script>
+<script src="reglages.js?v=5"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body class="app">
 
@@ -54,8 +54,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES } from "./outils.js?v=4";
-import * as C from "./compte.js?v=4";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=5";
+import * as C from "./compte.js?v=5";
 
 const R = window.Reglages;
 
@@ -144,71 +144,109 @@ function confirmer(titre, texte, libelle, action) {
   });
 }
 
-/* ---------- Accueil : bulles des matières + fil ---------- */
-let filtre = "Tout";
+/* ---------- Accueil : choisir son année ---------- */
+const ANNEE = Object.fromEntries(ANNEES.map((a) => [a.id, a]));
+const outilsAnnee = (a) => OUTILS.filter((o) => (o.annee || "").toLowerCase() === a.id);
+const matieresAnnee = (a) => [...new Set(outilsAnnee(a).map((o) => o.matiere))];
+const ICONE_VERROU = svg('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>');
 
 function carteBienvenue() {
   try { if (localStorage.getItem("bienvenue-vue")) return ""; } catch {}
   return `<div class="bienvenue" id="bienvenue" role="note">
     <b>Bienvenue sur EOPour les nuls 👋</b>
-    <p>Touche un QCM pour t'entraîner, tape deux fois pour le garder en favori. Dans Profil, connecte-toi pour retrouver ta progression partout.</p>
+    <p>Choisis ton année, puis ta matière. Touche ♡ sur un outil pour le garder en favori. Dans Profil, connecte-toi pour retrouver ta progression partout.</p>
     <button class="icon-btn" type="button" id="fermer-bienvenue" aria-label="Masquer ce message">${ICONE.fermer}</button>
   </div>`;
 }
 
+function dernierOutil() {
+  try { return OUTILS.find((o) => o.id === localStorage.getItem("dernier-outil")) || null; } catch { return null; }
+}
+
 function vueAccueil() {
-  const matieres = [...new Set(OUTILS.map((o) => o.matiere))];
-  if (!matieres.includes(filtre)) filtre = "Tout";
-  const liste = OUTILS.filter((o) => filtre === "Tout" || o.matiere === filtre);
+  const u = C.utilisateur();
+  const prenom = u?.nom ? String(u.nom).trim().split(/\s+/)[0] : "";
+  const dernier = dernierOutil();
   vue.innerHTML = `
-    <div class="stories" role="group" aria-label="Filtrer par matière">
-      ${[["Tout", "✨"], ...matieres.map((m) => [m, emojiMatiere(m)])].map(([m, e]) => `
-        <button class="story${m === filtre ? " actif" : ""}" type="button" data-m="${esc(m)}" aria-pressed="${m === filtre}">
-          <span class="story-ring"><span class="story-bulle">${e}</span></span>
-          <span class="story-nom">${esc(m)}</span>
-        </button>`).join("")}
-    </div>
+    <div class="accueil-tete"><h1>${prenom ? "Salut " + esc(prenom) : "Salut"}</h1><p class="sub">Choisis ton année, puis ta matière.</p></div>
     ${carteBienvenue()}
-    <div class="feed">${liste.map(post).join("")}</div>`;
-  vue.querySelectorAll(".story").forEach((b) => (b.onclick = () => { filtre = b.dataset.m; vueAccueil(); }));
+    <div class="annees" role="list">
+      ${ANNEES.map((a) => {
+        const n = matieresAnnee(a).length;
+        const etat = a.verrou ? " verrou" : n ? "" : " vide-annee";
+        return `<a class="annee${etat}" role="listitem" href="#${a.id}"${a.verrou ? ` aria-label="${esc(a.nom)}, verrouillé"` : ""}>
+          <span class="annee-ring"><span class="annee-bulle">${esc(a.nom)}</span>${a.verrou ? `<span class="annee-cadenas">${ICONE_VERROU}</span>` : ""}</span>
+          <b>${esc(a.sous)}</b>
+          <small>${a.verrou ? "Verrouillé" : n ? `${n} matière${n > 1 ? "s" : ""}` : "Aucune matière"}</small>
+        </a>`;
+      }).join("")}
+    </div>
+    ${dernier ? `<h2 class="titre-section">Reprendre</h2><div class="lignes">${ligneOutil(dernier)}</div>` : ""}`;
   $("#fermer-bienvenue")?.addEventListener("click", () => {
     try { localStorage.setItem("bienvenue-vue", "1"); } catch {}
     $("#bienvenue").remove();
   });
-  brancherPosts();
+  brancherLignes();
 }
 
-function post(o) {
+/* ---------- Une année : ses matières (bulles), puis les outils de la matière ---------- */
+const matiereChoisie = {};
+
+function vueAnnee(id) {
+  const a = ANNEE[id];
+  const retour = `<div class="profil-barre" style="margin: 0; padding: 0 8px 0 4px;">
+    <a class="icon-btn" href="#accueil" aria-label="Retour aux années">${ICONE.retour}</a><b>${esc(a.nom)} · ${esc(a.sous)}</b><span style="width: 44px;"></span></div>`;
+  if (a.verrou) {
+    vue.innerHTML = retour + `<div class="vide">${ICONE_VERROU}<h2>${esc(a.nom)} est verrouillé</h2><p>Ce parcours ouvrira plus tard.</p></div>`;
+    return;
+  }
+  const matieres = matieresAnnee(a);
+  if (!matieres.length) {
+    vue.innerHTML = retour + vide(ICONE.grille, `Pas encore de matière en ${a.nom}`, "Les matières s'ajouteront ici au fil des cours.");
+    return;
+  }
+  let m = matiereChoisie[id];
+  if (!matieres.includes(m)) m = matiereChoisie[id] = matieres[0];
+  const info = INFOS_MATIERES[m] || {};
+  const liste = outilsAnnee(a).filter((o) => o.matiere === m);
+  vue.innerHTML = retour + `
+    <div class="stories" role="group" aria-label="Matières de ${esc(a.nom)}">
+      ${matieres.map((x) => `
+        <button class="story${x === m ? " actif" : ""}" type="button" data-m="${esc(x)}" aria-pressed="${x === m}">
+          <span class="story-ring"><span class="story-bulle">${emojiMatiere(x)}</span></span>
+          <span class="story-nom">${esc(x)}</span>
+        </button>`).join("")}
+    </div>
+    <div class="matiere-tete">
+      <span class="mini-ring grand"><span>${emojiMatiere(m)}</span></span>
+      <div><h1>${esc(info.nom || m)}</h1><p class="sub">${[info.nom ? m : "", info.prof, `${liste.length} outil${liste.length > 1 ? "s" : ""}`].filter(Boolean).map(esc).join(" · ")}</p></div>
+    </div>
+    <div class="lignes">${liste.map(ligneOutil).join("")}</div>`;
+  vue.querySelectorAll(".story").forEach((b) => (b.onclick = () => { matiereChoisie[id] = b.dataset.m; vueAnnee(id); }));
+  brancherLignes();
+}
+
+/* Un outil = une ligne : emoji, titre, type, meilleur score, favori. */
+function ligneOutil(o) {
   const s = C.scoreLocal(o.id);
   const fav = C.favorisLocaux().has(o.id);
-  return `
-  <article class="post" data-id="${esc(o.id)}">
-    <header class="post-tete">
-      <span class="mini-ring"><span>${emojiMatiere(o.matiere)}</span></span>
-      <div class="post-qui"><b>${esc(o.matiere)}</b><small>${esc(o.type || "Outil")}</small></div>
-    </header>
-    <a class="post-media" href="${esc(o.fichier)}" style="--h:${teinte(o.matiere)}" aria-label="Ouvrir ${esc(o.titre)}">
-      <span class="post-emoji" aria-hidden="true">${o.emoji || "📝"}</span>
-      <span class="post-titre">${esc(o.titre)}</span>
-      <span class="coeur-burst" aria-hidden="true">${ICONE.coeur}</span>
+  return `<div class="ligne-outil" data-id="${esc(o.id)}">
+    <a class="lo-lien" href="${esc(o.fichier)}">
+      <span class="lo-emoji" style="--h:${teinte(o.matiere)}" aria-hidden="true">${o.emoji || "📝"}</span>
+      <span class="lo-txt"><b>${esc(o.titre)}</b><small>${esc(o.type || "Outil")}${s ? ` · meilleur score ${s.best}/${s.total}` : ""}</small>
+        <span class="lo-desc">${esc(o.description)}</span>
+        ${s ? `<span class="jauge"><i style="width:${Math.round((s.best / s.total) * 100)}%"></i></span>` : ""}</span>
     </a>
-    <div class="post-actions">
-      <button class="action like${fav ? " on" : ""}" type="button" aria-pressed="${fav}" aria-label="${fav ? "Retirer des favoris" : "Ajouter aux favoris"}">${ICONE.coeur}</button>
-      <button class="action partager" type="button" aria-label="Partager ce QCM">${ICONE.envoyer}</button>
-      <a class="btn btn-primary btn-sm post-go" href="${esc(o.fichier)}">${s ? "Rejouer" : "Commencer"}</a>
-    </div>
-    <div class="post-infos">
-      ${s ? `<div class="post-score"><span>Meilleur score <b>${s.best}/${s.total}</b></span><span class="jauge"><i style="width:${Math.round((s.best / s.total) * 100)}%"></i></span></div>` : ""}
-      <p class="legende"><b>${esc(o.matiere)}</b> ${esc(o.description)}</p>
-    </div>
-  </article>`;
+    <button class="action like${fav ? " on" : ""}" type="button" aria-pressed="${fav}" aria-label="${fav ? "Retirer des favoris" : "Ajouter aux favoris"}">${ICONE.coeur}</button>
+  </div>`;
 }
 
-function brancherPosts() {
-  vue.querySelectorAll(".post").forEach((el) => {
-    const o = OUTILS.find((x) => x.id === el.dataset.id);
+function brancherLignes() {
+  vue.querySelectorAll(".ligne-outil").forEach((el) => {
+    const id = el.dataset.id;
     const like = $(".like", el);
-    const majLike = (actif) => {
+    like.onclick = () => {
+      const actif = C.basculerFavori(id);
       like.classList.toggle("on", actif);
       like.setAttribute("aria-pressed", String(actif));
       like.setAttribute("aria-label", actif ? "Retirer des favoris" : "Ajouter aux favoris");
@@ -216,27 +254,7 @@ function brancherPosts() {
       void like.offsetWidth;
       like.classList.add("pop");
     };
-    like.onclick = () => majLike(C.basculerFavori(o.id));
-    $(".partager", el).onclick = () => partager(o.titre, new URL(o.fichier, location.href).href);
-
-    // Une tape : ouvre le QCM. Deux tapes rapides : favori (avec le cœur qui apparaît).
-    const media = $(".post-media", el);
-    let attente = null;
-    media.addEventListener("click", (ev) => {
-      if (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.button !== 0) return;
-      ev.preventDefault();
-      if (attente) {
-        clearTimeout(attente);
-        attente = null;
-        const burst = $(".coeur-burst", media);
-        burst.classList.remove("go");
-        void burst.offsetWidth;
-        burst.classList.add("go");
-        if (!C.favorisLocaux().has(o.id)) majLike(C.basculerFavori(o.id, true));
-        return;
-      }
-      attente = setTimeout(() => { attente = null; location.href = media.href; }, 260);
-    });
+    $(".lo-lien", el).addEventListener("click", () => { try { localStorage.setItem("dernier-outil", id); } catch {} });
   });
 }
 
@@ -586,7 +604,7 @@ function vueReglages() {
     <div class="groupe">
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
         "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 4 · site de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 5 · site de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div>`;
@@ -654,8 +672,17 @@ function route() {
   rendu++;
   fermerModal();
   const nom = location.hash.slice(1) || "accueil";
-  const cle = Object.prototype.hasOwnProperty.call(VUES, nom) ? nom : "accueil";
+  const annee = Object.prototype.hasOwnProperty.call(ANNEE, nom) ? nom : null;
+  const cle = annee ? "accueil" : Object.prototype.hasOwnProperty.call(VUES, nom) ? nom : "accueil";
   const onglet = cle === "reglages" && !matchMedia("(min-width: 1000px)").matches ? "profil" : cle;
+  if (annee) {
+    document.querySelectorAll(".tab").forEach((t) => {
+      const actif = t.dataset.vue === "accueil";
+      t.classList.toggle("actif", actif);
+      if (actif) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
+    });
+    return vueAnnee(annee);
+  }
   document.querySelectorAll(".tab").forEach((t) => {
     const actif = t.dataset.vue === onglet;
     t.classList.toggle("actif", actif);
