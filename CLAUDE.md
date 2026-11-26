@@ -17,8 +17,8 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
 - `compte.js` — comptes, progression (scores, favoris, jours d'activité), avatar ; localStorage toujours,
   + synchro Firebase si configuré.
 - `firebase-config.js` — config publique du projet Firebase (`null` = comptes désactivés, le site marche quand même).
-- `firestore.rules` — règles de sécurité Firestore. Copie de référence : elles ne s'appliquent qu'une fois
-  collées dans la console Firebase (Firestore Database → Règles → Publier).
+- `firestore.rules` — règles de sécurité Firestore, publiées par la commande de mise en ligne
+  (`firestore:rules`, déclaré dans `firebase.json`).
 - `manifest.webmanifest`, `icones/` — appli installable (écran d'accueil).
 - `sw.js` — service worker « réseau d'abord » (hors-ligne). Rien à modifier quand le site change.
 - `404.html` — page d'erreur ; seule exception à la règle des chemins relatifs (chemins absolus depuis la racine `/…`).
@@ -84,7 +84,8 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
 Site : https://eopourlesnuls.web.app (Firebase Hosting, config `firebase.json`).
 Repo `Hephh/EOPourLesNuls`, branche `main`. Un push ne met PAS ce site à jour : après le push, demander au
 propriétaire de lancer dans Cloud Shell (https://shell.cloud.google.com/?show=terminal) :
-`cd ~/eo-deploy && git pull && firebase deploy --only hosting --project eopourlesnuls`
+`cd ~/eo-deploy && git pull && firebase deploy --only hosting,firestore:rules --project eopourlesnuls`
+(cette commande publie aussi `firestore.rules` : plus besoin de les coller dans la console)
 (si Firebase refuse : `firebase login --no-localhost`, c'est lui qui saisit le code).
 Ancienne adresse https://hephh.github.io/EOPourLesNuls/ (GitHub Pages) : à désactiver sur sa demande.
 Cache : `reglages.js`, `style.css`, `outils.js`, `compte.js` et `firebase-config.js` sont chargés avec `?v=N`.
