@@ -5,7 +5,7 @@
      appareils dans Firestore (un document par membre : users/{uid}).
    Les pages n'écrivent jamais directement dans Firestore : elles passent ici.
    ===================================================================== */
-import { FIREBASE_CONFIG } from "./firebase-config.js?v=8";
+import { FIREBASE_CONFIG } from "./firebase-config.js?v=9";
 
 const CDN = "https://www.gstatic.com/firebasejs/13.4.0/";
 
@@ -75,6 +75,8 @@ function viderAppareil() {
 export const photoSure = (p) => (typeof p === "string" && /^https:\/\/lh\d\.googleusercontent\.com\//.test(p) && p.length <= 600 ? p : null);
 export const AVATARS = ["🦴", "🫀", "🧠", "🫁", "🩺", "💊", "🧬", "🔬", "📚", "☕", "🦊", "🐼", "🐸", "🦁", "🐙", "🌟", "🔥", "🍀"];
 export const avatarSur = (a) => (typeof a === "string" && AVATARS.includes(a) ? a : null);
+/** Photo importée par le membre : petite image en data URL (voir firestore.rules). */
+export const imageSure = (p) => (typeof p === "string" && p.length <= 90000 && /^data:image\/(webp|jpeg|png);base64,[A-Za-z0-9+/=]+$/.test(p) ? p : null);
 
 /* ---------- État du compte ---------- */
 let fb = null;            // { auth, db, A, F } une fois Firebase chargé
@@ -111,6 +113,7 @@ async function demarrer() {
         nom: (nomEnAttente || u.displayName || (u.email || "").split("@")[0] || "Moi").slice(0, 40),
         email: u.email || null,
         photo: photoSure(u.photoURL),
+        image: null,
         avatar: null,
       } : null;
       if (u) {
@@ -161,11 +164,14 @@ async function synchroniser() {
   if (nomEnAttente) { u.nom = nomEnAttente; nomEnAttente = null; }
   else if (distant.nom) u.nom = String(distant.nom).slice(0, 40);
   u.avatar = avatarSur(distant.avatar);
+  u.image = imageSure(distant.image);
+  u.nouveau = !snap.exists();
 
   await F.setDoc(ref, {
     nom: u.nom,
     photo: u.photo,
     avatar: u.avatar,
+    image: u.image,
     favoris: [...favoris],
     scores,
     activite: act,
@@ -182,7 +188,7 @@ async function majProfilPublic() {
   const { F, db } = fb;
   try {
     await F.setDoc(F.doc(db, "profils", courant.uid), {
-      nom: courant.nom, photo: courant.photo || null, avatar: courant.avatar || null, majLe: F.serverTimestamp(),
+      nom: courant.nom, photo: courant.photo || null, avatar: courant.avatar || null, image: courant.image || null, majLe: F.serverTimestamp(),
     });
   } catch (e) {
     console.warn("Profil public non synchronisé :", e.code || e.message);
@@ -321,6 +327,26 @@ export async function majAvatar(emoji) {
   }
   await majProfilPublic();
 }
+/** Photo de profil importée (fichier image) : réduite à 256 px, remplace l'avatar emoji. null = la retirer. */
+export async function majImage(fichier) {
+  exigerComptes();
+  if (!courant) return;
+  let data = null;
+  if (fichier) {
+    data = await compresserImage(fichier, 256, 0.82);
+    if (data.length > 90000) data = await compresserImage(fichier, 192, 0.7);
+    if (!imageSure(data)) throw Object.assign(new Error("Image trop lourde"), { code: "app/image-lourde" });
+  }
+  courant.image = data;
+  if (data) courant.avatar = null;
+  notifier();
+  try {
+    await fb.F.setDoc(fb.F.doc(fb.db, "users", courant.uid), { image: data, avatar: courant.avatar }, { merge: true });
+  } catch (e) {
+    console.warn("Photo non synchronisée :", e.code || e.message);
+  }
+  await majProfilPublic();
+}
 export function compteViaGoogle() {
   const user = fb?.auth.currentUser;
   return !!user && (user.providerData || []).some((p) => p.providerId === "google.com");
@@ -374,7 +400,15 @@ function catalogueSur(c) {
     matieres: Array.isArray(c.matieres) ? c.matieres.filter((m) => m && typeof m.id === "string") : [],
     outils: c.outils && typeof c.outils === "object" ? c.outils : {},
     masques: c.masques && typeof c.masques === "object" ? c.masques : {},
+    annonce: annonceSure(c.annonce),
+    images: c.images && typeof c.images === "object" && !Array.isArray(c.images) ? c.images : {},
   };
+}
+/** Annonce de l'admin affichée en haut de l'accueil (lien : une année « #p2 » ou un outil du site). */
+function annonceSure(a) {
+  if (!a || typeof a !== "object" || typeof a.texte !== "string" || !a.texte.trim()) return null;
+  const lien = typeof a.lien === "string" && /^(#[a-z0-9-]+|outils\/[a-z0-9-]+\.html(\?id=[a-z0-9-]+)?)$/.test(a.lien) ? a.lien : "";
+  return { id: String(a.id || "").slice(0, 20), titre: String(a.titre || "").slice(0, 60), texte: a.texte.slice(0, 400), lien };
 }
 /** Dernier catalogue connu sur cet appareil (affichage immédiat, hors ligne). */
 export function catalogueLocal() { return catalogueSur(lire(CLE_CATALOGUE, null)); }
@@ -403,12 +437,136 @@ export async function enregistrerCatalogue(c) {
   return propre;
 }
 
+/* ---------- Images : compression dans le navigateur, médiathèque de l'admin ----------
+   Pas de Firebase Storage (plan gratuit) : les images sont réduites puis gardées en data URL
+   dans Firestore (medias/{id} = { data, nom, le }, lu par tous, écrit par l'admin). */
+const LIM_MEDIA = 900000;
+const mediasCache = new Map();
+
+/** Réduit une image (fichier) à « cote » px de côté maximum ; renvoie une data URL WebP (JPEG si WebP impossible). */
+export async function compresserImage(fichier, cote = 1600, qualite = 0.82) {
+  if (!fichier || !/^image\//.test(fichier.type || "")) throw Object.assign(new Error("Pas une image"), { code: "app/image" });
+  const url = URL.createObjectURL(fichier);
+  try {
+    const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = url; });
+    const k = Math.min(1, cote / Math.max(img.naturalWidth, img.naturalHeight));
+    const cv = document.createElement("canvas");
+    cv.width = Math.max(1, Math.round(img.naturalWidth * k));
+    cv.height = Math.max(1, Math.round(img.naturalHeight * k));
+    cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+    let data = cv.toDataURL("image/webp", qualite);
+    if (!data.startsWith("data:image/webp")) data = cv.toDataURL("image/jpeg", qualite);
+    return data;
+  } catch {
+    throw Object.assign(new Error("Image illisible"), { code: "app/image" });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** Admin : enregistre une image dans la médiathèque, renvoie son identifiant. */
+export async function televerserMedia(fichier, { cote = 1600, nom = "" } = {}) {
+  exigerComptes();
+  let data = await compresserImage(fichier, cote);
+  if (data.length > LIM_MEDIA) data = await compresserImage(fichier, Math.round(cote * 0.7), 0.72);
+  if (data.length > LIM_MEDIA) data = await compresserImage(fichier, Math.round(cote * 0.5), 0.65);
+  if (data.length > LIM_MEDIA) throw Object.assign(new Error("Image trop lourde"), { code: "app/image-lourde" });
+  const { F, db } = fb;
+  const ref = F.doc(F.collection(db, "medias"));
+  await F.setDoc(ref, { data, nom: String(nom || fichier.name || "").slice(0, 80), le: F.serverTimestamp() });
+  mediasCache.set(ref.id, Promise.resolve(data));
+  return ref.id;
+}
+/** Admin : retire une image de la médiathèque (silencieux si déjà absente). */
+export async function supprimerMedia(id) {
+  if (!fb || !id) return;
+  mediasCache.delete(id);
+  try { localStorage.removeItem("media:" + id); } catch {}
+  try { await fb.F.deleteDoc(fb.F.doc(fb.db, "medias", id)); } catch (e) { console.warn("Image non supprimée :", e.code || e.message); }
+}
+const mediaSur = (d) => (typeof d === "string" && /^data:image\/(webp|jpeg|png);base64,/.test(d) ? d : null);
+/** Une image de la médiathèque (data URL), ou null. Les petites sont gardées sur l'appareil. */
+export function media(id) {
+  if (!id || typeof id !== "string") return Promise.resolve(null);
+  if (!mediasCache.has(id)) {
+    mediasCache.set(id, (async () => {
+      try { const l = mediaSur(localStorage.getItem("media:" + id)); if (l) return l; } catch {}
+      await pret;
+      if (!fb) return null;
+      try {
+        const snap = await fb.F.getDoc(fb.F.doc(fb.db, "medias", id));
+        const d = snap.exists() ? mediaSur(snap.data().data) : null;
+        if (d && d.length < 150000) { try { localStorage.setItem("media:" + id, d); } catch {} }
+        return d;
+      } catch (e) {
+        console.warn("Image illisible :", e.code || e.message);
+        mediasCache.delete(id);
+        return null;
+      }
+    })());
+  }
+  return mediasCache.get(id);
+}
+/** Remplit toutes les balises <img data-media="id"> d'un bloc de page. */
+export function hydraterMedias(racine = document) {
+  racine.querySelectorAll("img[data-media]:not([src])").forEach((img) => {
+    img.setAttribute("src", "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=");
+    media(img.dataset.media).then((d) => { if (d) img.src = d; else img.classList.add("media-absente"); });
+  });
+}
+
+/* ---------- Contenus créés depuis l'admin (QCM, fiches et schémas) ----------
+   contenus/{id} = { type: "qcm" | "fiche", titre, questions: [{ q, choix[], bonnes[], explication, image }],
+   blocs: [{ t: "titre" | "texte" | "image", v, legende }], majLe }. Lu par tous, écrit par l'admin. */
+export async function contenu(id) {
+  await pret;
+  const cle = "contenu:" + id;
+  if (!fb) return lire(cle, null);
+  try {
+    const snap = await fb.F.getDoc(fb.F.doc(fb.db, "contenus", id));
+    if (!snap.exists()) return null;
+    const { majLe, ...d } = snap.data();
+    ecrire(cle, d);
+    return d;
+  } catch (e) {
+    console.warn("Contenu illisible :", e.code || e.message);
+    return lire(cle, null);
+  }
+}
+export async function enregistrerContenu(id, d) {
+  exigerComptes();
+  const propre = {
+    type: d.type === "fiche" ? "fiche" : "qcm",
+    titre: String(d.titre || "").slice(0, 80),
+    questions: (d.questions || []).slice(0, 300).map((q) => ({
+      q: String(q.q || "").slice(0, 1500),
+      choix: (q.choix || []).slice(0, 8).map((c) => String(c || "").slice(0, 500)),
+      bonnes: (q.bonnes || []).filter((k) => Number.isInteger(k) && k >= 0 && k < 8),
+      explication: String(q.explication || "").slice(0, 3000),
+      image: typeof q.image === "string" ? q.image.slice(0, 40) : "",
+    })),
+    blocs: (d.blocs || []).slice(0, 300).map((b) => ({
+      t: ["titre", "texte", "image"].includes(b.t) ? b.t : "texte",
+      v: String(b.v || "").slice(0, 6000),
+      legende: String(b.legende || "").slice(0, 300),
+    })),
+  };
+  await fb.F.setDoc(fb.F.doc(fb.db, "contenus", id), { ...propre, majLe: fb.F.serverTimestamp() });
+  ecrire("contenu:" + id, propre);
+  return propre;
+}
+export async function supprimerContenu(id) {
+  exigerComptes();
+  try { localStorage.removeItem("contenu:" + id); } catch {}
+  await fb.F.deleteDoc(fb.F.doc(fb.db, "contenus", id));
+}
+
 /* ---------- Social : profils publics, commentaires, messagerie privée ----------
    Réservé aux membres connectés. Les pages passent toujours par ces fonctions. */
 const LIM_COMMENTAIRE = 500, LIM_MESSAGE = 1000;
 const texteSur = (t, max) => String(t || "").replace(/\s+$/g, "").replace(/^\s+/g, "").slice(0, max);
 const profilsCache = new Map();
-const profilSur = (uid, d) => ({ uid, nom: (d && typeof d.nom === "string" && d.nom) || "Membre", photo: photoSure(d?.photo), avatar: avatarSur(d?.avatar) });
+const profilSur = (uid, d) => ({ uid, nom: (d && typeof d.nom === "string" && d.nom) || "Membre", photo: photoSure(d?.photo), image: imageSure(d?.image), avatar: avatarSur(d?.avatar) });
 
 /** Profils publics de quelques membres : { uid: { uid, nom, photo, avatar } } (mis en cache). */
 export async function profils(uids) {
@@ -548,6 +706,8 @@ const MESSAGES = {
   "app/email-requis": "Entre ton e-mail, puis touche « Mot de passe oublié ? ».",
   "app/nom-requis": "Choisis un prénom ou un pseudo.",
   "app/comptes-indisponibles": "Les comptes ne sont pas disponibles pour le moment.",
+  "app/image": "Ce fichier n'est pas une image lisible (JPEG, PNG ou WebP).",
+  "app/image-lourde": "Image trop lourde, même réduite. Essaie une image plus petite.",
   "app/connexion-requise": "Connecte-toi (onglet Profil) pour commenter et écrire aux autres.",
 };
 export function messageErreur(e) {

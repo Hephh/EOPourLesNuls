@@ -13,8 +13,8 @@ const fr=n=>(Math.round(n*10)/10).toLocaleString('fr-FR');
 const CH=Object.fromEntries(C.chapters.map(c=>[c.id,c]));
 let ALL=C.chapters.map(c=>c.id);
 function masquer(ids){const h=new Set(ids||[]);ALL=C.chapters.filter(c=>!h.has(c.id)).map(c=>c.id);if(!ALL.length)ALL=C.chapters.map(c=>c.id)}
-try{const c=JSON.parse(localStorage.getItem('catalogue')||'null');if(c&&c.masques)masquer(c.masques[ID])}catch(e){}
-window.addEventListener('catalogue',e=>{const c=e.detail;masquer(c&&c.masques?c.masques[ID]:[]);CARD=null;render()});
+try{const c=JSON.parse(localStorage.getItem('catalogue')||'null');if(c&&c.masques)masquer(c.masques[ID]);if(c&&c.images)window.__imgcat=c.images[ID]}catch(e){}
+window.addEventListener('catalogue',e=>{const c=e.detail;masquer(c&&c.masques?c.masques[ID]:[]);IMGCAT=(c&&c.images&&c.images[ID])||{};CARD=null;render()});
 const TERM=Object.fromEntries(C.terms.map(t=>[t.id,t]));
 const QS=C.qcm,QID=Object.fromEntries(QS.map(q=>[q.id,q]));
 const chName=id=>(CH[id]&&(CH[id].short||CH[id].name))||id;
@@ -71,7 +71,7 @@ const wrongIds=s=>QS.filter(q=>inSel(q,s||sel())&&P.q[q.id]&&P.q[q.id][0]<=1).ma
 function topicLabel(){return custom()?sel().map(chName).join(', '):'toutes les catégories'}
 function counts(ch){const qs=QS.filter(q=>q.ch===ch||q.ch2===ch);return{an:qs.filter(q=>q.src==='an').length,q:qs.length,t:C.terms.filter(t=>t.ch===ch).length}}
 function bubbles(small){const isC=custom();
- return `<div class="bubbles${small?' sm':''}" role="group" aria-label="Catégories à réviser"><button class="bub" data-act="alltopics" aria-pressed="${!isC}"><span class="ring${!isC?' on':''}"><span class="face">${ic('grid','ico')}</span></span><span class="bl">Tout</span><span class="bn">${QS.filter(q=>ALL.includes(q.ch)).length} QCM</span></button>${C.chapters.filter(c=>ALL.includes(c.id)).map(c=>{const on=!isC||P.prefs.topics.includes(c.id);return `<button class="bub" data-act="topic" data-id="${c.id}" aria-pressed="${isC&&on}"><span class="ring${on?' on':''}"><span class="face">${thumb(c.fig)}</span></span><span class="bl">${esc(c.short||c.name)}</span><span class="bn">${counts(c.id).q} QCM</span></button>`}).join('')}</div>`}
+ return `<div class="bubbles${small?' sm':''}" role="group" aria-label="Catégories à réviser"><button class="bub" data-act="alltopics" aria-pressed="${!isC}"><span class="ring${!isC?' on':''}"><span class="face">${ic('grid','ico')}</span></span><span class="bl">Tout</span><span class="bn">${QS.filter(q=>ALL.includes(q.ch)).length} QCM</span></button>${C.chapters.filter(c=>ALL.includes(c.id)).map(c=>{const on=!isC||P.prefs.topics.includes(c.id);return `<button class="bub" data-act="topic" data-id="${c.id}" aria-pressed="${isC&&on}"><span class="ring${on?' on':''}"><span class="face">${thumb(c.fig,c.id)}</span></span><span class="bl">${esc(c.short||c.name)}</span><span class="bn">${counts(c.id).q} QCM</span></button>`}).join('')}</div>`}
 
 /* ---------- fiches découpées en blocs ---------- */
 const BL={};
@@ -85,7 +85,8 @@ function traps(s){const out=[];(s||sel()).forEach(ch=>{const re=/<div class="box
 /* ---------- figures (schémas redessinés en SVG) ---------- */
 const figCache={};
 function fig(key){if(!key||key.startsWith('img:'))return'';if(!figCache[key]){const f=S[key];figCache[key]=f?f():''}return figCache[key]}
-const thumb=fig;
+let IMGCAT=window.__imgcat||{};
+const thumb=(f,ch)=>IMGCAT[ch]?`<img class="th-img" data-media="${esc(IMGCAT[ch])}" alt="">`:fig(f);
 const linkify=s=>s.replace(/\[\[([a-z0-9-]+)(?:\|([^\]]+))?\]\]/g,(m,id,txt)=>TERM[id]?`<button class="tl" data-act="term" data-id="${id}">${txt||esc(TERM[id].t)}</button>`:(txt||id));
 function proc(h){h=linkify(h||'');
  h=h.replace(/<figure data-fig="([^"]+)" data-cap="([^"]*)"><\/figure>/g,(m,k,cap)=>`<figure>${fig(k)}<figcaption>${cap}</figcaption></figure>`);
@@ -169,7 +170,7 @@ function stamps(q){return q.src==='an'?stampAn('Annale · '+q.ref):q.src==='va'?
 function vFiche(){
  const s=sel(),bs=blocsOf(s),bd=bs.filter(b=>bDone(b.id)).length;
  const jump=bs.map(b=>`<button data-act="jump" data-id="${b.id}" class="${bDone(b.id)?'on':''}">${s.length>1?esc(chName(b.ch))+' · ':''}${b.title.replace(/<[^>]+>/g,'')}</button>`).join('');
- const secs=s.map(ch=>{const c=CH[ch],B=BL[ch];return `<section class="chsec" id="c-${ch}"><div class="ch-h"><span class="ring on"><span class="face">${thumb(c.fig)}</span></span><h2>${esc(c.name)}</h2></div><p class="src">Source : ${esc(c.src)}</p>${ntH(proc(B.intro))}
+ const secs=s.map(ch=>{const c=CH[ch],B=BL[ch];return `<section class="chsec" id="c-${ch}"><div class="ch-h"><span class="ring on"><span class="face">${thumb(c.fig,c.id)}</span></span><h2>${esc(c.name)}</h2></div><p class="src">Source : ${esc(c.src)}</p>${ntH(proc(B.intro))}
   ${B.blocs.map(b=>`<article class="bloc" id="b-${b.id}"><h3>${b.title}</h3>${ntH(proc(b.html))}<button class="okh" data-act="bloc" data-id="${b.id}" aria-pressed="${bDone(b.id)}">${ic('heart')}<span>${bDone(b.id)?'Compris':'J\'ai compris'}</span></button></article>`).join('')}
   <div class="fiche-end"><button class="mb" data-act="qcm-ch" data-id="${ch}">${ic('qcm')}QCM : ${esc(chName(ch))}</button><button class="mb alt" data-act="lex-ch" data-id="${ch}">${ic('abc')}Lexique du chapitre</button></div></section>`}).join('');
  return `${bubbles(true)}<div class="fiche"><div class="fhead" style="margin-top:12px"><h2>La fiche</h2><p><span id="fcount">${bd} / ${bs.length}</span> blocs compris</p></div><div class="meter fmeter"><i id="fbar" style="width:${bs.length?bd/bs.length*100:0}%"></i></div>

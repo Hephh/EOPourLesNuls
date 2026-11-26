@@ -6,11 +6,11 @@
 <title>EOPour les nuls</title>
 <meta name="description" content="QCM et outils de révision ostéo, de P1 à P5 — sur téléphone comme sur PC.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=8"></script>
+<script src="reglages.js?v=9"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=8">
+<link rel="stylesheet" href="style.css?v=9">
 </head>
 <body class="app">
 
@@ -61,8 +61,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=8";
-import * as C from "./compte.js?v=8";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=9";
+import * as C from "./compte.js?v=9";
 
 const R = window.Reglages;
 
@@ -110,7 +110,7 @@ async function partager(titre, url) {
 function avatar(u) {
   const emoji = C.avatarSur(u?.avatar);
   if (emoji) return `<span class="avatar-ring"><span class="avatar emoji">${emoji}</span></span>`;
-  const photo = C.photoSure(u?.photo);
+  const photo = C.imageSure(u?.image) || C.photoSure(u?.photo);
   const contenu = photo ? `<img src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`
     : u ? esc(initiale(u.nom)) : ICONE.user;
   return `<span class="avatar-ring"><span class="avatar">${contenu}</span></span>`;
@@ -122,7 +122,7 @@ function grille(liste) {
   return `<div class="grille">${liste.map((o) => {
     const s = C.scoreLocal(o.id);
     return `<a class="tuile" href="${esc(o.fichier)}" style="--h:${teinte(o.matiere)}" aria-label="${esc(o.titre)}">
-      <span class="tuile-emoji" aria-hidden="true">${o.emoji || "📝"}</span>
+      <span class="tuile-emoji" aria-hidden="true">${esc(o.emoji || "📝")}</span>
       <span class="tuile-titre">${esc(o.titre)}</span>
       ${s ? `<span class="tuile-badge">${s.best}/${s.total}</span>` : ""}
     </a>`;
@@ -132,6 +132,7 @@ function grille(liste) {
 /* ---------- Fenêtre modale ---------- */
 const modal = $("#modal");
 function ouvrirModal(html, brancher) {
+  if (!modal.open) modal.className = "modal";
   modal.innerHTML = `<div class="modal-corps">${html}</div>`;
   modal.querySelectorAll("[data-fermer]").forEach((b) => (b.onclick = fermerModal));
   brancher?.(modal);
@@ -166,14 +167,29 @@ function catalogueDeBase() {
     }
     outils[o.id] = { annee: an, matiere: m.id, cache: false };
   }
-  return { annees, matieres, outils, masques: {} };
+  return { annees, matieres, outils, masques: {}, annonce: null, images: {} };
 }
+const ID_BASE = new Set(OUTILS.map((o) => o.id));                                   // outils de outils.js
+const ORIG = new Map(OUTILS.map((o) => [o.id, { titre: o.titre, emoji: o.emoji }])); // avant retouche par l'admin
 let CAT = catalogueDeBase();
 let catPublie = false; // true = l'admin a déjà publié une organisation
 function appliquerCatalogue(c) {
   catPublie = !!c;
+  for (let k = OUTILS.length - 1; k >= 0; k--) if (!ID_BASE.has(OUTILS[k].id)) OUTILS.splice(k, 1);
   const base = catalogueDeBase();
-  CAT = c ? { annees: c.annees, matieres: c.matieres, outils: { ...base.outils, ...c.outils }, masques: c.masques || {} } : base;
+  CAT = c ? { annees: c.annees, matieres: c.matieres, outils: { ...base.outils, ...c.outils }, masques: c.masques || {}, annonce: c.annonce || null, images: c.images || {} } : base;
+  for (const o of OUTILS) {
+    const p = CAT.outils[o.id] || {}, d = ORIG.get(o.id);
+    o.titre = (typeof p.titre === "string" && p.titre) || d.titre;
+    o.emoji = (typeof p.emoji === "string" && p.emoji) || d.emoji;
+  }
+  // Outils écrits depuis l'admin (QCM, fiches) : une seule page, outils/contenu.html?id=…
+  for (const [id, p] of Object.entries(CAT.outils)) {
+    if (!p || !p.perso || ID_BASE.has(id) || !/^[a-z0-9-]+$/.test(id)) continue;
+    const type = p.type === "fiche" ? "fiche" : "qcm";
+    OUTILS.push({ id, perso: true, typePerso: type, titre: String(p.titre || "Sans titre"), emoji: String(p.emoji || "📝"), type: type === "qcm" ? "QCM" : "Fiche",
+      description: String(p.description || ""), fichier: "outils/contenu.html?id=" + id, matiere: matiereDe(p.matiere)?.nom || "", annee: p.annee });
+  }
 }
 const anneeDe = (id) => CAT.annees.find((a) => a.id === id) || null;
 const matiereDe = (id) => CAT.matieres.find((m) => m.id === id) || null;
@@ -184,11 +200,13 @@ function place(o) {
   let m = matiereDe(p.matiere);
   if (p.matiere !== null && (!m || m.annee !== annee)) m = CAT.matieres.find((x) => x.annee === annee && x.nom === o.matiere) || null;
   if (m && m.annee !== annee) m = null;
-  return { annee, matiere: m, cache: !!p.cache };
+  return { annee, matiere: m, cache: !!p.cache, nouveau: !!p.nouveau };
 }
 const outilsVisibles = () => OUTILS.filter((o) => !place(o).cache);
 const outilsAnnee = (a) => outilsVisibles().filter((o) => place(o).annee === a.id);
 const matieresAnnee = (a) => CAT.matieres.filter((m) => m.annee === a.id);
+/** Image de l'admin (médiathèque) si elle existe, sinon l'emoji. */
+const visuel = (x, defaut) => (x?.image ? `<img class="visuel" data-media="${esc(x.image)}" alt="">` : esc(x?.emoji || defaut));
 const ICONE_VERROU = svg('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>');
 
 /* ---------- Accueil : choisir son année ---------- */
@@ -201,6 +219,17 @@ function carteBienvenue() {
   </div>`;
 }
 
+function carteAnnonce() {
+  const a = CAT.annonce;
+  if (!a || !a.texte) return "";
+  try { if (localStorage.getItem("annonce-vue") === a.id) return ""; } catch {}
+  const lien = a.lien ? (a.lien.startsWith("#") ? a.lien : a.lien) : "";
+  const cible = a.lien.startsWith("#") ? anneeDe(a.lien.slice(1))?.nom : OUTILS.find((o) => o.fichier === a.lien)?.titre;
+  return `<div class="annonce" id="annonce" role="note"><span class="annonce-ico" aria-hidden="true">📣</span>
+    <div class="annonce-txt"><b>${esc(a.titre || "Annonce")}</b><p>${esc(a.texte)}</p>${lien && cible ? `<a class="btn btn-primary annonce-btn" href="${esc(lien)}">${esc(cible)} →</a>` : ""}</div>
+    <button class="icon-btn" type="button" id="fermer-annonce" aria-label="Masquer l'annonce">${ICONE.fermer}</button></div>`;
+}
+
 function dernierOutil() {
   try { return outilsVisibles().find((o) => o.id === localStorage.getItem("dernier-outil")) || null; } catch { return null; }
 }
@@ -211,19 +240,24 @@ function vueAccueil() {
   const dernier = dernierOutil();
   vue.innerHTML = `
     <div class="accueil-tete"><h1>${prenom ? "Salut " + esc(prenom) : "Salut"}</h1><p class="sub">Choisis ton année, puis ta matière.</p></div>
+    ${carteAnnonce()}
     ${carteBienvenue()}
     <div class="annees" role="list">
       ${CAT.annees.map((a) => {
         const n = matieresAnnee(a).length;
         const etat = a.verrou ? " verrou" : n ? "" : " vide-annee";
         return `<a class="annee${etat}" role="listitem" href="#${esc(a.id)}"${a.verrou ? ` aria-label="${esc(a.nom)}, verrouillé"` : ""}>
-          <span class="annee-ring"><span class="annee-bulle">${esc(a.nom)}</span>${a.verrou ? `<span class="annee-cadenas">${ICONE_VERROU}</span>` : ""}</span>
+          <span class="annee-ring"><span class="annee-bulle">${a.image ? `<img class="visuel" data-media="${esc(a.image)}" alt="">` : esc(a.nom)}</span>${a.verrou ? `<span class="annee-cadenas">${ICONE_VERROU}</span>` : ""}</span>
           <b>${esc(a.sous)}</b>
           <small>${a.verrou ? "Verrouillé" : n ? `${n} matière${n > 1 ? "s" : ""}` : "Aucune matière"}</small>
         </a>`;
       }).join("")}
     </div>
     ${dernier ? `<h2 class="titre-section">Reprendre</h2><div class="lignes">${ligneOutil(dernier)}</div>` : ""}`;
+  $("#fermer-annonce")?.addEventListener("click", () => {
+    try { localStorage.setItem("annonce-vue", CAT.annonce.id); } catch {}
+    $("#annonce").remove();
+  });
   $("#fermer-bienvenue")?.addEventListener("click", () => {
     try { localStorage.setItem("bienvenue-vue", "1"); } catch {}
     $("#bienvenue").remove();
@@ -257,16 +291,19 @@ function vueAnnee(id) {
     <div class="stories" role="group" aria-label="Matières de ${esc(a.nom)}">
       ${matieres.map((x) => `
         <button class="story${x.id === m.id ? " actif" : ""}" type="button" data-m="${esc(x.id)}" aria-pressed="${x.id === m.id}">
-          <span class="story-ring"><span class="story-bulle">${esc(x.emoji || "📚")}</span></span>
+          <span class="story-ring"><span class="story-bulle">${visuel(x, "📚")}</span></span>
           <span class="story-nom">${esc(x.nom)}</span>
         </button>`).join("")}
     </div>
     <div class="matiere-tete">
-      <span class="mini-ring grand"><span>${esc(m.emoji || "📚")}</span></span>
+      <span class="mini-ring grand"><span>${visuel(m, "📚")}</span></span>
       <div><h1>${esc(m.complet || m.nom)}</h1><p class="sub">${[m.complet ? m.nom : "", m.prof, `${liste.length} outil${liste.length > 1 ? "s" : ""}`].filter(Boolean).map(esc).join(" · ")}</p></div>
     </div>
-    ${liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>` : `<p class="vide-mini">Pas encore d'outil dans cette matière.</p>`}`;
+    ${liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>` : `<p class="vide-mini">Pas encore d'outil dans cette matière.</p>`}
+    ${jeSuisAdmin ? `<div class="admin-raccourcis"><span class="sub">Admin</span><button class="btn" type="button" id="adm-placer">Placer un outil ici</button><button class="btn" type="button" id="adm-creer">Créer un outil ici</button></div>` : ""}`;
   vue.querySelectorAll(".story").forEach((b) => (b.onclick = () => { matiereChoisie[id] = b.dataset.m; vueAnnee(id); }));
+  $("#adm-placer")?.addEventListener("click", () => placerOutil(id, m.id === AUTRES.id ? null : m.id));
+  $("#adm-creer")?.addEventListener("click", () => formNouvelOutil(id, m.id === AUTRES.id ? null : m.id));
   brancherLignes();
 }
 
@@ -276,8 +313,8 @@ function ligneOutil(o) {
   const fav = C.favorisLocaux().has(o.id);
   return `<div class="ligne-outil" data-id="${esc(o.id)}">
     <a class="lo-lien" href="${esc(o.fichier)}">
-      <span class="lo-emoji" style="--h:${teinte(o.matiere)}" aria-hidden="true">${o.emoji || "📝"}</span>
-      <span class="lo-txt"><b>${esc(o.titre)}</b><small>${esc(o.type || "Outil")}${s ? ` · meilleur score ${s.best}/${s.total}` : ""}</small>
+      <span class="lo-emoji" style="--h:${teinte(o.matiere)}" aria-hidden="true">${esc(o.emoji || "📝")}</span>
+      <span class="lo-txt"><b>${esc(o.titre)}${place(o).nouveau ? ` <span class="badge-nouveau">Nouveau</span>` : ""}</b><small>${esc(o.type || "Outil")}${s ? ` · meilleur score ${s.best}/${s.total}` : ""}</small>
         <span class="lo-desc">${esc(o.description)}</span>
         ${s ? `<span class="jauge"><i style="width:${Math.round((s.best / s.total) * 100)}%"></i></span>` : ""}</span>
     </a>
@@ -513,7 +550,9 @@ function statsLocales() {
   return { faits: faits.length, reussite: total ? Math.round((best / total) * 100) : null, favoris: C.favorisLocaux().size };
 }
 
+const modeFun = () => R.lire().fun !== false;
 function blocActivite() {
+  if (!modeFun()) return "";
   const a = C.activiteLocale();
   const objectif = Number(R.lire().objectif) || 3;
   const ajd = a[C.jourCle()] || 0;
@@ -586,9 +625,15 @@ function modalProfil() {
     <form id="form-profil">
       <label class="sub" for="champ-nom">Nom affiché</label>
       <input class="champ" id="champ-nom" name="nom" maxlength="40" required>
-      <span class="sub">Avatar</span>
+      <span class="sub">Photo</span>
+      <div class="photo-choix">
+        <span class="photo-apercu" id="photo-apercu">${avatar({ ...u, avatar: null })}</span>
+        <button class="btn" type="button" id="photo-importer">Importer une photo</button>
+        ${C.imageSure(u.image) ? `<button class="btn" type="button" id="photo-retirer">Retirer</button>` : ""}
+      </div>
+      <span class="sub">Ou un avatar</span>
       <div class="emojis" id="emojis">
-        <button type="button" class="texte-choix" data-a="" aria-pressed="${!choix}">${photo ? "Photo" : esc(initiale(u.nom))}</button>
+        <button type="button" class="texte-choix" data-a="" aria-pressed="${!choix}">${photo || C.imageSure(u.image) ? "Photo" : esc(initiale(u.nom))}</button>
         ${C.AVATARS.map((e) => `<button type="button" data-a="${e}" aria-pressed="${choix === e}">${e}</button>`).join("")}
       </div>
       <div class="modal-btns">
@@ -602,6 +647,13 @@ function modalProfil() {
       choix = b.dataset.a || null;
       boutons.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     }));
+    $("#photo-importer", m).onclick = async () => {
+      const f = await choisirFichier();
+      if (!f) return;
+      try { await C.majImage(f); toast("Photo mise à jour ✓"); modalProfil(); }
+      catch (err) { toast(C.messageErreur(err)); }
+    };
+    $("#photo-retirer", m)?.addEventListener("click", async () => { await C.majImage(null); toast("Photo retirée"); modalProfil(); });
     $("#form-profil", m).onsubmit = async (e) => {
       e.preventDefault();
       const nom = $("#champ-nom", m).value.trim();
@@ -798,10 +850,11 @@ function vueReglages() {
       ${inter("vibrations", "📳", "Vibrations", "Bonne ou mauvaise réponse (Android)")}
     </div>
 
-    <h2>Objectif</h2>
+    <h2>Mode fun</h2>
     <div class="groupe">
-      <div class="ligne colonne">${texte("QCM à terminer par jour", "Affiché dans ton profil, avec ta série de jours.")}
-        ${seg("objectif", [[1, "1"], [3, "3"], [5, "5"], [10, "10"]])}</div>
+      ${inter("fun", "🎉", "Mode fun", "Série de jours 🔥, objectif du jour, graphique de la semaine. Désactivé : seulement l'essentiel.")}
+      ${r.fun !== false ? `<div class="ligne colonne">${texte("QCM à terminer par jour", "Affiché dans ton profil, avec ta série de jours.")}
+        ${seg("objectif", [[1, "1"], [3, "3"], [5, "5"], [10, "10"]])}</div>` : ""}
     </div>
 
     <h2>Progression</h2>
@@ -821,7 +874,7 @@ function vueReglages() {
     <div class="groupe">
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
         "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 8 · site de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 9 · site de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div>`;
@@ -839,6 +892,7 @@ function vueReglages() {
     const actif = b.getAttribute("aria-checked") !== "true";
     R.ecrire(b.dataset.inter, actif);
     b.setAttribute("aria-checked", String(actif));
+    if (b.dataset.inter === "fun") vueReglages();
   }));
   vue.querySelectorAll("[data-action]").forEach((b) => (b.onclick = () => ACTIONS[b.dataset.action]?.()));
 }
@@ -861,14 +915,46 @@ function ligneMembre(m) {
   const sc = Object.values(m.scores || {}).filter((s) => s && s.total > 0);
   const b = sc.reduce((a, s) => a + (s.best || 0), 0);
   const t = sc.reduce((a, s) => a + s.total, 0);
-  const serie = C.serieJours(m.activite && typeof m.activite === "object" ? m.activite : {});
-  return `<li class="membre">${avatar({ nom: m.nom || "?", photo: m.photo, avatar: m.avatar })}
+  const serie = C.serieJours(activiteDe(m));
+  return `<li><button class="membre" type="button" data-uid="${esc(m.uid)}">${avatar({ nom: m.nom || "?", photo: m.photo, avatar: m.avatar })}
     <div><b>${esc(m.nom || "Sans nom")}</b>
-    <small>${sc.length} QCM${t ? ` · ${Math.round((b / t) * 100)} % de réussite` : ""}${serie ? ` · 🔥 ${serie}` : ""} · ${depuis(enMs(m.vuLe))}</small></div></li>`;
+    <small>${sc.length} QCM${t ? ` · ${Math.round((b / t) * 100)} % de réussite` : ""}${serie ? ` · 🔥 ${serie}` : ""} · ${depuis(enMs(m.vuLe))}</small></div>
+    <span class="chevron" aria-hidden="true">›</span></button></li>`;
 }
 
-let ongletAdmin = "organisation";
+const activiteDe = (m) => (m && m.activite && typeof m.activite === "object" && !Array.isArray(m.activite) ? m.activite : {});
+const reussiteDe = (m) => {
+  const sc = Object.values(m.scores || {}).filter((s) => s && s.total > 0);
+  const t = sc.reduce((a, s) => a + s.total, 0);
+  return t ? sc.reduce((a, s) => a + (s.best || 0), 0) / t : -1;
+};
+/** Les n derniers jours (dates), du plus ancien à aujourd'hui. */
+function joursRecents(n = 14) {
+  return Array.from({ length: n }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (n - 1) + i); return d; });
+}
+/** Petit graphique en barres (un jour par barre), avec un résumé pour les lecteurs d'écran. */
+function barresJours(valeurs, jours, unite) {
+  const max = Math.max(1, ...valeurs);
+  const total = valeurs.reduce((a, b) => a + b, 0);
+  return `<div class="barres" role="img" aria-label="${total} ${unite} sur ${jours.length} jours">
+    ${valeurs.map((v, i) => `<div class="barre${i === valeurs.length - 1 ? " auj" : ""}" title="${jours[i].toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} : ${v} ${unite}">
+      <span class="barre-n">${v || ""}</span><i style="height:${Math.round((v / max) * 100)}%"></i>
+      <small>${jours[i].toLocaleDateString("fr-FR", { weekday: "narrow" })}</small></div>`).join("")}
+  </div>`;
+}
+
+let ongletAdmin = "stats";
 let anneeAdmin = null;
+let cacheMembres = null;      // { t, liste } : la liste des membres est relue au plus une fois par minute
+let triMembres = "recents";
+let filtreMembres = "";
+
+async function lesMembres(force) {
+  if (!force && cacheMembres && Date.now() - cacheMembres.t < 60000) return cacheMembres.liste;
+  const liste = await C.membres();
+  cacheMembres = { t: Date.now(), liste };
+  return liste;
+}
 
 async function vueAdmin() {
   const r = rendu;
@@ -879,27 +965,137 @@ async function vueAdmin() {
   }
   if (r !== rendu) return;
   const onglets = `<div class="segmente admin-onglets" role="group" aria-label="Partie de l'admin">
-    ${[["organisation", "Organisation"], ["membres", "Membres"]].map(([v, l]) => `<button type="button" data-onglet="${v}" aria-pressed="${ongletAdmin === v}">${l}</button>`).join("")}</div>`;
+    ${[["stats", "Tableau de bord"], ["organisation", "Organisation"], ["membres", "Membres"]].map(([v, l]) => `<button type="button" data-onglet="${v}" aria-pressed="${ongletAdmin === v}">${l}</button>`).join("")}</div>`;
   if (ongletAdmin === "organisation") {
     vueOrganisation(onglets);
   } else {
     vue.innerHTML = `<h1 class="titre-vue">Admin</h1>${onglets}<p class="vide-mini">Chargement…</p>`;
-    let html;
-    try {
-      const liste = (await C.membres()).sort((a, b) => enMs(b.vuLe) - enMs(a.vuLe));
-      html = `<h1 class="titre-vue">Admin · ${liste.length} membre${liste.length > 1 ? "s" : ""}</h1>${onglets}
-        <ul class="membres">${liste.map(ligneMembre).join("")}</ul>`;
-    } catch (e) {
-      html = `<h1 class="titre-vue">Admin</h1>${onglets}<p class="erreur vide-mini">Lecture impossible (${esc(e.code || e.message)}).</p>`;
-    }
+    let liste = null, erreur = "";
+    try { liste = await lesMembres(); } catch (e) { erreur = e.code || e.message; }
     if (r !== rendu) return;
-    vue.innerHTML = html;
+    if (!liste) vue.innerHTML = `<h1 class="titre-vue">Admin</h1>${onglets}<p class="erreur vide-mini">Lecture impossible (${esc(erreur)}).</p>`;
+    else if (ongletAdmin === "stats") vueStats(onglets, liste);
+    else vueMembres(onglets, liste);
   }
   vue.querySelectorAll("[data-onglet]").forEach((b) => (b.onclick = () => { ongletAdmin = b.dataset.onglet; vueAdmin(); }));
 }
 
-/* ---------- Admin ▸ Organisation : années, matières, place des outils, catégories ---------- */
-const copieCat = () => JSON.parse(JSON.stringify({ annees: CAT.annees, matieres: CAT.matieres, outils: CAT.outils, masques: CAT.masques }));
+/* ---------- Admin ▸ Tableau de bord ---------- */
+function vueStats(onglets, liste) {
+  const jours = joursRecents(14);
+  const cles = jours.map((d) => C.jourCle(d));
+  const auj = cles[cles.length - 1], sept = cles.slice(-7);
+  const actifsAuj = liste.filter((m) => activiteDe(m)[auj]).length;
+  const actifs7 = liste.filter((m) => sept.some((j) => activiteDe(m)[j])).length;
+  const nouveaux = liste.filter((m) => enMs(m.creeLe) && Date.now() - enMs(m.creeLe) < 7 * 864e5).length;
+  const vus24 = liste.filter((m) => Date.now() - enMs(m.vuLe) < 864e5).length;
+  const parJour = cles.map((j) => liste.reduce((s, m) => s + (Number(activiteDe(m)[j]) || 0), 0));
+  const actifsParJour = cles.map((j) => liste.filter((m) => activiteDe(m)[j]).length);
+  const parties7 = parJour.slice(-7).reduce((a, b) => a + b, 0);
+  let b = 0, t = 0;
+  const parOutil = {};
+  for (const m of liste) for (const [id, s] of Object.entries(m.scores || {})) {
+    if (!s || !(s.total > 0)) continue;
+    b += s.best || 0; t += s.total;
+    const o = (parOutil[id] ||= { n: 0, b: 0, t: 0 });
+    o.n++; o.b += s.best || 0; o.t += s.total;
+  }
+  const top = Object.entries(parOutil).sort((x, y) => y[1].n - x[1].n).slice(0, 6);
+  const series = liste.map((m) => ({ m, s: C.serieJours(activiteDe(m)) })).filter((x) => x.s > 0).sort((x, y) => y.s - x.s).slice(0, 5);
+  const tuile = (n, l, d = "") => `<div class="stat-tuile"><b>${n}</b><span>${l}</span>${d ? `<small>${d}</small>` : ""}</div>`;
+  const titreOutil = (id) => OUTILS.find((o) => o.id === id) || { titre: id, emoji: "📝" };
+  vue.innerHTML = `<h1 class="titre-vue">Admin</h1>${onglets}
+  <div class="reglages admin-stats">
+    <div class="stat-tuiles">
+      ${tuile(liste.length, "membres", nouveaux ? `+${nouveaux} cette semaine` : "")}
+      ${tuile(actifsAuj, "actifs aujourd'hui", `${vus24} passé(s) sur le site en 24 h`)}
+      ${tuile(actifs7, "actifs sur 7 jours", liste.length ? `${Math.round((actifs7 / liste.length) * 100)} % des membres` : "")}
+      ${tuile(parties7, "parties sur 7 jours", t ? `réussite moyenne ${Math.round((b / t) * 100)} %` : "")}
+    </div>
+    <h2>Parties par jour</h2>
+    <div class="groupe stat-bloc">${barresJours(parJour, jours, "parties")}</div>
+    <h2>Membres actifs par jour</h2>
+    <div class="groupe stat-bloc">${barresJours(actifsParJour, jours, "membres actifs")}</div>
+    <h2>Outils les plus joués</h2>
+    <div class="groupe">${top.length ? top.map(([id, s]) => { const o = titreOutil(id); const p = Math.round((s.b / s.t) * 100); return `<div class="ligne stat-outil">
+      <span class="ligne-ico" aria-hidden="true">${esc(o.emoji || "📝")}</span>
+      <span class="ligne-txt"><b>${esc(o.titre)}</b><small>${s.n} membre${s.n > 1 ? "s" : ""} · réussite moyenne ${p} %</small><span class="jauge"><i style="width:${p}%"></i></span></span></div>`; }).join("")
+      : `<div class="ligne"><span class="ligne-txt"><small>Aucun score enregistré pour l'instant.</small></span></div>`}</div>
+    <h2>Plus longues séries 🔥</h2>
+    <div class="groupe">${series.length ? series.map(({ m, s }) => `<button class="ligne" type="button" data-uid="${esc(m.uid)}">${petitAvatar({ nom: m.nom || "?", photo: m.photo, avatar: m.avatar })}
+      <span class="ligne-txt"><b>${esc(m.nom || "Sans nom")}</b><small>${s} jour${s > 1 ? "s" : ""} d'affilée</small></span><span class="chevron" aria-hidden="true">›</span></button>`).join("")
+      : `<div class="ligne"><span class="ligne-txt"><small>Personne n'a de série en cours.</small></span></div>`}</div>
+    <p class="note">Chiffres tirés des comptes (les visiteurs sans compte ne sont pas comptés). <button class="lien" type="button" id="stats-maj">Actualiser</button></p>
+  </div>`;
+  vue.querySelectorAll("[data-uid]").forEach((el) => (el.onclick = () => ficheMembre(liste.find((m) => m.uid === el.dataset.uid))));
+  $("#stats-maj").onclick = async () => { try { await lesMembres(true); } catch {} vueAdmin(); };
+}
+
+/* ---------- Admin ▸ Membres : recherche, tri, fiche ---------- */
+function vueMembres(onglets, liste) {
+  const TRIS = [["recents", "Récents"], ["nom", "Nom"], ["reussite", "Réussite"], ["serie", "Série"]];
+  vue.innerHTML = `<h1 class="titre-vue">Admin · ${liste.length} membre${liste.length > 1 ? "s" : ""}</h1>${onglets}
+    <div class="adm-outils-membres">
+      <input class="champ" id="adm-cherche" type="search" placeholder="Chercher un membre" aria-label="Chercher un membre" autocomplete="off">
+      <div class="segmente" role="group" aria-label="Trier par">${TRIS.map(([v, l]) => `<button type="button" data-tri="${v}" aria-pressed="${triMembres === v}">${l}</button>`).join("")}</div>
+    </div>
+    <ul class="membres" id="adm-liste"></ul>`;
+  const champ = $("#adm-cherche");
+  champ.value = filtreMembres;
+  const dessiner = () => {
+    const q = sansAccents(filtreMembres.trim());
+    const tri = {
+      recents: (a, b) => enMs(b.vuLe) - enMs(a.vuLe),
+      nom: (a, b) => String(a.nom || "").localeCompare(String(b.nom || ""), "fr"),
+      reussite: (a, b) => reussiteDe(b) - reussiteDe(a),
+      serie: (a, b) => C.serieJours(activiteDe(b)) - C.serieJours(activiteDe(a)),
+    }[triMembres];
+    const vus = liste.filter((m) => !q || sansAccents(String(m.nom || "")).includes(q)).sort(tri);
+    $("#adm-liste").innerHTML = vus.map(ligneMembre).join("") || `<li class="vide-mini">Aucun membre ne correspond.</li>`;
+    vue.querySelectorAll("#adm-liste [data-uid]").forEach((el) => (el.onclick = () => ficheMembre(liste.find((m) => m.uid === el.dataset.uid))));
+  };
+  champ.oninput = () => { filtreMembres = champ.value; dessiner(); };
+  vue.querySelectorAll("[data-tri]").forEach((b) => (b.onclick = () => {
+    triMembres = b.dataset.tri;
+    vue.querySelectorAll("[data-tri]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    dessiner();
+  }));
+  dessiner();
+}
+
+function ficheMembre(m) {
+  if (!m) return;
+  const jours = joursRecents(14);
+  const a = activiteDe(m);
+  const scores = Object.entries(m.scores || {}).filter(([, s]) => s && s.total > 0)
+    .map(([id, s]) => ({ o: OUTILS.find((x) => x.id === id) || { titre: id, emoji: "📝" }, s }))
+    .sort((x, y) => y.s.best / y.s.total - x.s.best / x.s.total);
+  const r = reussiteDe(m);
+  const serie = C.serieJours(a);
+  const moi = C.utilisateur()?.uid === m.uid;
+  const cree = enMs(m.creeLe);
+  ouvrirModal(`<div class="fiche-tete">${avatar({ nom: m.nom || "?", photo: m.photo, avatar: m.avatar })}
+      <div><h3>${esc(m.nom || "Sans nom")}</h3><small>${cree ? `Inscrit le ${new Date(cree).toLocaleDateString("fr-FR")}` : "Date d'inscription inconnue"} · vu ${depuis(enMs(m.vuLe))}</small></div></div>
+    <div class="stat-tuiles petites">
+      <div class="stat-tuile"><b>${scores.length}</b><span>QCM</span></div>
+      <div class="stat-tuile"><b>${r < 0 ? "—" : Math.round(r * 100) + " %"}</b><span>réussite</span></div>
+      <div class="stat-tuile"><b>${serie}</b><span>série 🔥</span></div>
+      <div class="stat-tuile"><b>${Array.isArray(m.favoris) ? m.favoris.length : 0}</b><span>favoris</span></div>
+    </div>
+    <p class="sub fiche-sous">Parties sur 14 jours</p>
+    ${barresJours(jours.map((d) => Number(a[C.jourCle(d)]) || 0), jours, "parties")}
+    ${scores.length ? `<p class="sub fiche-sous">Meilleurs scores</p><div class="fiche-scores">${scores.map(({ o, s }) => `<div><span>${esc(o.emoji || "📝")} ${esc(o.titre)}</span><b>${s.best}/${s.total}</b></div>`).join("")}</div>` : ""}
+    <div class="modal-btns">
+      ${moi ? "" : `<button class="btn btn-primary" type="button" data-ecrire>Écrire un message</button>`}
+      <button class="btn" type="button" data-fermer>Fermer</button>
+    </div>`, (f) => {
+    const e = $("[data-ecrire]", f);
+    if (e) e.onclick = () => { fermerModal(); location.hash = "#dm-" + m.uid; };
+  });
+}
+
+/* ---------- Admin ▸ Organisation : annonce, années, matières, outils, images, sauvegarde ---------- */
+const copieCat = () => JSON.parse(JSON.stringify({ annees: CAT.annees, matieres: CAT.matieres, outils: CAT.outils, masques: CAT.masques, annonce: CAT.annonce || null, images: CAT.images || {} }));
 
 /** Publie une nouvelle organisation : visible tout de suite par tout le monde. */
 async function publierCat(c, message) {
@@ -913,72 +1109,152 @@ async function publierCat(c, message) {
   if (location.hash === "#admin") vueAdmin();
 }
 
+/** Ouvre le sélecteur de fichiers (à appeler pendant un clic) ; renvoie le fichier choisi ou null. */
+function choisirFichier(accept = "image/*") {
+  return new Promise((ok) => {
+    const i = document.createElement("input");
+    i.type = "file";
+    i.accept = accept;
+    i.onchange = () => ok(i.files[0] || null);
+    i.addEventListener("cancel", () => ok(null));
+    i.click();
+  });
+}
+/** Choisit une image et l'envoie dans la médiathèque ; renvoie son id (ou null). */
+async function televerserImage(cote, nom) {
+  const f = await choisirFichier();
+  if (!f) return null;
+  toast("Envoi de l'image…");
+  try {
+    const id = await C.televerserMedia(f, { cote, nom });
+    toast("Image ajoutée ✓");
+    return id;
+  } catch (e) {
+    toast(C.messageErreur(e));
+    return null;
+  }
+}
+
+const ICO = {
+  crayon: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>'),
+  poubelle: svg('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
+  haut: svg('<path d="m6 15 6-6 6 6"/>'),
+  bas: svg('<path d="m6 9 6 6 6-6"/>'),
+  plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  image: svg('<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>'),
+  oeil: svg('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+  megaphone: svg('<path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/>'),
+  telecharger: svg('<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>'),
+  envoyer: svg('<path d="M12 20V9M7 14l5-5 5 5M5 4h14"/>'),
+};
+const btnAdm = (act, id, ico, label, classe = "") => `<button class="icon-btn adm-ico ${classe}" type="button" data-adm="${act}" data-id="${esc(id)}" aria-label="${esc(label)}" title="${esc(label)}">${ico}</button>`;
+const optAnnees = (sel) => CAT.annees.map((x) => `<option value="${esc(x.id)}"${x.id === sel ? " selected" : ""}>${esc(x.nom)}${x.verrou ? " 🔒" : ""}</option>`).join("") + `<option value="-"${sel === "-" ? " selected" : ""}>Aucune (hors accueil)</option>`;
+const optMat = (an, sel) => `<option value="">Autres</option>` + CAT.matieres.filter((m) => m.annee === an).map((m) => `<option value="${esc(m.id)}"${m.id === sel ? " selected" : ""}>${esc(m.emoji || "")} ${esc(m.nom)}</option>`).join("");
+const TYPES_PERSO = { qcm: "QCM", fiche: "Fiche / schéma" };
+
 function vueOrganisation(onglets) {
   if (!anneeDe(anneeAdmin)) anneeAdmin = CAT.annees[0]?.id || null;
   const a = anneeDe(anneeAdmin);
-  const btn = (act, id, ico, label, classe = "") => `<button class="icon-btn adm-ico ${classe}" type="button" data-adm="${act}" data-id="${esc(id)}" aria-label="${esc(label)}" title="${esc(label)}">${ico}</button>`;
-  const ICO = {
-    crayon: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>'),
-    poubelle: svg('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
-    haut: svg('<path d="m6 15 6-6 6 6"/>'),
-    plus: svg('<path d="M12 5v14M5 12h14"/>'),
-  };
   const matieres = a ? matieresAnnee(a) : [];
-  const ligneMat = (m, i) => `<div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${esc(m.emoji || "📚")}</span>
-      <span class="ligne-txt"><b>${esc(m.nom)}</b><small>${esc([m.complet, m.prof].filter(Boolean).join(" · ") || "—")} · ${OUTILS.filter((o) => place(o).matiere?.id === m.id).length} outil(s)</small></span>
-      ${i ? btn("monter-mat", m.id, ICO.haut, "Monter " + m.nom) : ""}${btn("modifier-mat", m.id, ICO.crayon, "Modifier " + m.nom)}${btn("suppr-mat", m.id, ICO.poubelle, "Supprimer " + m.nom, "danger")}</div>`;
-  const optAnnees = (sel) => CAT.annees.map((x) => `<option value="${esc(x.id)}"${x.id === sel ? " selected" : ""}>${esc(x.nom)}</option>`).join("") + `<option value="-"${sel === "-" ? " selected" : ""}>Aucune (hors accueil)</option>`;
-  const optMat = (an, sel) => `<option value="">Autres</option>` + CAT.matieres.filter((m) => m.annee === an).map((m) => `<option value="${esc(m.id)}"${m.id === sel ? " selected" : ""}>${esc(m.emoji || "")} ${esc(m.nom)}</option>`).join("");
+  const nbOutils = (m) => OUTILS.filter((o) => place(o).matiere?.id === m.id).length;
+  const ligneMat = (m, i) => `<div class="ligne adm-ligne"><span class="ligne-ico adm-visuel" aria-hidden="true">${visuel(m, "📚")}</span>
+      <span class="ligne-txt"><b>${esc(m.nom)}</b><small>${esc([m.complet, m.prof].filter(Boolean).join(" · ") || "—")} · ${nbOutils(m)} outil(s)</small></span>
+      ${i ? btnAdm("monter-mat", m.id, ICO.haut, "Monter " + m.nom) : ""}${btnAdm("modifier-mat", m.id, ICO.crayon, "Modifier " + m.nom)}${btnAdm("suppr-mat", m.id, ICO.poubelle, "Supprimer " + m.nom, "danger")}</div>`;
   const ligneOut = (o) => {
     const p = place(o);
-    return `<div class="ligne colonne adm-outil" data-outil="${esc(o.id)}">
-      <span class="ligne-txt"><b>${o.emoji || "📝"} ${esc(o.titre)}</b><small>${esc(o.fichier)}</small></span>
+    const an = anneeDe(p.annee);
+    const imgs = (CAT.images || {})[o.id] || {};
+    const alerte = p.cache ? "Caché : n'apparaît nulle part"
+      : p.annee === "-" ? "Hors accueil : seulement dans la recherche"
+      : an?.verrou ? `⚠️ ${an.nom} est verrouillée : personne ne voit cet outil`
+      : `Affiché en ${an ? an.nom : "?"} › ${p.matiere ? p.matiere.nom : "Autres"}`;
+    return `<div class="ligne colonne adm-outil${p.cache ? " adm-cache" : ""}" data-outil="${esc(o.id)}">
+      <div class="adm-outil-tete"><span class="lo-emoji" style="--h:${teinte(o.matiere)}" aria-hidden="true">${esc(o.emoji || "📝")}</span>
+        <span class="ligne-txt"><b>${esc(o.titre)}${o.perso ? ` <span class="badge-mini">${esc(TYPES_PERSO[o.typePerso] || "Perso")}</span>` : ""}${p.nouveau ? ` <span class="badge-nouveau">Nouveau</span>` : ""}</b>
+          <small class="${!p.cache && an?.verrou ? "erreur" : ""}">${esc(alerte)}</small></span></div>
       <div class="adm-choix">
         <label>Année<select class="champ" data-champ="annee">${optAnnees(p.annee)}</select></label>
         <label>Matière<select class="champ" data-champ="matiere"${p.annee === "-" ? " disabled" : ""}>${optMat(p.annee, p.matiere?.id || "")}</select></label>
       </div>
-      <button class="ligne adm-inter" type="button" role="switch" data-champ="visible" aria-checked="${!p.cache}"><span class="ligne-txt"><b>Visible</b><small>${p.cache ? "Caché : n'apparaît nulle part" : "Affiché sur l'accueil et la recherche"}</small></span><span class="interrupteur"></span></button>
-      ${(o.categories || []).length ? `<span class="sub adm-cat-titre">Catégories de l'outil (touche pour masquer ou afficher)</span>
-      <div class="adm-cats">${o.categories.map(([cid, nom]) => { const off = (CAT.masques[o.id] || []).includes(cid); return `<button type="button" class="adm-cat${off ? " off" : ""}" data-cat="${esc(cid)}" aria-pressed="${!off}">${esc(nom)}</button>`; }).join("")}</div>` : ""}
+      <div class="adm-puces">
+        <button class="puce" type="button" data-champ="visible" aria-pressed="${!p.cache}">${ICO.oeil} ${p.cache ? "Caché" : "Visible"}</button>
+        <button class="puce" type="button" data-champ="nouveau" aria-pressed="${p.nouveau}">✨ Badge « Nouveau »</button>
+        ${o.perso ? `<a class="puce" href="#edit-${esc(o.id)}">${ICO.crayon} Modifier le contenu</a>` : `<button class="puce" type="button" data-champ="affichage">${ICO.crayon} Titre et emoji</button>`}
+        <button class="puce" type="button" data-champ="commentaires">💬 Commentaires</button>
+        <a class="puce" href="${esc(o.fichier)}" target="_blank" rel="noopener">↗ Ouvrir</a>
+        ${o.perso ? `<button class="puce danger" type="button" data-champ="supprimer">${ICO.poubelle} Supprimer</button>` : ""}
+      </div>
+      ${(o.categories || []).length ? `<span class="sub adm-cat-titre">Catégories : touche pour masquer ou afficher, 🖼 pour changer l'image</span>
+      <div class="adm-cats">${o.categories.map(([cid, nom]) => { const off = (CAT.masques[o.id] || []).includes(cid); return `<span class="adm-cat-paire"><button type="button" class="adm-cat${off ? " off" : ""}" data-cat="${esc(cid)}" aria-pressed="${!off}">${esc(nom)}</button><button type="button" class="adm-cat-img" data-catimg="${esc(cid)}" aria-label="Image de ${esc(nom)}" title="Image de ${esc(nom)}">${imgs[cid] ? `<img data-media="${esc(imgs[cid])}" alt="">` : "🖼"}</button></span>`; }).join("")}</div>` : ""}
     </div>`;
   };
+  const ann = CAT.annonce;
 
   vue.innerHTML = `<h1 class="titre-vue">Admin</h1>${onglets}
   <div class="reglages admin-org">
     <p class="note adm-note">${catPublie ? "Chaque changement est publié tout de suite pour tous les membres." : "Organisation tirée de outils.js : ton premier changement la publiera pour tous les membres."}</p>
 
+    <h2>Annonce</h2>
+    <div class="groupe">
+      ${ann ? `<div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">📣</span><span class="ligne-txt"><b>${esc(ann.titre || "Annonce")}</b><small>${esc(ann.texte)}</small></span>
+        ${btnAdm("annonce", "", ICO.crayon, "Modifier l'annonce")}${btnAdm("suppr-annonce", "", ICO.poubelle, "Retirer l'annonce", "danger")}</div>`
+      : `<button class="ligne" type="button" data-adm="annonce" data-id=""><span class="ligne-ico" aria-hidden="true">${ICO.megaphone}</span><span class="ligne-txt"><b>Écrire une annonce</b><small>Un message en haut de l'accueil pour tout le monde</small></span><span class="chevron" aria-hidden="true">›</span></button>`}
+    </div>
+
     <h2>Années</h2>
     <div class="stories adm-annees" role="group" aria-label="Choisir l'année à organiser">
       ${CAT.annees.map((x) => `<button class="story${x.id === anneeAdmin ? " actif" : ""}" type="button" data-adm="voir-annee" data-id="${esc(x.id)}" aria-pressed="${x.id === anneeAdmin}">
-        <span class="story-ring"><span class="story-bulle adm-bulle">${esc(x.nom)}</span></span><span class="story-nom">${x.verrou ? "🔒 " : ""}${esc(x.sous || x.nom)}</span></button>`).join("")}
+        <span class="story-ring"><span class="story-bulle adm-bulle">${x.image ? `<img class="visuel" data-media="${esc(x.image)}" alt="">` : esc(x.nom)}</span></span><span class="story-nom">${x.verrou ? "🔒 " : ""}${esc(x.nom)}</span></button>`).join("")}
       <button class="story" type="button" data-adm="ajout-annee" data-id=""><span class="story-ring adm-plus"><span class="story-bulle">${ICO.plus}</span></span><span class="story-nom">Ajouter</span></button>
     </div>
     ${a ? `<div class="groupe">
       <div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${a.verrou ? "🔒" : "📅"}</span>
         <span class="ligne-txt"><b>${esc(a.nom)}</b><small>${esc(a.sous || "")}${a.verrou ? " · verrouillée" : ""}</small></span>
-        ${CAT.annees.indexOf(a) ? btn("monter-annee", a.id, ICO.haut, "Monter " + a.nom) : ""}${btn("modifier-annee", a.id, ICO.crayon, "Modifier " + a.nom)}${btn("suppr-annee", a.id, ICO.poubelle, "Supprimer " + a.nom, "danger")}</div>
-      <button class="ligne" type="button" role="switch" data-adm="verrou" data-id="${esc(a.id)}" aria-checked="${!!a.verrou}"><span class="ligne-ico" aria-hidden="true">🔒</span><span class="ligne-txt"><b>Verrouiller</b><small>Bulle grisée avec un cadenas, la page ne s'ouvre pas</small></span><span class="interrupteur"></span></button>
+        ${CAT.annees.indexOf(a) ? btnAdm("monter-annee", a.id, ICO.haut, "Monter " + a.nom) : ""}${btnAdm("modifier-annee", a.id, ICO.crayon, "Modifier " + a.nom)}${btnAdm("suppr-annee", a.id, ICO.poubelle, "Supprimer " + a.nom, "danger")}</div>
+      <button class="ligne" type="button" role="switch" data-adm="verrou" data-id="${esc(a.id)}" aria-checked="${!!a.verrou}"><span class="ligne-ico" aria-hidden="true">🔒</span><span class="ligne-txt"><b>Verrouiller</b><small>Bulle grisée avec un cadenas : ni la page ni ses outils ne s'ouvrent</small></span><span class="interrupteur"></span></button>
     </div>
 
     <h2>Matières de ${esc(a.nom)}</h2>
     <div class="groupe">
       ${matieres.map(ligneMat).join("") || `<div class="ligne"><span class="ligne-txt"><small>Aucune matière pour l'instant.</small></span></div>`}
       <button class="ligne" type="button" data-adm="ajout-mat" data-id="${esc(a.id)}"><span class="ligne-ico" aria-hidden="true">${ICO.plus}</span><span class="ligne-txt"><b>Ajouter une matière</b></span><span class="chevron" aria-hidden="true">›</span></button>
+      <button class="ligne" type="button" data-adm="nouvel-outil" data-id="${esc(a.id)}"><span class="ligne-ico" aria-hidden="true">📝</span><span class="ligne-txt"><b>Créer un outil en ${esc(a.nom)}</b><small>QCM, fiche ou schéma, écrit ici sans toucher au code</small></span><span class="chevron" aria-hidden="true">›</span></button>
     </div>` : ""}
 
     <h2>Outils</h2>
     <div class="groupe">${OUTILS.map(ligneOut).join("")}</div>
-    <p class="note">Un nouvel outil (une nouvelle page) s'ajoute toujours dans outils.js ; ici tu choisis où il s'affiche.</p>
+    <p class="note">Les outils « QCM » et « Fiche / schéma » se créent ici. Un outil d'un nouveau genre (une nouvelle page) passe par Claude Code.</p>
+
+    <h2>Sauvegarde</h2>
+    <div class="groupe">
+      <button class="ligne" type="button" data-adm="sauver" data-id=""><span class="ligne-ico" aria-hidden="true">${ICO.telecharger}</span><span class="ligne-txt"><b>Télécharger l'organisation</b><small>Années, matières, places des outils, annonce (fichier .json)</small></span><span class="chevron" aria-hidden="true">›</span></button>
+      <button class="ligne" type="button" data-adm="restaurer" data-id=""><span class="ligne-ico" aria-hidden="true">${ICO.envoyer}</span><span class="ligne-txt"><b>Restaurer une sauvegarde</b><small>Remplace l'organisation actuelle pour tout le monde</small></span><span class="chevron" aria-hidden="true">›</span></button>
+    </div>
   </div>`;
 
   vue.querySelectorAll("[data-adm]").forEach((b) => (b.onclick = () => actionAdmin(b.dataset.adm, b.dataset.id)));
   vue.querySelectorAll(".adm-outil").forEach((el) => {
     const id = el.dataset.outil;
     const o = OUTILS.find((x) => x.id === id);
-    const maj = (change, msg) => { const c = copieCat(); const p = { ...place(o), ...{} }; c.outils[id] = { annee: p.annee, matiere: p.matiere ? p.matiere.id : null, cache: p.cache, ...change(c) }; publierCat(c, msg); };
-    $('[data-champ="annee"]', el).onchange = (e) => maj(() => ({ annee: e.target.value, matiere: null }), "Outil déplacé");
+    const maj = (change, msg) => {
+      const c = copieCat();
+      const p = place(o);
+      c.outils[id] = { ...(c.outils[id] || {}), annee: p.annee, matiere: p.matiere ? p.matiere.id : null, cache: p.cache, ...change(c) };
+      publierCat(c, msg);
+    };
+    $('[data-champ="annee"]', el).onchange = (e) => {
+      const cible = anneeDe(e.target.value);
+      const faire = () => maj(() => ({ annee: e.target.value, matiere: CAT.matieres.find((m) => m.annee === e.target.value)?.id || null }), `Outil déplacé en ${cible ? cible.nom : "hors accueil"}`);
+      if (cible?.verrou) confirmer(`Déplacer en ${cible.nom} ?`, `${cible.nom} est verrouillée : l'outil ne sera plus visible par personne tant qu'elle le reste.`, "Déplacer quand même", faire);
+      else faire();
+      e.target.value = place(o).annee;
+    };
     $('[data-champ="matiere"]', el).onchange = (e) => maj(() => ({ matiere: e.target.value || null }), "Outil déplacé");
     $('[data-champ="visible"]', el).onclick = () => maj(() => ({ cache: !place(o).cache }), place(o).cache ? "Outil affiché" : "Outil caché");
+    $('[data-champ="nouveau"]', el).onclick = () => maj(() => ({ nouveau: !place(o).nouveau }), place(o).nouveau ? "Badge retiré" : "Badge « Nouveau » ajouté");
+    $('[data-champ="affichage"]', el)?.addEventListener("click", () => formOutil(o));
+    $('[data-champ="commentaires"]', el).onclick = () => ouvrirCommentaires(o);
+    $('[data-champ="supprimer"]', el)?.addEventListener("click", () => supprimerOutilPerso(o));
     el.querySelectorAll("[data-cat]").forEach((b) => (b.onclick = () => {
       const c = copieCat();
       const liste = new Set(c.masques[id] || []);
@@ -988,17 +1264,64 @@ function vueOrganisation(onglets) {
       c.masques[id] = [...liste];
       publierCat(c, liste.has(cid) ? "Catégorie masquée" : "Catégorie affichée");
     }));
+    el.querySelectorAll("[data-catimg]").forEach((b) => (b.onclick = () => imageCategorie(o, b.dataset.catimg)));
   });
+}
+
+/** Image d'une catégorie d'outil (ex. « Coude » dans M.E.) : remplacer ou revenir au schéma d'origine. */
+function imageCategorie(o, cid) {
+  const nom = (o.categories.find(([c]) => c === cid) || [, cid])[1];
+  const actuelle = ((CAT.images || {})[o.id] || {})[cid];
+  const poser = (mediaId) => {
+    const c = copieCat();
+    const imgs = { ...(c.images[o.id] || {}) };
+    if (mediaId) imgs[cid] = mediaId; else delete imgs[cid];
+    c.images[o.id] = imgs;
+    publierCat(c, mediaId ? `Image de ${nom} changée` : `${nom} : schéma d'origine remis`);
+  };
+  ouvrirModal(`<h3>Image de « ${esc(nom)} »</h3>
+    <div class="apercu-img">${actuelle ? `<img data-media="${esc(actuelle)}" alt="">` : `<p class="sub">Schéma d'origine de l'outil.</p>`}</div>
+    <p class="sub">Une image carrée marche le mieux (elle est découpée en rond dans la bulle).</p>
+    <div class="modal-btns">
+      <button class="btn btn-primary" type="button" data-choisir>${actuelle ? "Remplacer l'image" : "Choisir une image"}</button>
+      ${actuelle ? `<button class="btn btn-danger" type="button" data-retirer>Remettre le schéma d'origine</button>` : ""}
+      <button class="btn" type="button" data-fermer>Annuler</button>
+    </div>`, (m) => {
+    $("[data-choisir]", m).onclick = async () => { const id = await televerserImage(512, `${o.id} ${cid}`); if (id) { fermerModal(); poser(id); } };
+    $("[data-retirer]", m)?.addEventListener("click", () => { fermerModal(); poser(null); });
+  });
+}
+
+/** Champ « image » d'un formulaire (année, matière) : renvoie { html, brancher(m), valeur() }. */
+function champImage(actuelle, cote, nom) {
+  let val = actuelle || "";
+  const dessin = () => `${val ? `<img class="champ-img-apercu" data-media="${esc(val)}" alt="">` : `<span class="champ-img-vide">Aucune image : l'emoji est utilisé</span>`}
+    <button class="btn" type="button" data-img-choisir>${val ? "Changer" : "Choisir une image"}</button>
+    ${val ? `<button class="btn" type="button" data-img-retirer>Retirer</button>` : ""}`;
+  return {
+    html: `<span class="sub">Image de la bulle (facultatif)</span><div class="champ-img" data-champ-img>${dessin()}</div>`,
+    brancher(m) {
+      const box = $("[data-champ-img]", m);
+      const lier = () => {
+        $("[data-img-choisir]", box).onclick = async () => { const id = await televerserImage(cote, nom()); if (id) { val = id; box.innerHTML = dessin(); lier(); } };
+        $("[data-img-retirer]", box)?.addEventListener("click", () => { val = ""; box.innerHTML = dessin(); lier(); });
+      };
+      lier();
+    },
+    valeur: () => val,
+  };
 }
 
 /* Formulaires (fenêtre maison) */
 function formAnnee(a) {
+  const img = champImage(a?.image, 512, () => "année " + ($("#an-nom")?.value || ""));
   ouvrirModal(`<h3>${a ? "Modifier l'année" : "Ajouter une année"}</h3>
     <form id="form-annee" class="adm-form">
       <label class="sub" for="an-nom">Nom court (dans la bulle)</label>
       <input class="champ" id="an-nom" maxlength="8" required placeholder="ex. P6">
       <label class="sub" for="an-sous">Sous-titre</label>
       <input class="champ" id="an-sous" maxlength="30" placeholder="ex. 6e année">
+      ${img.html}
       <div class="modal-btns">
         <button class="btn btn-primary" type="submit">${a ? "Enregistrer" : "Ajouter"}</button>
         <button class="btn" type="button" data-fermer>Annuler</button>
@@ -1006,16 +1329,17 @@ function formAnnee(a) {
     </form>`, (m) => {
     $("#an-nom", m).value = a?.nom || "";
     $("#an-sous", m).value = a?.sous || "";
+    img.brancher(m);
     $("#form-annee", m).onsubmit = (e) => {
       e.preventDefault();
-      const nom = $("#an-nom", m).value.trim(), sous = $("#an-sous", m).value.trim();
+      const nom = $("#an-nom", m).value.trim(), sous = $("#an-sous", m).value.trim(), image = img.valeur();
       if (!nom) return;
       const c = copieCat();
-      if (a) Object.assign(c.annees.find((x) => x.id === a.id), { nom, sous });
+      if (a) Object.assign(c.annees.find((x) => x.id === a.id), { nom, sous, image });
       else {
         let id = slug(nom), n = 2;
-        while (c.annees.some((x) => x.id === id) || ["accueil", "recherche", "favoris", "profil", "reglages", "admin"].includes(id)) id = slug(nom) + "-" + n++;
-        c.annees.push({ id, nom, sous, verrou: false });
+        while (c.annees.some((x) => x.id === id) || ["accueil", "recherche", "favoris", "messages", "profil", "reglages", "admin"].includes(id) || /^(dm|edit)-/.test(id)) id = slug(nom) + "-" + n++;
+        c.annees.push({ id, nom, sous, image, verrou: false });
         anneeAdmin = id;
       }
       fermerModal();
@@ -1025,6 +1349,7 @@ function formAnnee(a) {
 }
 
 function formMatiere(m, annee) {
+  const img = champImage(m?.image, 512, () => "matière " + ($("#mt-nom")?.value || ""));
   ouvrirModal(`<h3>${m ? "Modifier la matière" : "Ajouter une matière"}</h3>
     <form id="form-mat" class="adm-form">
       <label class="sub" for="mt-nom">Nom court (sous la bulle)</label>
@@ -1032,6 +1357,7 @@ function formMatiere(m, annee) {
       <label class="sub" for="mt-emoji">Emoji de la bulle</label>
       <input class="champ" id="mt-emoji" maxlength="8" placeholder="ex. 🫁">
       <div class="emojis adm-emojis">${["🦴", "🫀", "🧠", "🫁", "🩺", "🩸", "🧬", "💪", "🦵", "🖐️", "👶", "📚"].map((e) => `<button type="button" data-e="${e}">${e}</button>`).join("")}</div>
+      ${img.html}
       <label class="sub" for="mt-complet">Nom complet (facultatif)</label>
       <input class="champ" id="mt-complet" maxlength="60" placeholder="ex. Ostéopathie viscérale">
       <label class="sub" for="mt-prof">Enseignant (facultatif)</label>
@@ -1045,10 +1371,11 @@ function formMatiere(m, annee) {
     $("#mt-emoji", f).value = m?.emoji || "📚";
     $("#mt-complet", f).value = m?.complet || "";
     $("#mt-prof", f).value = m?.prof || "";
+    img.brancher(f);
     f.querySelectorAll("[data-e]").forEach((b) => (b.onclick = () => { $("#mt-emoji", f).value = b.dataset.e; }));
     $("#form-mat", f).onsubmit = (e) => {
       e.preventDefault();
-      const v = { nom: $("#mt-nom", f).value.trim(), emoji: $("#mt-emoji", f).value.trim() || "📚", complet: $("#mt-complet", f).value.trim(), prof: $("#mt-prof", f).value.trim() };
+      const v = { nom: $("#mt-nom", f).value.trim(), emoji: $("#mt-emoji", f).value.trim() || "📚", image: img.valeur(), complet: $("#mt-complet", f).value.trim(), prof: $("#mt-prof", f).value.trim() };
       if (!v.nom) return;
       const c = copieCat();
       if (m) Object.assign(c.matieres.find((x) => x.id === m.id), v);
@@ -1056,6 +1383,98 @@ function formMatiere(m, annee) {
       fermerModal();
       publierCat(c, m ? "Matière modifiée" : "Matière ajoutée");
     };
+  });
+}
+
+/** Nouvel outil écrit depuis l'admin : QCM ou fiche/schéma, rangé dans une année et une matière. */
+function formNouvelOutil(annee, matiere) {
+  ouvrirModal(`<h3>Créer un outil</h3>
+    <form id="form-nouvel" class="adm-form">
+      <span class="sub">Genre</span>
+      <div class="segmente" role="group" aria-label="Genre d'outil">
+        <button type="button" data-type="qcm" aria-pressed="true">🧪 QCM</button>
+        <button type="button" data-type="fiche" aria-pressed="false">🗂️ Fiche / schéma</button>
+      </div>
+      <label class="sub" for="no-titre">Titre</label>
+      <input class="champ" id="no-titre" maxlength="60" required placeholder="ex. QCM Rachis lombaire">
+      <label class="sub" for="no-emoji">Emoji</label>
+      <input class="champ" id="no-emoji" maxlength="8" value="📝">
+      <label class="sub" for="no-desc">Description courte (facultatif)</label>
+      <input class="champ" id="no-desc" maxlength="140" placeholder="ex. 20 questions d'annales corrigées">
+      <div class="adm-choix">
+        <label>Année<select class="champ" id="no-annee">${optAnnees(annee || CAT.annees[0]?.id)}</select></label>
+        <label>Matière<select class="champ" id="no-mat"></select></label>
+      </div>
+      <p class="note adm-note">L'outil reste caché tant que tu ne l'as pas rendu visible depuis l'éditeur.</p>
+      <div class="modal-btns">
+        <button class="btn btn-primary" type="submit">Créer et écrire le contenu</button>
+        <button class="btn" type="button" data-fermer>Annuler</button>
+      </div>
+    </form>`, (f) => {
+    let type = "qcm";
+    f.querySelectorAll("[data-type]").forEach((b) => (b.onclick = () => {
+      type = b.dataset.type;
+      f.querySelectorAll("[data-type]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      if ($("#no-emoji", f).value === "📝" || $("#no-emoji", f).value === "🗂️") $("#no-emoji", f).value = type === "qcm" ? "📝" : "🗂️";
+    }));
+    const selAn = $("#no-annee", f), selMat = $("#no-mat", f);
+    const majMat = (sel) => { selMat.innerHTML = optMat(selAn.value, sel); selMat.disabled = selAn.value === "-"; };
+    selAn.onchange = () => majMat(CAT.matieres.find((m) => m.annee === selAn.value)?.id || "");
+    majMat(matiere || CAT.matieres.find((m) => m.annee === selAn.value)?.id || "");
+    $("#form-nouvel", f).onsubmit = async (e) => {
+      e.preventDefault();
+      const titre = $("#no-titre", f).value.trim();
+      if (!titre) return;
+      const id = (slug(titre).slice(0, 40) + "-" + Date.now().toString(36)).replace(/^-+/, "");
+      const meta = { perso: true, type, titre, emoji: $("#no-emoji", f).value.trim() || "📝", description: $("#no-desc", f).value.trim(), annee: selAn.value, matiere: selMat.value || null, cache: true };
+      fermerModal();
+      try {
+        await C.enregistrerContenu(id, { type, titre, questions: [], blocs: [] });
+        const c = copieCat();
+        c.outils[id] = meta;
+        await C.enregistrerCatalogue(c).then(appliquerCatalogue);
+        brouillon = null;
+        location.hash = "#edit-" + id;
+      } catch (err) {
+        toast(C.messageErreur(err) || "Création impossible");
+      }
+    };
+  });
+}
+
+/** Placer un outil existant dans une matière (depuis la page d'une année, pour l'admin). */
+function placerOutil(annee, matiere) {
+  const m = matiereDe(matiere);
+  ouvrirModal(`<h3>Placer un outil dans ${esc(m ? m.nom : "Autres")}</h3>
+    <div class="dest-liste">${OUTILS.map((o) => { const p = place(o); const an = anneeDe(p.annee); return `<button class="ligne" type="button" data-placer="${esc(o.id)}">
+      <span class="ligne-ico" aria-hidden="true">${esc(o.emoji || "📝")}</span><span class="ligne-txt"><b>${esc(o.titre)}</b><small>${p.cache ? "caché · " : ""}actuellement : ${an ? esc(an.nom) : "hors accueil"}${p.matiere ? " › " + esc(p.matiere.nom) : ""}</small></span></button>`; }).join("")}</div>
+    <div class="modal-btns"><button class="btn" type="button" data-fermer>Annuler</button></div>`, (f) => {
+    f.querySelectorAll("[data-placer]").forEach((b) => (b.onclick = () => {
+      const c = copieCat();
+      c.outils[b.dataset.placer] = { ...(c.outils[b.dataset.placer] || {}), annee, matiere: matiere || null, cache: false };
+      fermerModal();
+      publierCat(c, "Outil placé ✓").then(() => route());
+    }));
+  });
+}
+
+async function supprimerOutilPerso(o) {
+  confirmer(`Supprimer « ${o.titre} » ?`, "Son contenu (questions, blocs, images) est effacé définitivement pour tout le monde.", "Supprimer", async () => {
+    try {
+      const d = await C.contenu(o.id);
+      for (const q of d?.questions || []) if (q.image) C.supprimerMedia(q.image);
+      for (const b of d?.blocs || []) if (b.t === "image" && b.v) C.supprimerMedia(b.v);
+      await C.supprimerContenu(o.id);
+      const c = copieCat();
+      delete c.outils[o.id];
+      delete c.masques[o.id];
+      delete c.images[o.id];
+      brouillon = null;
+      await publierCat(c, "Outil supprimé");
+      if (location.hash.startsWith("#edit-")) location.hash = "#admin";
+    } catch (e) {
+      toast(C.messageErreur(e) || "Suppression impossible");
+    }
   });
 }
 
@@ -1075,7 +1494,7 @@ function actionAdmin(act, id) {
         const d = copieCat();
         d.annees = d.annees.filter((x) => x.id !== id);
         d.matieres = d.matieres.filter((m) => m.annee !== id);
-        for (const o of OUTILS) { const p = place(o); if (p.annee === id) d.outils[o.id] = { annee: "-", matiere: null, cache: p.cache }; }
+        for (const o of OUTILS) { const p = place(o); if (p.annee === id) d.outils[o.id] = { ...(d.outils[o.id] || {}), annee: "-", matiere: null, cache: p.cache }; }
         anneeAdmin = null;
         await publierCat(d, `${a.nom} supprimée`);
       });
@@ -1096,11 +1515,235 @@ function actionAdmin(act, id) {
       confirmer(`Supprimer ${m.nom} ?`, `Ses outils ne sont pas effacés : ils passent dans « Autres » de la même année, et tu peux les replacer.`, "Supprimer", async () => {
         const d = copieCat();
         d.matieres = d.matieres.filter((x) => x.id !== id);
-        for (const o of OUTILS) { const p = place(o); if (p.matiere?.id === id) d.outils[o.id] = { annee: p.annee, matiere: null, cache: p.cache }; }
+        for (const o of OUTILS) { const p = place(o); if (p.matiere?.id === id) d.outils[o.id] = { ...(d.outils[o.id] || {}), annee: p.annee, matiere: null, cache: p.cache }; }
         await publierCat(d, `${m.nom} supprimée`);
       });
       break;
     }
+    case "nouvel-outil": formNouvelOutil(id, null); break;
+    case "annonce": formAnnonce(); break;
+    case "suppr-annonce": confirmer("Retirer l'annonce ?", "Elle disparaît de l'accueil de tout le monde.", "Retirer", () => { const d = copieCat(); d.annonce = null; return publierCat(d, "Annonce retirée"); }); break;
+    case "sauver": telechargerSauvegarde(); break;
+    case "restaurer": choisirFichier("application/json,.json").then((f) => f && restaurerSauvegarde(f)); break;
+  }
+}
+
+/* ---------- Admin ▸ éditeur d'un outil créé ici (#edit-<id>) ---------- */
+let brouillon = null; // { id, sale, titre, emoji, description, type, questions, blocs }
+
+/** Lit des questions collées en texte. Format :
+ *  Q: énoncé  (ou « 1. énoncé »)
+ *  + bonne proposition   - mauvaise proposition   (ou « A) … » puis « Réponse : A, C »)
+ *  E: explication
+ */
+function lireTexteQcm(txt) {
+  const qs = [];
+  let q = null;
+  const nouvelle = (t) => { q = { q: t, choix: [], bonnes: [], explication: "", image: "" }; qs.push(q); };
+  for (const brut of String(txt).split(/\r?\n/)) {
+    const l = brut.trim();
+    let m;
+    if (!l) continue;
+    if ((m = l.match(/^(?:Q(?:uestion)?\s*\d*\s*[:.)-]|\d+\s*[.)-])\s*(.+)$/i))) nouvelle(m[1]);
+    else if (!q) nouvelle(l);
+    else if ((m = l.match(/^(?:R(?:é|e)ponses?|R)\s*:\s*([A-H](?:[\s,;/et]+[A-H])*)\s*$/i))) q.bonnes = [...new Set(m[1].toUpperCase().match(/[A-H]/g).map((x) => "ABCDEFGH".indexOf(x)))].filter((k) => k < q.choix.length);
+    else if ((m = l.match(/^(?:E|Expl(?:ication)?|Correction)\s*:\s*(.*)$/i))) q.explication = m[1];
+    else if ((m = l.match(/^(?:\+|\*|✓|✔|\[x\])\s*(.+)$/i))) { q.bonnes.push(q.choix.length); q.choix.push(m[1]); }
+    else if ((m = l.match(/^(?:-|–|•|\[ \])\s*(.+)$/))) q.choix.push(m[1]);
+    else if ((m = l.match(/^[A-H]\s*[).:-]\s*(.+)$/))) q.choix.push(m[1]);
+    else if (q.explication) q.explication += "\n" + l;
+    else if (!q.choix.length) q.q += " " + l;
+    else q.explication = l;
+  }
+  return qs.filter((x) => x.q && x.choix.length >= 2);
+}
+
+async function vueEditeur(id) {
+  const r = rendu;
+  vue.innerHTML = `<p class="vide-mini">Chargement…</p>`;
+  if (!(await C.estAdmin())) { if (r === rendu) location.hash = "#accueil"; return; }
+  const p = CAT.outils[id];
+  if (!p || !p.perso) { vue.innerHTML = vide(ICONE.grille, "Outil introuvable", "Il a peut-être été supprimé. Retourne dans Admin ▸ Organisation."); return; }
+  if (!brouillon || brouillon.id !== id) {
+    const d = (await C.contenu(id)) || {};
+    if (r !== rendu) return;
+    brouillon = { id, sale: false, titre: p.titre || "", emoji: p.emoji || "📝", description: p.description || "", type: p.type === "fiche" ? "fiche" : "qcm",
+      questions: JSON.parse(JSON.stringify(d.questions || [])), blocs: JSON.parse(JSON.stringify(d.blocs || [])) };
+  }
+  dessinerEditeur();
+}
+
+function dessinerEditeur() {
+  const b = brouillon;
+  const p = CAT.outils[b.id] || {};
+  const o = OUTILS.find((x) => x.id === b.id);
+  const y = window.scrollY;
+  const carteQ = (q, i) => `<div class="ed-carte" data-q="${i}">
+      <div class="ed-carte-tete"><b>Question ${i + 1}</b>
+        ${i ? `<button class="icon-btn adm-ico" type="button" data-ed="q-monter" aria-label="Monter la question ${i + 1}">${ICO.haut}</button>` : ""}
+        <button class="icon-btn adm-ico danger" type="button" data-ed="q-suppr" aria-label="Supprimer la question ${i + 1}">${ICO.poubelle}</button></div>
+      <textarea class="champ" data-f="q" rows="2" maxlength="1500" placeholder="Énoncé de la question">${esc(q.q)}</textarea>
+      <div class="ed-choix">${q.choix.map((c, k) => `<div class="ed-choix-ligne">
+        <button class="ed-bonne" type="button" data-ed="bonne" data-k="${k}" aria-pressed="${q.bonnes.includes(k)}" aria-label="Proposition ${"ABCDEFGH"[k]} juste ?" title="Juste / fausse">${"ABCDEFGH"[k]}</button>
+        <input class="champ" data-f="choix" data-k="${k}" maxlength="500" value="${esc(c)}" placeholder="Proposition ${"ABCDEFGH"[k]}">
+        <button class="icon-btn adm-ico" type="button" data-ed="choix-suppr" data-k="${k}" aria-label="Retirer la proposition ${"ABCDEFGH"[k]}">${ICONE.fermer}</button></div>`).join("")}
+        ${q.choix.length < 8 ? `<button class="lien ed-ajout" type="button" data-ed="choix-ajout">+ Ajouter une proposition</button>` : ""}
+      </div>
+      <p class="sub ed-aide">Touche la lettre des propositions justes (en vert).</p>
+      <textarea class="champ" data-f="explication" rows="2" maxlength="3000" placeholder="Correction (facultatif) : pourquoi c'est juste">${esc(q.explication)}</textarea>
+      <div class="ed-image">${q.image ? `<img data-media="${esc(q.image)}" alt=""><button class="btn" type="button" data-ed="q-img-suppr">Retirer l'image</button>` : `<button class="btn" type="button" data-ed="q-img">${ICO.image} Ajouter une image (schéma)</button>`}</div>
+    </div>`;
+  const NOMS = { titre: "Titre", texte: "Texte", image: "Image / schéma" };
+  const carteB = (x, i) => `<div class="ed-carte" data-b="${i}">
+      <div class="ed-carte-tete"><b>${NOMS[x.t]}</b>
+        ${i ? `<button class="icon-btn adm-ico" type="button" data-ed="b-monter" aria-label="Monter">${ICO.haut}</button>` : ""}
+        <button class="icon-btn adm-ico danger" type="button" data-ed="b-suppr" aria-label="Supprimer ce bloc">${ICO.poubelle}</button></div>
+      ${x.t === "titre" ? `<input class="champ" data-f="v" maxlength="200" value="${esc(x.v)}" placeholder="Titre de partie">`
+      : x.t === "texte" ? `<textarea class="champ" data-f="v" rows="5" maxlength="6000" placeholder="Texte. **gras**, et une ligne qui commence par « - » fait une liste.">${esc(x.v)}</textarea>`
+      : `<div class="ed-image">${x.v ? `<img data-media="${esc(x.v)}" alt="">` : ""}<button class="btn" type="button" data-ed="b-img">${ICO.image} ${x.v ? "Changer l'image" : "Choisir l'image"}</button></div>
+        <input class="champ" data-f="legende" maxlength="300" value="${esc(x.legende)}" placeholder="Légende (facultatif)">`}
+    </div>`;
+  vue.innerHTML = `<div class="profil-barre" style="margin: 0; padding: 0 8px 0 4px;">
+      <a class="icon-btn" href="#admin" aria-label="Retour à l'admin">${ICONE.retour}</a><b>${b.type === "qcm" ? "Éditer le QCM" : "Éditer la fiche"}</b><span style="width: 44px;"></span></div>
+    <div class="reglages editeur">
+      <div class="groupe ed-meta">
+        <div class="ed-meta-ligne"><input class="champ ed-emoji" data-m="emoji" maxlength="8" value="${esc(b.emoji)}" aria-label="Emoji">
+          <input class="champ" data-m="titre" maxlength="60" value="${esc(b.titre)}" placeholder="Titre" aria-label="Titre"></div>
+        <input class="champ" data-m="description" maxlength="140" value="${esc(b.description)}" placeholder="Description courte (facultatif)" aria-label="Description">
+        <button class="ligne" type="button" role="switch" data-ed="visible" aria-checked="${!p.cache}"><span class="ligne-txt"><b>Visible par les membres</b><small>${p.cache ? "Caché pour l'instant : seul toi peux l'ouvrir" : "Affiché dans sa matière et dans la recherche"}</small></span><span class="interrupteur"></span></button>
+      </div>
+      ${b.type === "qcm" ? `
+        <h2>${b.questions.length} question${b.questions.length > 1 ? "s" : ""}</h2>
+        <div class="ed-liste">${b.questions.map(carteQ).join("")}</div>
+        <div class="ed-ajouts">
+          <button class="btn btn-primary" type="button" data-ed="q-ajout">${ICO.plus} Ajouter une question</button>
+          <button class="btn" type="button" data-ed="import">📋 Coller des questions en texte</button>
+        </div>`
+      : `<h2>${b.blocs.length} bloc${b.blocs.length > 1 ? "s" : ""}</h2>
+        <div class="ed-liste">${b.blocs.map(carteB).join("")}</div>
+        <div class="ed-ajouts">
+          <button class="btn" type="button" data-ed="b-ajout" data-t="titre">${ICO.plus} Titre</button>
+          <button class="btn" type="button" data-ed="b-ajout" data-t="texte">${ICO.plus} Texte</button>
+          <button class="btn" type="button" data-ed="b-ajout" data-t="image">${ICO.image} Image / schéma</button>
+        </div>`}
+      <div class="ed-barre">
+        <span class="sub" id="ed-etat">${b.sale ? "Modifications non enregistrées" : "Tout est enregistré"}</span>
+        ${o ? `<a class="btn" href="${esc(o.fichier)}" target="_blank" rel="noopener">${ICO.oeil} Aperçu</a>` : ""}
+        <button class="btn btn-primary" type="button" data-ed="enregistrer">Enregistrer</button>
+      </div>
+      <button class="lien danger ed-suppr" type="button" data-ed="supprimer">Supprimer cet outil</button>
+    </div>`;
+  window.scrollTo(0, y);
+  const sale = () => { b.sale = true; const e = $("#ed-etat"); if (e) e.textContent = "Modifications non enregistrées"; };
+  vue.querySelectorAll("[data-m]").forEach((el) => (el.oninput = () => { b[el.dataset.m] = el.value; sale(); }));
+  vue.querySelectorAll("[data-q] [data-f]").forEach((el) => (el.oninput = () => {
+    const q = b.questions[+el.closest("[data-q]").dataset.q];
+    if (el.dataset.f === "choix") q.choix[+el.dataset.k] = el.value; else q[el.dataset.f] = el.value;
+    sale();
+  }));
+  vue.querySelectorAll("[data-b] [data-f]").forEach((el) => (el.oninput = () => { b.blocs[+el.closest("[data-b]").dataset.b][el.dataset.f] = el.value; sale(); }));
+  vue.querySelectorAll("[data-ed]").forEach((el) => (el.onclick = () => actionEditeur(el)));
+}
+
+async function actionEditeur(el) {
+  const b = brouillon;
+  const qi = el.closest("[data-q]") ? +el.closest("[data-q]").dataset.q : -1;
+  const bi = el.closest("[data-b]") ? +el.closest("[data-b]").dataset.b : -1;
+  const q = b.questions[qi], k = +el.dataset.k;
+  const redessiner = () => { b.sale = true; dessinerEditeur(); };
+  switch (el.dataset.ed) {
+    case "q-ajout": b.questions.push({ q: "", choix: ["", "", "", ""], bonnes: [], explication: "", image: "" }); redessiner();
+      requestAnimationFrame(() => vue.querySelector(`[data-q="${b.questions.length - 1}"] textarea`)?.focus()); break;
+    case "q-suppr": confirmer(`Supprimer la question ${qi + 1} ?`, q.q || "Question vide", "Supprimer", () => { b.questions.splice(qi, 1); redessiner(); }); break;
+    case "q-monter": monter(b.questions, qi); redessiner(); break;
+    case "bonne": q.bonnes = q.bonnes.includes(k) ? q.bonnes.filter((x) => x !== k) : [...q.bonnes, k].sort(); redessiner(); break;
+    case "choix-ajout": q.choix.push(""); redessiner(); break;
+    case "choix-suppr": q.choix.splice(k, 1); q.bonnes = q.bonnes.filter((x) => x !== k).map((x) => (x > k ? x - 1 : x)); redessiner(); break;
+    case "q-img": { const id = await televerserImage(1400, `${b.id} q${qi + 1}`); if (id) { q.image = id; redessiner(); } break; }
+    case "q-img-suppr": q.image = ""; redessiner(); break;
+    case "import": formImport(); break;
+    case "b-ajout": {
+      if (el.dataset.t === "image") { const id = await televerserImage(1800, b.id); if (!id) return; b.blocs.push({ t: "image", v: id, legende: "" }); }
+      else b.blocs.push({ t: el.dataset.t, v: "", legende: "" });
+      redessiner();
+      break;
+    }
+    case "b-suppr": b.blocs.splice(bi, 1); redessiner(); break;
+    case "b-monter": monter(b.blocs, bi); redessiner(); break;
+    case "b-img": { const id = await televerserImage(1800, b.id); if (id) { b.blocs[bi].v = id; redessiner(); } break; }
+    case "visible": {
+      const c = copieCat();
+      c.outils[b.id] = { ...c.outils[b.id], cache: !c.outils[b.id].cache };
+      try { appliquerCatalogue(await C.enregistrerCatalogue(c)); toast(c.outils[b.id].cache ? "Outil caché" : "Outil visible ✓"); } catch (e) { toast(C.messageErreur(e)); }
+      dessinerEditeur();
+      break;
+    }
+    case "enregistrer": enregistrerBrouillon(); break;
+    case "supprimer": supprimerOutilPerso(OUTILS.find((x) => x.id === b.id) || { id: b.id, titre: b.titre }); break;
+  }
+}
+
+function formImport() {
+  ouvrirModal(`<h3>Coller des questions</h3>
+    <p class="sub">Une question par paragraphe. Les questions lues sont ajoutées à la suite.</p>
+    <pre class="ed-exemple">Q: Le coude comporte combien d'articulations ?
+- 1
+- 2
++ 3
+E: huméro-ulnaire, huméro-radiale, radio-ulnaire sup.
+
+1. Autre question
+A) proposition
+B) proposition
+Réponse : B</pre>
+    <textarea class="champ" id="imp-txt" rows="10" placeholder="Colle tes questions ici"></textarea>
+    <p class="sub" id="imp-lu"></p>
+    <div class="modal-btns">
+      <button class="btn btn-primary" type="button" data-ok disabled>Ajouter</button>
+      <button class="btn" type="button" data-fermer>Annuler</button>
+    </div>`, (m) => {
+    const t = $("#imp-txt", m), ok = $("[data-ok]", m);
+    t.oninput = () => {
+      const qs = lireTexteQcm(t.value);
+      const sans = qs.filter((q) => !q.bonnes.length).length;
+      $("#imp-lu", m).textContent = qs.length ? `${qs.length} question(s) lue(s)${sans ? ` · ${sans} sans bonne réponse (à cocher ensuite)` : ""}` : "Aucune question reconnue pour l'instant.";
+      ok.disabled = !qs.length;
+    };
+    ok.onclick = () => {
+      brouillon.questions.push(...lireTexteQcm(t.value));
+      brouillon.sale = true;
+      fermerModal();
+      dessinerEditeur();
+      toast("Questions ajoutées : vérifie-les puis enregistre");
+    };
+  });
+}
+
+async function enregistrerBrouillon() {
+  const b = brouillon;
+  if (!b.titre.trim()) return toast("Donne un titre à l'outil");
+  const questions = [];
+  for (const [i, q] of b.questions.entries()) {
+    const garde = q.choix.map((c, k) => ({ c: c.trim(), bonne: q.bonnes.includes(k) })).filter((x) => x.c);
+    if (!q.q.trim() && !garde.length) continue; // question vide : ignorée
+    if (!q.q.trim()) return toast(`Question ${i + 1} : écris l'énoncé`);
+    if (garde.length < 2) return toast(`Question ${i + 1} : il faut au moins 2 propositions`);
+    if (!garde.some((x) => x.bonne)) return toast(`Question ${i + 1} : coche au moins une proposition juste`);
+    questions.push({ q: q.q.trim(), choix: garde.map((x) => x.c), bonnes: garde.flatMap((x, k) => (x.bonne ? [k] : [])), explication: q.explication.trim(), image: q.image || "" });
+  }
+  const blocs = b.blocs.filter((x) => (x.v || "").trim());
+  try {
+    await C.enregistrerContenu(b.id, { type: b.type, titre: b.titre.trim(), questions, blocs });
+    const c = copieCat();
+    c.outils[b.id] = { ...c.outils[b.id], titre: b.titre.trim(), emoji: b.emoji.trim() || "📝", description: b.description.trim(), type: b.type };
+    appliquerCatalogue(await C.enregistrerCatalogue(c));
+    b.questions = JSON.parse(JSON.stringify(questions));
+    b.blocs = JSON.parse(JSON.stringify(blocs));
+    b.sale = false;
+    toast("Enregistré ✓ — visible tout de suite" + (c.outils[b.id].cache ? " (une fois l'outil rendu visible)" : ""));
+    dessinerEditeur();
+  } catch (e) {
+    toast(C.messageErreur(e) || "Enregistrement impossible");
   }
 }
 
@@ -1115,6 +1758,14 @@ function route() {
   arretVue = null;
   const nom = location.hash.slice(1) || "accueil";
   document.body.classList.toggle("en-dm", nom.startsWith("dm-"));
+  if (nom.startsWith("edit-")) {
+    document.querySelectorAll(".tab").forEach((t) => {
+      const actif = t.dataset.vue === "admin";
+      t.classList.toggle("actif", actif);
+      if (actif) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
+    });
+    return vueEditeur(nom.slice(5));
+  }
   if (nom.startsWith("dm-")) {
     document.querySelectorAll(".tab").forEach((t) => {
       const actif = t.dataset.vue === "messages";
@@ -1144,7 +1795,7 @@ function route() {
 
 function majOngletProfil(u) {
   const emoji = C.avatarSur(u?.avatar);
-  const photo = C.photoSure(u?.photo);
+  const photo = C.imageSure(u?.image) || C.photoSure(u?.photo);
   $("#tab-avatar").innerHTML = emoji ? `<span class="emoji">${emoji}</span>`
     : photo ? `<img src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`
     : u ? `<b>${esc(initiale(u.nom))}</b>` : ICONE.user;
@@ -1153,12 +1804,36 @@ function majOngletProfil(u) {
 window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); });
 window.addEventListener("pageshow", (e) => { if (e.persisted) route(); }); // retour d'un QCM : scores à jour
 $("#partager-site").onclick = () => partager("EOPour les nuls", lienSite());
+let jeSuisAdmin = false;
 C.surChangement(async (u) => {
   majOngletProfil(u);
   suivreConversations(u);
+  jeSuisAdmin = await C.estAdmin();
   route();
-  $('.tab[data-vue="admin"]').hidden = !(await C.estAdmin());
+  $('.tab[data-vue="admin"]').hidden = !jeSuisAdmin;
+  if (u && R.lire().fun == null) demanderModeFun();
 });
+
+/** Première connexion sur cet appareil : fun ou sobre ? (modifiable ensuite dans Réglages) */
+function demanderModeFun() {
+  ouvrirModal(`<h3>Comment tu veux réviser ?</h3>
+    <p class="sub">Tu pourras changer d'avis dans Réglages ▸ Mode fun.</p>
+    <div class="choix-mode">
+      <button class="choix-carte" type="button" data-fun="1"><span aria-hidden="true">🎉</span><b>Mode fun</b><small>Série de jours 🔥, objectif du jour, petites animations</small></button>
+      <button class="choix-carte" type="button" data-fun="0"><span aria-hidden="true">📚</span><b>Mode sobre</b><small>Juste les cours et les QCM, sans compteurs ni objectifs</small></button>
+    </div>`, (m) => {
+    m.querySelectorAll("[data-fun]").forEach((b) => (b.onclick = () => {
+      R.ecrire("fun", b.dataset.fun === "1");
+      fermerModal();
+      toast(b.dataset.fun === "1" ? "Mode fun activé 🎉" : "Mode sobre activé");
+      route();
+    }));
+  });
+  modal.addEventListener("close", () => { if (R.lire().fun == null) R.ecrire("fun", true); }, { once: true });
+}
+
+// Images de la médiathèque : remplies dès qu'elles apparaissent dans la page ou une fenêtre
+new MutationObserver(() => C.hydraterMedias(document.body)).observe(document.body, { childList: true, subtree: true });
 appliquerCatalogue(C.catalogueLocal());
 majOngletProfil(null);
 route();

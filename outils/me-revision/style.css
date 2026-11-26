@@ -558,3 +558,9 @@ details.orig p{margin:6px 0}
 /* ---------- cartes : un cran au-dessus du fond (lisible en sombre, papier en clair) ---------- */
 .plate,.panel,.card,.qq,.opt,.fl-f,.fl-b,.enimg,.launch,.sheet,.sheet .sh-top,.bub .face,.sched button{background-color:var(--surface)}
 .plate,.panel,.card,.fl-f,.fl-b,.enimg{box-shadow:var(--ombre)}
+
+/* ---------- bulles en anneau (photo de profil façon réseau social) ---------- */
+.ring{position:relative;display:grid;place-items:center;border-radius:50%;padding:3px;background:var(--ring-off)}
+.ring.on{background:var(--ig)}
+.ring>.face{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;border:3px solid var(--bg);background:var(--bg2);overflow:hidden}
+.bub .face .th-img,.ch-h .face .th-img{width:100%;height:100%;object-fit:cover}

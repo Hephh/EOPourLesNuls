@@ -23,6 +23,9 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
 - `sw.js` — service worker « réseau d'abord » (hors-ligne). Rien à modifier quand le site change.
 - `404.html` — page d'erreur ; seule exception à la règle des chemins relatifs (chemins absolus depuis la racine `/…`).
 - `outils/<id>.html` — un outil = une page (CSS/JS en ligne + `../reglages.js` + `../style.css` + `../compte.js`).
+- `outils/contenu.html?id=…` — page commune des outils **créés depuis l'admin** (QCM, fiche / schéma) : contenu lu dans
+  `contenus/{id}`, images dans `medias/{id}`. Le propriétaire ajoute le contenu lui-même : ne pas coder un QCM en dur
+  s'il peut passer par Admin ▸ Organisation ▸ Créer un outil.
 - `outils/qcm-hemato-exemple.html` — modèle de QCM à copier (mode examen, chrono, vibrations déjà gérés).
 - `outils/me-revision.html` + dossier `outils/me-revision/` — révision M.E. (P2, M. Boucherat) : parcours, fiche en blocs,
   cartes, QCM (annales + Claude), lexique ; catégories à cocher (coude, épaule…). Exception à « CSS/JS en ligne » :
@@ -78,6 +81,15 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   - Messagerie privée : `conversations/{uidA_uidB triés}` = `{ membres, dernier { texte, de }, majLe, lu { uid: date } }`
     + `messages/{id}` = `{ de, texte (≤ 1000), le }`. Seuls les deux membres lisent (pas l'admin).
     Vues `#messages` et `#dm-<uid>` ; pastille des non-lus dans la barre du haut et la barre latérale.
+- Admin : onglets Tableau de bord (stats des comptes), Organisation (annonce, années, matières, outils, images,
+  sauvegarde JSON), Membres (recherche, tri, fiche). Éditeur `#edit-<id>` pour les outils créés ici (import de QCM collés
+  en texte : `Q:` / `+` juste / `-` faux / `E:` explication, ou `A)…` + `Réponse : A, C`).
+- Images (pas de Firebase Storage sur Spark) : réduites dans le navigateur, gardées en data URL. `medias/{id}` = `{ data, nom, le }`
+  (admin) ; `<img data-media="id">` est rempli tout seul (`hydraterMedias`). Photo de profil importée : champ `image`
+  (≤ 90 000 caractères) dans `users` et `profils`. Catalogue : `annonce`, `images: { <outil>: { <catégorie>: mediaId } }`,
+  et par outil `titre`, `emoji`, `nouveau`, `perso` (outil créé depuis l'admin).
+- Thème : `auto | clair` (papier) `| sombre | oled` → `data-theme` + `data-nuance="oled"`. Mode fun (`fun` : null = pas
+  encore demandé à la 1re connexion) : désactivé → `data-fun="off"`, plus de série, d'objectif ni de graphique de la semaine.
 - Taille du texte : réglage `texte` (85 à 140 %) → variable CSS `--texte` posée par `reglages.js` sur `<html>`.
 
 ## Mise en ligne

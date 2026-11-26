@@ -14,7 +14,8 @@
     melangerQuestions: true,
     melangerChoix: true,
     vibrations: true,
-    objectif: 3               // QCM terminés par jour
+    objectif: 3,              // QCM terminés par jour
+    fun: null                 // mode fun (série, objectif…) : null = pas encore demandé, true, false
   };
   var sombreSysteme = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
 
@@ -38,6 +39,7 @@
     if (oled) d.setAttribute("data-nuance", "oled"); else d.removeAttribute("data-nuance");
     d.style.setProperty("--texte", String(r.texte / 100));
     if (r.animations === false) d.setAttribute("data-anim", "off"); else d.removeAttribute("data-anim");
+    if (r.fun === false) d.setAttribute("data-fun", "off"); else d.removeAttribute("data-fun");
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", oled ? "#000000" : sombre ? "#16181d" : "#f6f1e7");
   }

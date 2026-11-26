@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Révision M.E. · EOPour les nuls</title>
 <meta name="theme-color" content="#ffffff">
-<script src="../reglages.js?v=8"></script>
+<script src="../reglages.js?v=9"></script>
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icones/icone-192.png">
-<link rel="stylesheet" href="../style.css?v=8">
-<link rel="stylesheet" href="me-revision/style.css?v=3">
+<link rel="stylesheet" href="../style.css?v=9">
+<link rel="stylesheet" href="me-revision/style.css?v=4">
 </head>
 <body>
 <div id="defs"></div>
@@ -32,12 +32,13 @@
 <script src="me-revision/anim.js?v=2"></script>
 <script src="me-revision/essentiel.js?v=2"></script>
 <script src="me-revision/notions.js?v=2"></script>
-<script src="me-revision/app.js?v=2"></script>
+<script src="me-revision/app.js?v=3"></script>
 <script type="module">
 // Comptes du site : score des séries et activité du jour (objectif, série 🔥).
-import * as Compte from "../compte.js?v=8";
+import * as Compte from "../compte.js?v=9";
 window.Compte = Compte;
-// Catégories masquées par l'admin (Admin ▸ Organisation)
+// Catégories masquées et images choisies par l'admin (Admin ▸ Organisation)
+new MutationObserver(() => Compte.hydraterMedias(document.body)).observe(document.body, { childList: true, subtree: true });
 Compte.chargerCatalogue().then((c) => window.dispatchEvent(new CustomEvent("catalogue", { detail: c })));
 </script>
 </body>
