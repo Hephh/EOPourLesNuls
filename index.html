@@ -3,134 +3,407 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Révisions P1</title>
-<meta name="description" content="Outils de révision P1 : QCM et entraînement, sur téléphone ou PC.">
-<meta name="theme-color" content="#4f46e5">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%9A%3C/text%3E%3C/svg%3E">
+<title>EO pour les nuls</title>
+<meta name="description" content="QCM et outils de révision P1 — sur téléphone comme sur PC.">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A6%B4%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
-<style>
-  .search {
-    width: 100%; min-height: 48px; margin: 20px 0 12px; padding: 12px 14px;
-    border: 1px solid var(--line); border-radius: 12px;
-    background: var(--surface); color: var(--text); font: inherit;
-  }
-  .chips { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: none; }
-  .chips::-webkit-scrollbar { display: none; }
-  .chip {
-    flex: none; min-height: 40px; padding: 0 16px; border-radius: 999px;
-    border: 1px solid var(--line); background: var(--surface); color: var(--text);
-    font: inherit; font-size: .92rem; cursor: pointer;
-  }
-  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-top: 8px; }
-  .card {
-    display: flex; gap: 14px; align-items: flex-start; padding: 16px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
-    box-shadow: var(--shadow); color: inherit; text-decoration: none;
-    transition: border-color .15s, transform .15s;
-  }
-  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .ico {
-    flex: none; display: grid; place-items: center; width: 48px; height: 48px;
-    border-radius: 12px; background: var(--accent-soft); font-size: 1.5rem;
-  }
-  .card h2 { margin: 0 0 2px; font-size: 1.02rem; line-height: 1.3; }
-  .card p { margin: 0; color: var(--muted); font-size: .9rem; }
-  .meta { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; font-size: .78rem; font-weight: 600; }
-  .mat { color: var(--accent); }
-  .best { color: var(--ok); }
-  .empty { color: var(--muted); text-align: center; padding: 32px 0; }
-</style>
 </head>
-<body>
-<div class="wrap">
-  <header>
-    <h1>📚 Révisions P1</h1>
-    <p class="sub">QCM et outils d'entraînement — sur téléphone comme sur PC.</p>
-  </header>
+<body class="app">
 
-  <input id="recherche" class="search" type="search" placeholder="Rechercher un outil…" aria-label="Rechercher un outil" autocomplete="off">
-  <div id="chips" class="chips" role="group" aria-label="Filtrer par matière"></div>
-  <main id="grille" class="grid" aria-live="polite"></main>
-  <p id="vide" class="empty" hidden>Aucun outil ne correspond.</p>
+<header class="topbar">
+  <a class="logo" href="#accueil">EO<span> pour les nuls</span></a>
+  <button class="icon-btn" id="partager-site" type="button" aria-label="Partager le site">
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 10 14"/><path d="M21 3l-6.5 18-4.5-7-7-4.5z"/></svg>
+  </button>
+</header>
 
-  <footer>Ta progression est enregistrée sur ton appareil uniquement.</footer>
-</div>
+<nav class="tabbar" aria-label="Navigation principale">
+  <a class="logo logo-side" href="#accueil">EO<span> pour les nuls</span></a>
+  <a class="tab" href="#accueil" data-vue="accueil" aria-label="Accueil">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+    <span class="tab-label">Accueil</span>
+  </a>
+  <a class="tab" href="#recherche" data-vue="recherche" aria-label="Recherche">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <span class="tab-label">Recherche</span>
+  </a>
+  <a class="tab" href="#favoris" data-vue="favoris" aria-label="Favoris">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>
+    <span class="tab-label">Favoris</span>
+  </a>
+  <a class="tab" href="#admin" data-vue="admin" aria-label="Admin" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+    <span class="tab-label">Admin</span>
+  </a>
+  <a class="tab" href="#profil" data-vue="profil" aria-label="Profil">
+    <span class="tab-avatar" id="tab-avatar"></span>
+    <span class="tab-label">Profil</span>
+  </a>
+</nav>
 
-<script>
-/* ================= LISTE DES OUTILS — une entrée par outil ================= */
-const OUTILS = [
-  {
-    titre: "QCM Hématologie — exemple",
-    matiere: "Hématologie",
-    description: "7 questions pour tester le modèle : réponses multiples, correction expliquée, refaire ses erreurs.",
-    fichier: "outils/qcm-hemato-exemple.html",
-    emoji: "🩸"
-  },
-];
-/* =========================================================================== */
+<main id="vue" class="vue"></main>
+<div id="toast" class="toast" role="status" hidden></div>
 
-const $ = (s) => document.querySelector(s);
+<script type="module">
+import { OUTILS, MATIERES } from "./outils.js";
+import * as C from "./compte.js";
+
+/* ---------- Outils ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const vue = $("#vue");
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const sansAccents = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const TEINTES = [174, 199, 228, 256, 282, 322, 350, 18, 146];
+const teinte = (txt) => { let h = 0; for (const c of txt) h = (h * 31 + c.codePointAt(0)) >>> 0; return TEINTES[h % TEINTES.length]; };
+const emojiMatiere = (m) => MATIERES[m] || OUTILS.find((o) => o.matiere === m)?.emoji || "📚";
+const initiale = (nom) => (Array.from(String(nom || "?").trim())[0] || "?").toUpperCase();
+const navigateurIntegre = /Instagram|FBAN|FBAV|FB_IAB|Snapchat|Line\/|TikTok|musical_ly|; wv\)/i.test(navigator.userAgent);
+
+const svg = (corps) => `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${corps}</svg>`;
+const ICONE = {
+  coeur: svg('<path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/>'),
+  envoyer: svg('<path d="M21 3 10 14"/><path d="M21 3l-6.5 18-4.5-7-7-4.5z"/>'),
+  loupe: svg('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
+  user: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/>'),
+  grille: svg('<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>'),
+};
+
+let minuteurToast;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.hidden = false;
+  clearTimeout(minuteurToast);
+  minuteurToast = setTimeout(() => (t.hidden = true), 2600);
+}
+
+async function partager(titre, url) {
+  if (navigator.share) {
+    try { await navigator.share({ title: titre, url }); return; }
+    catch (e) { if (e.name === "AbortError") return; }
+  }
+  try { await navigator.clipboard.writeText(url); toast("Lien copié 📋"); }
+  catch { toast(url); }
+}
+
+function avatar(u) {
+  const photo = C.photoSure(u?.photo);
+  const contenu = photo ? `<img src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`
+    : u ? esc(initiale(u.nom)) : ICONE.user;
+  return `<span class="avatar-ring"><span class="avatar">${contenu}</span></span>`;
+}
+
+const vide = (icone, titre, texte) => `<div class="vide">${icone}<h2>${esc(titre)}</h2><p>${esc(texte)}</p></div>`;
+
+function grille(liste) {
+  return `<div class="grille">${liste.map((o) => {
+    const s = C.scoreLocal(o.id);
+    return `<a class="tuile" href="${esc(o.fichier)}" style="--h:${teinte(o.matiere)}" aria-label="${esc(o.titre)}">
+      <span class="tuile-emoji" aria-hidden="true">${o.emoji || "📝"}</span>
+      <span class="tuile-titre">${esc(o.titre)}</span>
+      ${s ? `<span class="tuile-badge">${s.best}/${s.total}</span>` : ""}
+    </a>`;
+  }).join("")}</div>`;
+}
+
+/* ---------- Accueil : bulles des matières + fil ---------- */
 let filtre = "Tout";
 
-function meilleurScore(fichier) {
+function vueAccueil() {
+  const matieres = [...new Set(OUTILS.map((o) => o.matiere))];
+  if (!matieres.includes(filtre)) filtre = "Tout";
+  const liste = OUTILS.filter((o) => filtre === "Tout" || o.matiere === filtre);
+  vue.innerHTML = `
+    <div class="stories" role="group" aria-label="Filtrer par matière">
+      ${[["Tout", "✨"], ...matieres.map((m) => [m, emojiMatiere(m)])].map(([m, e]) => `
+        <button class="story${m === filtre ? " actif" : ""}" type="button" data-m="${esc(m)}" aria-pressed="${m === filtre}">
+          <span class="story-ring"><span class="story-bulle">${e}</span></span>
+          <span class="story-nom">${esc(m)}</span>
+        </button>`).join("")}
+    </div>
+    <div class="feed">${liste.map(post).join("")}</div>`;
+  vue.querySelectorAll(".story").forEach((b) => (b.onclick = () => { filtre = b.dataset.m; vueAccueil(); }));
+  brancherPosts();
+}
+
+function post(o) {
+  const s = C.scoreLocal(o.id);
+  const fav = C.favorisLocaux().has(o.id);
+  return `
+  <article class="post" data-id="${esc(o.id)}">
+    <header class="post-tete">
+      <span class="mini-ring"><span>${emojiMatiere(o.matiere)}</span></span>
+      <div class="post-qui"><b>${esc(o.matiere)}</b><small>${esc(o.type || "Outil")}</small></div>
+    </header>
+    <a class="post-media" href="${esc(o.fichier)}" style="--h:${teinte(o.matiere)}" aria-label="Ouvrir ${esc(o.titre)}">
+      <span class="post-emoji" aria-hidden="true">${o.emoji || "📝"}</span>
+      <span class="post-titre">${esc(o.titre)}</span>
+      <span class="coeur-burst" aria-hidden="true">${ICONE.coeur}</span>
+    </a>
+    <div class="post-actions">
+      <button class="action like${fav ? " on" : ""}" type="button" aria-pressed="${fav}" aria-label="${fav ? "Retirer des favoris" : "Ajouter aux favoris"}">${ICONE.coeur}</button>
+      <button class="action partager" type="button" aria-label="Partager ce QCM">${ICONE.envoyer}</button>
+      <a class="btn btn-primary btn-sm post-go" href="${esc(o.fichier)}">${s ? "Rejouer" : "Commencer"}</a>
+    </div>
+    <div class="post-infos">
+      ${s ? `<div class="post-score"><span>Meilleur score <b>${s.best}/${s.total}</b></span><span class="jauge"><i style="width:${Math.round((s.best / s.total) * 100)}%"></i></span></div>` : ""}
+      <p class="legende"><b>${esc(o.matiere)}</b> ${esc(o.description)}</p>
+    </div>
+  </article>`;
+}
+
+function brancherPosts() {
+  vue.querySelectorAll(".post").forEach((el) => {
+    const o = OUTILS.find((x) => x.id === el.dataset.id);
+    const like = $(".like", el);
+    const majLike = (actif) => {
+      like.classList.toggle("on", actif);
+      like.setAttribute("aria-pressed", String(actif));
+      like.setAttribute("aria-label", actif ? "Retirer des favoris" : "Ajouter aux favoris");
+      like.classList.remove("pop");
+      void like.offsetWidth;
+      like.classList.add("pop");
+    };
+    like.onclick = () => majLike(C.basculerFavori(o.id));
+    $(".partager", el).onclick = () => partager(o.titre, new URL(o.fichier, location.href).href);
+
+    // Une tape : ouvre le QCM. Deux tapes rapides : favori (avec le cœur qui apparaît).
+    const media = $(".post-media", el);
+    let attente = null;
+    media.addEventListener("click", (ev) => {
+      if (ev.ctrlKey || ev.metaKey || ev.shiftKey || ev.button !== 0) return;
+      ev.preventDefault();
+      if (attente) {
+        clearTimeout(attente);
+        attente = null;
+        const burst = $(".coeur-burst", media);
+        burst.classList.remove("go");
+        void burst.offsetWidth;
+        burst.classList.add("go");
+        if (!C.favorisLocaux().has(o.id)) majLike(C.basculerFavori(o.id, true));
+        return;
+      }
+      attente = setTimeout(() => { attente = null; location.href = media.href; }, 260);
+    });
+  });
+}
+
+/* ---------- Recherche ---------- */
+let recherche = "";
+
+function vueRecherche() {
+  vue.innerHTML = `
+    <div class="recherche"><input id="champ" class="champ" type="search" placeholder="Rechercher un QCM, une matière…" aria-label="Rechercher" autocomplete="off" enterkeyhint="search"></div>
+    <div id="resultats"></div>`;
+  const champ = $("#champ");
+  champ.value = recherche;
+  const maj = () => {
+    recherche = champ.value;
+    const q = sansAccents(recherche.trim());
+    const liste = OUTILS.filter((o) => !q || sansAccents(`${o.titre} ${o.matiere} ${o.description}`).includes(q));
+    $("#resultats").innerHTML = liste.length ? grille(liste) : vide(ICONE.loupe, "Aucun résultat", "Essaie un autre mot-clé.");
+  };
+  champ.addEventListener("input", maj);
+  maj();
+  if (matchMedia("(pointer: fine)").matches) champ.focus();
+}
+
+/* ---------- Favoris ---------- */
+function vueFavoris() {
+  const fav = C.favorisLocaux();
+  const liste = OUTILS.filter((o) => fav.has(o.id));
+  vue.innerHTML = `<h1 class="titre-vue">Favoris</h1>` + (liste.length ? grille(liste)
+    : vide(ICONE.coeur, "Aucun favori", "Touche ♡ ou tape deux fois sur un QCM pour le retrouver ici."));
+}
+
+/* ---------- Profil + connexion ---------- */
+let modeInscription = false;
+
+function statsLocales() {
+  const faits = OUTILS.map((o) => C.scoreLocal(o.id)).filter(Boolean);
+  const best = faits.reduce((a, s) => a + s.best, 0);
+  const total = faits.reduce((a, s) => a + s.total, 0);
+  return { faits: faits.length, reussite: total ? Math.round((best / total) * 100) : null, favoris: C.favorisLocaux().size };
+}
+
+function vueProfil() {
+  const u = C.utilisateur();
+  const st = statsLocales();
+  const joues = OUTILS.filter((o) => C.scoreLocal(o.id));
+  const stats = `<div class="stats">
+      <div><b>${st.faits}</b><span>QCM faits</span></div>
+      <div><b>${st.reussite == null ? "–" : st.reussite + " %"}</b><span>réussite</span></div>
+      <div><b>${st.favoris}</b><span>favoris</span></div>
+    </div>`;
+  const mesQcm = `<h2 class="titre-section">${ICONE.grille} ${u ? "Mes QCM" : "Sur cet appareil"}</h2>`
+    + (joues.length ? grille(joues) : `<p class="vide-mini">Fais un QCM : il apparaîtra ici avec ton meilleur score.</p>`);
+
+  if (!u) {
+    vue.innerHTML = `<div class="profil">
+      ${C.comptesActifs ? formulaireConnexion() : `<div class="connexion"><span class="logo">EO<span> pour les nuls</span></span><p>Les comptes arrivent très bientôt. En attendant, ta progression est gardée sur cet appareil.</p></div>`}
+      <div class="profil-tete local">${avatar(null)}${stats}</div>
+      ${mesQcm}
+    </div>`;
+    if (C.comptesActifs) brancherConnexion();
+    return;
+  }
+
+  vue.innerHTML = `<div class="profil">
+    <div class="profil-tete">${avatar(u)}${stats}</div>
+    <p class="profil-nom">${esc(u.nom)}</p>
+    ${u.email ? `<p class="profil-mail">${esc(u.email)}</p>` : ""}
+    <div class="profil-actions">
+      <button class="btn" type="button" id="btn-nom">Modifier le nom</button>
+      <button class="btn" type="button" id="btn-sortir">Se déconnecter</button>
+    </div>
+    <form id="form-nom" class="form-nom" hidden>
+      <input class="champ" name="nom" maxlength="40" aria-label="Nouveau nom" required>
+      <button class="btn btn-primary" type="submit">OK</button>
+    </form>
+    ${mesQcm}
+    <p class="uid">ID du compte : <code>${esc(u.uid)}</code> <button class="lien" type="button" id="copier-uid">Copier</button></p>
+  </div>`;
+  const formNom = $("#form-nom");
+  formNom.nom.value = u.nom;
+  $("#btn-nom").onclick = () => { formNom.hidden = false; formNom.nom.focus(); };
+  formNom.onsubmit = (e) => { e.preventDefault(); C.changerNom(formNom.nom.value); };
+  $("#btn-sortir").onclick = async () => { await C.deconnexion(); toast("Déconnecté"); };
+  $("#copier-uid").onclick = async () => {
+    try { await navigator.clipboard.writeText(u.uid); toast("ID copié"); } catch { toast(u.uid); }
+  };
+}
+
+function formulaireConnexion() {
+  const ins = modeInscription;
+  return `<div class="connexion">
+    <span class="logo">EO<span> pour les nuls</span></span>
+    <p>Connecte-toi pour retrouver ta progression sur tous tes appareils.</p>
+    <button class="btn btn-plein" type="button" id="btn-google">Continuer avec Google</button>
+    ${navigateurIntegre ? `<p class="astuce">Pour Google, ouvre d'abord le site dans Chrome ou Safari (menu ⋮ → « Ouvrir dans le navigateur »).</p>` : ""}
+    <div class="sep">OU</div>
+    <form id="form-email" novalidate>
+      ${ins ? `<input class="champ" name="nom" placeholder="Prénom ou pseudo" maxlength="40" autocomplete="nickname">` : ""}
+      <input class="champ" name="email" type="email" placeholder="Adresse e-mail" autocomplete="email" inputmode="email">
+      <input class="champ" name="mdp" type="password" placeholder="Mot de passe${ins ? " (6 caractères min.)" : ""}" autocomplete="${ins ? "new-password" : "current-password"}">
+      <button class="btn btn-primary btn-plein" type="submit">${ins ? "Créer mon compte" : "Se connecter"}</button>
+    </form>
+    <p class="erreur" id="erreur" role="alert" hidden></p>
+    ${ins ? "" : `<button class="lien" type="button" id="btn-oubli">Mot de passe oublié ?</button>`}
+    <p class="bascule">${ins ? "Déjà un compte ?" : "Pas encore de compte ?"}
+      <button class="lien" type="button" id="btn-bascule">${ins ? "Se connecter" : "Inscris-toi"}</button></p>
+  </div>`;
+}
+
+function brancherConnexion() {
+  const form = $("#form-email");
+  const erreur = (e) => {
+    const p = $("#erreur");
+    const m = C.messageErreur(e);
+    p.textContent = m;
+    p.hidden = !m;
+  };
+  $("#btn-google").onclick = async () => {
+    erreur(null);
+    try { await C.connexionGoogle(); } catch (e) { erreur(e); }
+  };
+  $("#btn-bascule").onclick = () => { modeInscription = !modeInscription; vueProfil(); };
+  $("#btn-oubli")?.addEventListener("click", async () => {
+    const email = form.email.value.trim();
+    if (!email) return erreur({ code: "app/email-requis" });
+    try { await C.motDePasseOublie(email); toast("Si un compte existe, un e-mail t'a été envoyé"); }
+    catch (e) { erreur(e); }
+  });
+  form.onsubmit = async (ev) => {
+    ev.preventDefault();
+    erreur(null);
+    const bouton = form.querySelector('button[type="submit"]');
+    bouton.disabled = true;
+    try {
+      if (modeInscription) await C.inscriptionEmail(form.nom.value, form.email.value.trim(), form.mdp.value);
+      else await C.connexionEmail(form.email.value.trim(), form.mdp.value);
+      modeInscription = false;
+    } catch (e) {
+      erreur(e);
+      bouton.disabled = false;
+    }
+  };
+}
+
+/* ---------- Admin ---------- */
+const enMs = (t) => (t && typeof t.toMillis === "function" ? t.toMillis() : 0);
+
+function depuis(t) {
+  if (!t) return "jamais vu";
+  const min = Math.round((Date.now() - t) / 60000);
+  if (min < 2) return "à l'instant";
+  if (min < 60) return `il y a ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `il y a ${h} h`;
+  const j = Math.round(h / 24);
+  return j < 30 ? `il y a ${j} j` : new Date(t).toLocaleDateString("fr-FR");
+}
+
+function ligneMembre(m) {
+  const sc = Object.values(m.scores || {}).filter((s) => s && s.total > 0);
+  const b = sc.reduce((a, s) => a + (s.best || 0), 0);
+  const t = sc.reduce((a, s) => a + s.total, 0);
+  return `<li class="membre">${avatar({ nom: m.nom || "?", photo: m.photo })}
+    <div><b>${esc(m.nom || "Sans nom")}</b>
+    <small>${sc.length} QCM${t ? ` · ${Math.round((b / t) * 100)} % de réussite` : ""} · ${depuis(enMs(m.vuLe))}</small></div></li>`;
+}
+
+async function vueAdmin() {
+  const r = rendu;
+  vue.innerHTML = `<h1 class="titre-vue">Admin</h1><p class="vide-mini">Chargement…</p>`;
+  if (!(await C.estAdmin())) {
+    if (r === rendu) location.hash = "#accueil";
+    return;
+  }
+  let html;
   try {
-    const v = JSON.parse(localStorage.getItem("score:" + fichier));
-    return v && typeof v.best === "number" ? v : null;
-  } catch { return null; }
-}
-
-function afficherChips() {
-  const matieres = ["Tout", ...new Set(OUTILS.map((o) => o.matiere))];
-  const box = $("#chips");
-  box.innerHTML = "";
-  box.hidden = matieres.length <= 2; // inutile tant qu'il n'y a qu'une matière
-  for (const m of matieres) {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "chip";
-    b.textContent = m;
-    b.setAttribute("aria-pressed", String(m === filtre));
-    b.onclick = () => { filtre = m; afficherChips(); afficherOutils(); };
-    box.appendChild(b);
+    const liste = (await C.membres()).sort((a, b) => enMs(b.vuLe) - enMs(a.vuLe));
+    html = `<h1 class="titre-vue">Admin · ${liste.length} membre${liste.length > 1 ? "s" : ""}</h1>
+      <ul class="membres">${liste.map(ligneMembre).join("")}</ul>`;
+  } catch (e) {
+    html = `<h1 class="titre-vue">Admin</h1><p class="erreur vide-mini">Lecture impossible (${esc(e.code || e.message)}).</p>`;
   }
+  if (r === rendu) vue.innerHTML = html;
 }
 
-function afficherOutils() {
-  const q = sansAccents($("#recherche").value.trim());
-  const liste = OUTILS.filter((o) =>
-    (filtre === "Tout" || o.matiere === filtre) &&
-    (!q || sansAccents(`${o.titre} ${o.matiere} ${o.description}`).includes(q))
-  );
-  const grille = $("#grille");
-  grille.innerHTML = "";
-  for (const o of liste) {
-    const s = meilleurScore(o.fichier);
-    const a = document.createElement("a");
-    a.className = "card";
-    a.href = o.fichier;
-    a.innerHTML = `
-      <span class="ico" aria-hidden="true"></span>
-      <div>
-        <h2></h2>
-        <p></p>
-        <div class="meta"><span class="mat"></span>${s ? '<span class="best"></span>' : ""}</div>
-      </div>`;
-    a.querySelector(".ico").textContent = o.emoji || "📝";
-    a.querySelector("h2").textContent = o.titre;
-    a.querySelector("p").textContent = o.description;
-    a.querySelector(".mat").textContent = o.matiere;
-    if (s) a.querySelector(".best").textContent = `Meilleur score : ${s.best}/${s.total}`;
-    grille.appendChild(a);
-  }
-  $("#vide").hidden = liste.length > 0;
+/* ---------- Navigation ---------- */
+const VUES = { accueil: vueAccueil, recherche: vueRecherche, favoris: vueFavoris, profil: vueProfil, admin: vueAdmin };
+let rendu = 0;
+
+function route() {
+  rendu++;
+  const nom = location.hash.slice(1) || "accueil";
+  const cle = Object.prototype.hasOwnProperty.call(VUES, nom) ? nom : "accueil";
+  document.querySelectorAll(".tab").forEach((t) => {
+    const actif = t.dataset.vue === cle;
+    t.classList.toggle("actif", actif);
+    if (actif) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
+  });
+  VUES[cle]();
 }
 
-$("#recherche").addEventListener("input", afficherOutils);
-window.addEventListener("pageshow", afficherOutils); // rafraîchit le score au retour d'un outil
-afficherChips();
-afficherOutils();
+function majOngletProfil(u) {
+  const photo = C.photoSure(u?.photo);
+  $("#tab-avatar").innerHTML = photo ? `<img src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`
+    : u ? `<b>${esc(initiale(u.nom))}</b>` : ICONE.user;
+}
+
+window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); });
+window.addEventListener("pageshow", (e) => { if (e.persisted) route(); }); // retour d'un QCM : scores à jour
+$("#partager-site").onclick = () => partager("EO pour les nuls", new URL("./", location.href).href);
+C.surChangement(async (u) => {
+  majOngletProfil(u);
+  route();
+  $('.tab[data-vue="admin"]').hidden = !(await C.estAdmin());
+});
+majOngletProfil(null);
+route();
 </script>
 </body>
 </html>
