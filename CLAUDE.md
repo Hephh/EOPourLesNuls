@@ -1,4 +1,4 @@
-# EO pour les nuls — consignes pour Claude
+# EOPour les nuls — consignes pour Claude
 
 Site statique de révision P1 façon réseau social, partagé entre étudiants.
 HTML/CSS/JS pur (modules ES) : pas de build, pas de npm, pas de framework, pas de serveur.

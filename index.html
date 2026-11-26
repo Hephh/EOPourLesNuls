@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>EO pour les nuls</title>
+<title>EOPour les nuls</title>
 <meta name="description" content="QCM et outils de révision P1 — sur téléphone comme sur PC.">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
@@ -13,14 +13,14 @@
 <body class="app">
 
 <header class="topbar">
-  <a class="logo" href="#accueil">EO<span> pour les nuls</span></a>
+  <a class="logo" href="#accueil">EO<span>Pour les nuls</span></a>
   <button class="icon-btn" id="partager-site" type="button" aria-label="Partager le site">
     <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 10 14"/><path d="M21 3l-6.5 18-4.5-7-7-4.5z"/></svg>
   </button>
 </header>
 
 <nav class="tabbar" aria-label="Navigation principale">
-  <a class="logo logo-side" href="#accueil">EO<span> pour les nuls</span></a>
+  <a class="logo logo-side" href="#accueil">EO<span>Pour les nuls</span></a>
   <a class="tab" href="#accueil" data-vue="accueil" aria-label="Accueil">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
     <span class="tab-label">Accueil</span>
@@ -242,7 +242,7 @@ function vueProfil() {
 
   if (!u) {
     vue.innerHTML = `<div class="profil">
-      ${C.comptesActifs ? formulaireConnexion() : `<div class="connexion"><span class="logo">EO<span> pour les nuls</span></span><p>Les comptes arrivent très bientôt. En attendant, ta progression est gardée sur cet appareil.</p></div>`}
+      ${C.comptesActifs ? formulaireConnexion() : `<div class="connexion"><span class="logo">EO<span>Pour les nuls</span></span><p>Les comptes arrivent très bientôt. En attendant, ta progression est gardée sur cet appareil.</p></div>`}
       <div class="profil-tete local">${avatar(null)}${stats}</div>
       ${mesQcm}
     </div>`;
@@ -278,7 +278,7 @@ function vueProfil() {
 function formulaireConnexion() {
   const ins = modeInscription;
   return `<div class="connexion">
-    <span class="logo">EO<span> pour les nuls</span></span>
+    <span class="logo">EO<span>Pour les nuls</span></span>
     <p>Connecte-toi pour retrouver ta progression sur tous tes appareils.</p>
     <button class="btn btn-plein" type="button" id="btn-google">Continuer avec Google</button>
     ${navigateurIntegre ? `<p class="astuce">Pour Google, ouvre d'abord le site dans Chrome ou Safari (menu ⋮ → « Ouvrir dans le navigateur »).</p>` : ""}
@@ -396,7 +396,7 @@ function majOngletProfil(u) {
 
 window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); });
 window.addEventListener("pageshow", (e) => { if (e.persisted) route(); }); // retour d'un QCM : scores à jour
-$("#partager-site").onclick = () => partager("EO pour les nuls", new URL("./", location.href).href);
+$("#partager-site").onclick = () => partager("EOPour les nuls", new URL("./", location.href).href);
 C.surChangement(async (u) => {
   majOngletProfil(u);
   route();
