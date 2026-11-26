@@ -565,3 +565,42 @@ details.orig p{margin:6px 0}
 .ring.on{background:var(--ig)}
 .ring>.face{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;border:3px solid var(--bg);background:var(--bg2);overflow:hidden}
 .bub .face .th-img,.ch-h .face .th-img{width:100%;height:100%;object-fit:cover}
+
+/* =====================================================================
+   Style « version ultime » (comme l'accueil du site) : polices, en-tête, onglets horizontaux, composeur
+   ===================================================================== */
+:root{--disp:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+h1,h2,h3,h4,.qcompo-t{font-family:"Space Grotesk",Inter,system-ui,sans-serif}
+.top{background:var(--surface,var(--bg))}
+.top .crumb a{color:var(--ink2);text-decoration:none}
+.top .crumb a:hover{color:var(--ink);text-decoration:underline}
+@media(min-width:1000px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 1fr}
+  .top{grid-column:1;grid-row:1;padding-left:max(16px,calc((100% - 1120px)/2));padding-right:max(16px,calc((100% - 1120px)/2))}
+  .mtabs{position:sticky;top:calc(56px + env(safe-area-inset-top));z-index:19;grid-column:1;grid-row:2;height:auto;display:flex;gap:2px;
+    padding:0 max(16px,calc((100% - 1120px)/2));border-right:0;border-bottom:1px solid var(--rule);background:var(--surface,var(--bg))}
+  .mtabs a{flex-direction:row;gap:8px;min-height:50px;padding:0 16px;border-radius:0;border-bottom:3px solid transparent;font-size:15px;font-weight:600;color:var(--ink2)}
+  .mtabs a:hover{background:transparent;color:var(--ink)}
+  .mtabs a[aria-current=page]{border-bottom-color:var(--pri);color:var(--ink);font-weight:700}
+  .mtabs a svg{width:20px;height:20px}
+  .top,main{grid-column:1}
+  main{grid-row:3}
+}
+.qcompo{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.qcompo-main{flex:999 1 480px;min-width:0;padding:22px}
+.qcompo-aside{flex:1 1 280px;max-width:380px;display:flex;flex-direction:column;gap:14px}
+@media(max-width:999px){.qcompo-aside{max-width:none}}
+.qcompo-t{font-size:clamp(24px,4vw,30px);line-height:1.1;margin-bottom:4px}
+.qcompo-h3{font-size:17px;margin-bottom:12px}
+.qcompo-grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:0 18px}
+.qcompo-pied{position:sticky;bottom:calc(58px + env(safe-area-inset-bottom));z-index:5;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:4px -22px -22px;padding:14px 22px;border-top:1px solid var(--rule);border-radius:0 0 22px 22px;background:var(--surface,var(--bg))}
+@media(min-width:1000px){.qcompo-pied{bottom:0}}
+.qcompo-pied p{margin:0;color:var(--ink2);font-size:15px}
+.qcompo-pied b{color:var(--ink)}
+.perf{display:grid;gap:11px;margin-bottom:10px}
+.perf-l{display:grid;gap:5px}
+.perf-l>span:first-child{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.perf-l em{font-style:normal;color:var(--ink2)}
+.perf-b{display:block;height:7px;border-radius:99px;background:var(--bg2);overflow:hidden}
+.perf-b i{display:block;height:100%;border-radius:99px}
+.qcompo-aside .qquick{grid-template-columns:1fr;margin:0}

@@ -52,7 +52,7 @@ const ic=(n,c)=>`<svg${c?` class="${c}"`:''} viewBox="0 0 24 24" fill="none" str
 /* ---------- état (sur l'appareil) ---------- */
 const KEY='me-revision';
 const corrSite=()=>{try{return R&&R.lire().correction==='fin'?'end':'each'}catch(e){return 'each'}};
-const DEF={v:1,q:{},t:{},b:{},prefs:{topics:[],src:'mix',n:20,order:'smart',corr:corrSite(),bareme:'evalbox',cc:''}};
+const DEF={v:1,q:{},t:{},b:{},prefs:{topics:[],src:'mix',etat:'toutes',n:20,order:'smart',corr:corrSite(),bareme:'evalbox',cc:''}};
 const clone=o=>JSON.parse(JSON.stringify(o));
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.v===1){const d=clone(DEF);return Object.assign(d,s,{prefs:Object.assign(d.prefs,s.prefs||{})});}}catch(e){}return clone(DEF)}
 let P=load();
@@ -223,19 +223,37 @@ function vCartes(){
 let Q=null,QS_TIMER=0;
 const SET={n:[[10,'10'],[20,'20'],[40,'40'],[0,'Toutes']],order:[['smart','Intelligent'],['random','Aléatoire'],['course','Du cours']],corr:[['each','Après chaque question'],['end','À la fin (examen)']]};
 function vQcm(){if(Q)return Q.fin?(Q.rev!=null?vQuestion(true):vResults()):vQuestion(false);return vSetup()}
+/* Filtre « Lesquelles » : toutes, jamais vues, ratées (dernière réponse fausse) */
+function etatOk(q,e){const r=P.q[q.id];return e==='jamais'?!r:e==='ratees'?!!(r&&r[0]<=1):true}
+const poolF=src=>pool(src).filter(q=>etatOk(q,P.prefs.etat||'toutes'));
+/* Réussite par catégorie : dernière réponse de chaque question déjà faite */
+function perfCats(){return ALL.map(ch=>{const qs=QS.filter(q=>q.ch===ch);let v=0,ok=0;qs.forEach(q=>{const r=P.q[q.id];if(r){v++;if(r[4])ok++}});return{ch,v,ok,tot:qs.length}})}
 function vSetup(){
- const p=pool(P.prefs.src),n=P.prefs.n?Math.min(P.prefs.n,p.length):p.length,wr=wrongIds().length,an=pool('an').length;
+ const p=poolF(P.prefs.src),n=P.prefs.n?Math.min(P.prefs.n,p.length):p.length,wr=wrongIds().length,an=pool('an').length,e=P.prefs.etat||'toutes';
  const seg=(k)=>SET[k].map(([v,l])=>`<button data-act="set" data-k="${k}" data-v="${v}" aria-pressed="${String(P.prefs[k])===String(v)}">${l}</button>`).join('');
- return `<div class="qset"><h2>S'entraîner</h2><p class="intro">Comme au CC : sélectionne la ou les bonnes réponses, et ne te fie pas aux pluriels de l'énoncé.</p>
+ const segE=[['toutes','Toutes'],['jamais','Jamais vues'],['ratees','Ratées']].map(([v,l])=>`<button data-act="set" data-k="etat" data-v="${v}" aria-pressed="${e===v}">${l}</button>`).join('');
+ const perf=perfCats().map(c=>{const pc=c.v?Math.round(c.ok/c.v*100):0,col=!c.v?'transparent':pc>=70?'var(--pri)':pc>=50?'color-mix(in srgb,var(--pri) 55%,var(--bg2))':'#e0763b';
+  return `<div class="perf-l"><span><b>${esc(chName(c.ch))}</b><em>${c.v?`${c.ok}/${c.v} juste${c.ok>1?'s':''}`:'pas commencé'}</em></span><span class="perf-b" aria-hidden="true"><i style="width:${pc}%;background:${col}"></i></span></div>`}).join('');
+ const lib=P.prefs.src==='an'?'annales':P.prefs.src==='cl'?'variantes et entraînement':'annales et variantes';
+ return `<div class="qcompo">
+ <section class="card qcompo-main" aria-labelledby="qc-t"><h2 class="qcompo-t" id="qc-t">Composer ta série</h2><p class="intro">Comme au CC : sélectionne la ou les bonnes réponses, et ne te fie pas aux pluriels de l'énoncé.</p>
  <div class="field"><span class="lab">Catégories</span>${bubbles(true)}</div>
- <div class="field"><span class="lab">Questions</span><div class="seg" role="group">${segSrc(pool('an').length,pool('mix').length,pool('cl').length)}</div></div>
- <div class="field"><span class="lab">Nombre</span><div class="seg" role="group">${seg('n')}</div></div>
+ <div class="qcompo-grille">
+  <div class="field"><span class="lab">Questions</span><div class="seg" role="group">${segSrc(pool('an').length,pool('mix').length,pool('cl').length)}</div></div>
+  <div class="field"><span class="lab">Lesquelles</span><div class="seg" role="group">${segE}</div></div>
+  <div class="field"><span class="lab">Nombre</span><div class="seg" role="group">${seg('n')}</div></div>
+  <div class="field"><span class="lab">Correction</span><div class="seg" role="group">${seg('corr')}</div></div>
+ </div>
  <div class="field"><span class="lab">Ordre</span><div class="seg" role="group">${seg('order')}</div><small class="muted">Intelligent : tes erreurs d'abord, puis les questions jamais vues, puis celles à revoir.</small></div>
- <div class="field"><span class="lab">Correction</span><div class="seg" role="group">${seg('corr')}</div></div>
- <div class="qquick"><button class="qq" data-act="wrong"${wr?'':' disabled'}><span class="ic">${ic('redo')}</span><span><b>Refaire mes erreurs</b><span>${wr} question${wr>1?'s':''}</span></span></button>
- ${custom()?`<button class="qq" data-act="quick" data-v="an"${an?'':' disabled'}><span class="ic">${ic('stamp')}</span><span><b>Annales de tes catégories</b><span>${an} sur ${ANT} : celles qui parlent de ${esc(topicLabel())}</span></span></button><button class="qq" data-act="quickall"><span class="ic">${ic('stamp')}</span><span><b>Les ${ANT} annales</b><span>tout le sujet du CC, toutes catégories</span></span></button>`:`<button class="qq" data-act="quick" data-v="an"><span class="ic">${ic('stamp')}</span><span><b>Les ${ANT} annales</b><span>les 15 questions des sujets A et B (les mêmes, dans un autre ordre)</span></span></button>`}</div>
- <div class="launch"><p>${n} question${n>1?'s':''} : ${P.prefs.src==='an'?'annales':P.prefs.src==='cl'?'variantes et entraînement':'annales et variantes'}, ${esc(topicLabel())}</p><button class="mb ig wide" data-act="launch"${n?'':' disabled'}>${ic('play')}Lancer</button></div>
- <section class="card legend-p">${legendInner()}</section></div>`}
+ <div class="qcompo-pied"><p>${p.length?`<b>${p.length}</b> question${p.length>1?'s':''} disponible${p.length>1?'s':''} · ${lib} · ${esc(topicLabel())}`:'Aucune question avec ces filtres.'}</p>
+  <button class="mb ig" data-act="launch"${n?'':' disabled'}>${ic('play')}${n?`Lancer ${n} question${n>1?'s':''}`:'Rien à lancer'}</button></div>
+ </section>
+ <aside class="qcompo-aside" aria-label="Tes résultats">
+  <section class="card"><h3 class="qcompo-h3">Réussite par catégorie</h3><div class="perf">${perf}</div><small class="muted">Selon ta dernière réponse à chaque question. Les QCM ratés reviennent aussi dans « À revoir » et « Mes erreurs » de l'accueil.</small></section>
+  <div class="qquick"><button class="qq" data-act="wrong"${wr?'':' disabled'}><span class="ic">${ic('redo')}</span><span><b>Refaire mes erreurs</b><span>${wr} question${wr>1?'s':''}</span></span></button>
+  ${custom()?`<button class="qq" data-act="quick" data-v="an"${an?'':' disabled'}><span class="ic b">${ic('stamp')}</span><span><b>Annales de tes catégories</b><span>${an} sur ${ANT}</span></span></button><button class="qq" data-act="quickall"><span class="ic b">${ic('stamp')}</span><span><b>Les ${ANT} annales</b><span>tout le sujet du CC</span></span></button>`:`<button class="qq" data-act="quick" data-v="an"><span class="ic b">${ic('stamp')}</span><span><b>Les ${ANT} annales</b><span>les questions des sujets A et B</span></span></button>`}</div>
+  <section class="card legend-p">${legendInner()}</section>
+ </aside></div>`}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function orderIds(list,order){
  if(order==='random')return shuffle(list.map(q=>q.id));
@@ -243,7 +261,7 @@ function orderIds(list,order){
  const t=now(),iv=[0,0,1,3,7,21];
  return list.map(q=>{const r=P.q[q.id];let p;if(!r)p=1+(q.src==='an'?0:.4);else if(r[0]<=1)p=0;else{const due=r[3]+iv[Math.min(r[0],5)]*864e5;p=due<=t?2:3+(due-t)/864e5}return[p+Math.random()*.3,q.id]}).sort((a,b)=>a[0]-b[0]).map(x=>x[1])}
 function startQuiz(ids,title,corr){if(!ids.length){toast('Aucune question pour cette sélection');return}Q={ids,i:0,ans:{},val:{},t0:now(),corr:corr||P.prefs.corr,title:title||'Entraînement',fin:false,rev:null};go('qcm')}
-function launch(src){const p=pool(src);let ids=orderIds(p,P.prefs.order);if(P.prefs.n)ids=ids.slice(0,P.prefs.n);startQuiz(ids,src==='an'?'Annales':src==='cl'?'Variantes':'Annales + variantes')}
+function launch(src){const p=poolF(src);let ids=orderIds(p,P.prefs.order);if(P.prefs.n)ids=ids.slice(0,P.prefs.n);startQuiz(ids,src==='an'?'Annales':src==='cl'?'Variantes':'Annales + variantes')}
 function scoreQ(q,s){const set=new Set(s||[]);let good=0,bad=0,nOk=0;q.o.forEach((o,i)=>{if(o[1])nOk++;if(set.has(i)){if(o[1])good++;else bad++}});const perfect=good===nOk&&bad===0;return{pts:good-.5*bad,max:nOk,perfect,good,bad,nOk}}
 function record(q,res){const r=P.q[q.id]||[0,0,0,0,0];P.q[q.id]=[res.perfect?Math.max(2,Math.min(5,r[0]+1)):1,r[1]+1,r[2]+(res.perfect?1:0),now(),res.perfect?1:0];save();
  /* répétition espacée du site (« À revoir », « Mes erreurs ») */
