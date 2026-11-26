@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Révision M.E. · EOPour les nuls</title>
 <meta name="theme-color" content="#ffffff">
-<script src="../reglages.js?v=7"></script>
+<script src="../reglages.js?v=8"></script>
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icones/icone-192.png">
-<link rel="stylesheet" href="../style.css?v=7">
-<link rel="stylesheet" href="me-revision/style.css?v=2">
+<link rel="stylesheet" href="../style.css?v=8">
+<link rel="stylesheet" href="me-revision/style.css?v=3">
 </head>
 <body>
 <div id="defs"></div>
@@ -35,7 +35,7 @@
 <script src="me-revision/app.js?v=2"></script>
 <script type="module">
 // Comptes du site : score des séries et activité du jour (objectif, série 🔥).
-import * as Compte from "../compte.js?v=7";
+import * as Compte from "../compte.js?v=8";
 window.Compte = Compte;
 // Catégories masquées par l'admin (Admin ▸ Organisation)
 Compte.chargerCatalogue().then((c) => window.dispatchEvent(new CustomEvent("catalogue", { detail: c })));

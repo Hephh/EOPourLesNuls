@@ -6,7 +6,7 @@
    ===================================================================== */
 (function () {
   var DEFAUTS = {
-    theme: "auto",            // auto | clair | sombre
+    theme: "auto",            // auto | clair (papier) | sombre | oled (noir pur)
     texte: 100,               // taille du texte en %, de 85 à 140
     animations: true,
     correction: "immediate",  // immediate | fin (mode examen)
@@ -32,12 +32,14 @@
   function appliquer(r) {
     r = r || lire();
     var d = document.documentElement;
-    var sombre = r.theme === "sombre" || (r.theme !== "clair" && !!(sombreSysteme && sombreSysteme.matches));
+    var oled = r.theme === "oled";
+    var sombre = oled || r.theme === "sombre" || (r.theme === "auto" && !!(sombreSysteme && sombreSysteme.matches));
     d.setAttribute("data-theme", sombre ? "dark" : "light");
+    if (oled) d.setAttribute("data-nuance", "oled"); else d.removeAttribute("data-nuance");
     d.style.setProperty("--texte", String(r.texte / 100));
     if (r.animations === false) d.setAttribute("data-anim", "off"); else d.removeAttribute("data-anim");
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", sombre ? "#000000" : "#ffffff");
+    if (meta) meta.setAttribute("content", oled ? "#000000" : sombre ? "#16181d" : "#f6f1e7");
   }
 
   function ecrire(cle, valeur) {

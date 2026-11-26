@@ -2,47 +2,68 @@
    EOPour les nuls — thème partagé
    Esprit réseau social (fil, bulles, profil en grille) avec une identité
    propre : dégradé sarcelle → indigo → violet. Réutiliser ces variables.
-   Le thème clair/sombre est choisi par reglages.js (attribut data-theme).
+   Thème choisi par reglages.js : data-theme="light" (papier) ou "dark", + data-nuance="oled" (noir pur).
    ===================================================================== */
 :root {
-  --bg: #ffffff;
-  --bg-2: #f6f6f7;
-  --surface: #ffffff;
-  --text: #0f0f10;
-  --muted: #6e6e73;
-  --line: #dbdbdf;
-  --line-2: #efeff1;
+  /* Clair « papier » : fond crème, encre brun-noir, filets chauds */
+  --bg: #f6f1e7;
+  --bg-2: #ece5d6;
+  --surface: #fffcf5;
+  --text: #2a251f;
+  --muted: #6b6255;
+  --line: #d6cbb6;
+  --line-2: #e6dece;
   --accent: #4f46e5;
-  --accent-ink: #4f46e5;
+  --accent-ink: #4338ca;
   --accent-text: #ffffff;
-  --accent-soft: #eef0ff;
+  --accent-soft: #e9e6f7;
   --grad: linear-gradient(45deg, #14b8a6 0%, #6366f1 55%, #a855f7 100%);
-  --like: #ef4444;
-  --ok: #15803d;
-  --ok-soft: #e7f6ec;
-  --ko: #b91c1c;
-  --ko-soft: #fdecec;
+  --like: #e0383e;
+  --ok: #2f7a3a;
+  --ok-soft: #e3eedb;
+  --ko: #b3261e;
+  --ko-soft: #f7e2da;
+  --ombre: 0 1px 2px rgba(60, 45, 20, .08), 0 2px 8px rgba(60, 45, 20, .06);
   --nav-h: 56px;
   --side-w: 240px;
   color-scheme: light;
 }
+/* Sombre : gris anthracite en paliers (fond < cartes < éléments levés) pour bien distinguer les blocs */
 :root[data-theme="dark"] {
-  --bg: #000000;
-  --bg-2: #121214;
-  --surface: #000000;
-  --text: #f4f4f5;
-  --muted: #a1a1aa;
-  --line: #2c2c30;
-  --line-2: #1b1b1e;
-  --accent: #5b5bd6;
+  --bg: #16181d;
+  --bg-2: #242730;
+  --surface: #1e2128;
+  --text: #eceef2;
+  --muted: #a9adb8;
+  --line: #3a3e49;
+  --line-2: #2b2e37;
+  --accent: #6366f1;
   --accent-ink: #a5b4fc;
-  --accent-soft: #1d1d3b;
+  --accent-soft: #2a2c55;
   --ok: #4ade80;
-  --ok-soft: #0f2a19;
+  --ok-soft: #173322;
   --ko: #f87171;
-  --ko-soft: #2e1212;
+  --ko-soft: #3a1c1e;
+  --ombre: 0 1px 2px rgba(0, 0, 0, .35);
   color-scheme: dark;
 }
+/* OLED : noir pur (économise la batterie des écrans OLED), filets un peu plus marqués */
+:root[data-theme="dark"][data-nuance="oled"] {
+  --bg: #000000;
+  --bg-2: #141416;
+  --surface: #0b0b0c;
+  --text: #f4f4f5;
+  --muted: #a1a1aa;
+  --line: #2f2f34;
+  --line-2: #1c1c1f;
+  --accent-soft: #1d1d3b;
+  --ok-soft: #0f2a19;
+  --ko-soft: #2e1212;
+  --ombre: none;
+}
+:root[data-theme="dark"] .segmente button[aria-pressed="true"] { background: var(--line); }
+
+
 :root { font-size: calc(100% * var(--texte, 1)); }
 :root[data-anim="off"] *,
 :root[data-anim="off"] *::before,
@@ -854,3 +875,6 @@ dialog.modal-com .com-form .lien { flex: none; }
 .com-n { position: static; font-size: .78rem; color: var(--text); }
 .msg-barre { margin: 0; padding: 0 8px 0 16px; }
 .dm-barre { margin: 0; padding: 0 8px 0 4px; }
+
+/* ---------- Relief des cartes (thèmes papier / sombre ; rien en OLED) ---------- */
+.groupe, .ligne-outil, .bienvenue, .activite, .connexion, .tuile { box-shadow: var(--ombre); }

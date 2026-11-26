@@ -5,7 +5,7 @@
      appareils dans Firestore (un document par membre : users/{uid}).
    Les pages n'écrivent jamais directement dans Firestore : elles passent ici.
    ===================================================================== */
-import { FIREBASE_CONFIG } from "./firebase-config.js?v=7";
+import { FIREBASE_CONFIG } from "./firebase-config.js?v=8";
 
 const CDN = "https://www.gstatic.com/firebasejs/13.4.0/";
 

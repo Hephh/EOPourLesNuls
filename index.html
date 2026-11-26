@@ -6,11 +6,11 @@
 <title>EOPour les nuls</title>
 <meta name="description" content="QCM et outils de révision ostéo, de P1 à P5 — sur téléphone comme sur PC.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=7"></script>
+<script src="reglages.js?v=8"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=7">
+<link rel="stylesheet" href="style.css?v=8">
 </head>
 <body class="app">
 
@@ -61,8 +61,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=7";
-import * as C from "./compte.js?v=7";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=8";
+import * as C from "./compte.js?v=8";
 
 const R = window.Reglages;
 
@@ -781,7 +781,7 @@ function vueReglages() {
 
     <h2>Apparence</h2>
     <div class="groupe">
-      <div class="ligne colonne">${texte("Thème")}${seg("theme", [["auto", "Auto"], ["clair", "Clair"], ["sombre", "Sombre"]])}</div>
+      <div class="ligne colonne">${texte("Thème")}${seg("theme", [["auto", "Auto"], ["clair", "Papier"], ["sombre", "Sombre"], ["oled", "OLED"]])}</div>
       <div class="ligne colonne">${texte("Taille du texte", "Glisse pour agrandir ou réduire tout le texte du site.")}
         <div class="curseur"><span aria-hidden="true" style="font-size: .8rem;">A</span><input type="range" id="taille-texte" min="85" max="140" step="5" value="${r.texte}" aria-label="Taille du texte"><span aria-hidden="true" style="font-size: 1.35rem;">A</span><output id="taille-val">${r.texte} %</output></div></div>
       ${inter("animations", "✨", "Animations")}
@@ -821,7 +821,7 @@ function vueReglages() {
     <div class="groupe">
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
         "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 7 · site de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 8 · site de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div>`;

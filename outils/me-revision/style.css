@@ -554,3 +554,7 @@ details.orig p{margin:6px 0}
 .tsz input{flex:1;min-width:0;height:44px;accent-color:var(--pri)}
 .tsz output{min-width:3.4em;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
 :root{font-size:100%}
+
+/* ---------- cartes : un cran au-dessus du fond (lisible en sombre, papier en clair) ---------- */
+.plate,.panel,.card,.qq,.opt,.fl-f,.fl-b,.enimg,.launch,.sheet,.sheet .sh-top,.bub .face,.sched button{background-color:var(--surface)}
+.plate,.panel,.card,.fl-f,.fl-b,.enimg{box-shadow:var(--ombre)}
