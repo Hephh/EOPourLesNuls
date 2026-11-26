@@ -18,7 +18,8 @@ service cloud.firestore {
     }
 
     function profilValide(d) {
-      return d.keys().hasOnly(['nom', 'photo', 'avatar', 'image', 'favoris', 'scores', 'activite', 'creeLe', 'vuLe'])
+      return d.keys().hasOnly(['nom', 'photo', 'avatar', 'image', 'favoris', 'scores', 'activite', 'revisions', 'creeLe', 'vuLe'])
+        && (!('revisions' in d) || (d.revisions is map && d.revisions.size() <= 3000))
         && imageValide(d)
         && (!('nom' in d) || (d.nom is string && d.nom.size() > 0 && d.nom.size() <= 40))
         && (!('photo' in d) || d.photo == null

@@ -245,7 +245,9 @@ function orderIds(list,order){
 function startQuiz(ids,title,corr){if(!ids.length){toast('Aucune question pour cette sélection');return}Q={ids,i:0,ans:{},val:{},t0:now(),corr:corr||P.prefs.corr,title:title||'Entraînement',fin:false,rev:null};go('qcm')}
 function launch(src){const p=pool(src);let ids=orderIds(p,P.prefs.order);if(P.prefs.n)ids=ids.slice(0,P.prefs.n);startQuiz(ids,src==='an'?'Annales':src==='cl'?'Variantes':'Annales + variantes')}
 function scoreQ(q,s){const set=new Set(s||[]);let good=0,bad=0,nOk=0;q.o.forEach((o,i)=>{if(o[1])nOk++;if(set.has(i)){if(o[1])good++;else bad++}});const perfect=good===nOk&&bad===0;return{pts:good-.5*bad,max:nOk,perfect,good,bad,nOk}}
-function record(q,res){const r=P.q[q.id]||[0,0,0,0,0];P.q[q.id]=[res.perfect?Math.max(2,Math.min(5,r[0]+1)):1,r[1]+1,r[2]+(res.perfect?1:0),now(),res.perfect?1:0];save()}
+function record(q,res){const r=P.q[q.id]||[0,0,0,0,0];P.q[q.id]=[res.perfect?Math.max(2,Math.min(5,r[0]+1)):1,r[1]+1,r[2]+(res.perfect?1:0),now(),res.perfect?1:0];save();
+ /* répétition espacée du site (« À revoir », « Mes erreurs ») */
+ try{window.Compte&&window.Compte.noterReponse(ID,q.id,res.perfect,{ch:q.ch})}catch(e){}}
 function vibrer(ok){try{if(R&&R.lire().vibrations!==false&&navigator.vibrate)navigator.vibrate(ok?30:[60,40,60])}catch(e){}}
 function verdict(res){const v=res.perfect?1:res.pts>0?2:3;return `<div class="verdict v${v}">${ic(v===1?'check':v===2?'half':'x')}${v===1?'Tout juste':v===2?'Partiellement juste':'Faux'}<span>${res.pts>0&&P.prefs.bareme!=='tor'?'+':''}${fr(res.pts)} / ${fr(res.max)} pt${res.max>1?'s':''}</span></div>`}
 function vQuestion(review){

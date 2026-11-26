@@ -6,49 +6,34 @@
 <title>EOPour les nuls</title>
 <meta name="description" content="QCM et outils de révision ostéo, de P1 à P5 — sur téléphone comme sur PC.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=12"></script>
+<script src="reglages.js?v=13"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 <body class="app">
 
 <header class="topbar">
-  <a class="logo" href="#accueil">EO<span>Pour les nuls</span></a>
-  <span class="topbar-actions">
-  <button class="icon-btn" id="partager-site" type="button" aria-label="Partager le site">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 10 14"/><path d="M21 3l-6.5 18-4.5-7-7-4.5z"/></svg>
-  </button>
-  </span>
+  <a class="marque" href="#accueil" aria-label="EOPour les nuls, aujourd'hui"><span class="marque-eo">EO</span><span class="marque-nom">Pour les nuls</span></a>
+  <button class="icon-btn" id="ouvrir-recherche" type="button" aria-label="Rechercher"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
 </header>
 
 <nav class="tabbar" aria-label="Navigation principale">
-  <a class="logo logo-side" href="#accueil">EO<span>Pour les nuls</span></a>
-  <a class="tab" href="#accueil" data-vue="accueil" aria-label="Accueil">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
-    <span class="tab-label">Accueil</span>
-  </a>
-  <a class="tab" href="#recherche" data-vue="recherche" aria-label="Recherche">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-    <span class="tab-label">Recherche</span>
-  </a>
-  <a class="tab" href="#favoris" data-vue="favoris" aria-label="Favoris">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>
-    <span class="tab-label">Favoris</span>
-  </a>
-  <a class="tab" href="#admin" data-vue="admin" aria-label="Admin" hidden>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
-    <span class="tab-label">Admin</span>
-  </a>
-  <a class="tab" href="#profil" data-vue="profil" aria-label="Profil">
-    <span class="tab-avatar" id="tab-avatar"></span>
-    <span class="tab-label">Profil</span>
-  </a>
-  <a class="tab tab-pc" href="#reglages" data-vue="reglages" aria-label="Réglages">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-    <span class="tab-label">Réglages</span>
-  </a>
+  <a class="marque marque-side" href="#accueil" aria-label="EOPour les nuls, aujourd'hui"><span class="marque-eo">EO</span><span class="marque-nom">Pour les nuls</span></a>
+  <button class="recherche-k" id="recherche-k" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Rechercher…</span><kbd>Ctrl K</kbd></button>
+  <a class="tab" href="#accueil" data-vue="accueil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="tab-label">Aujourd'hui</span></a>
+  <a class="tab tab-ordi" href="#revoir" data-vue="revoir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span class="tab-label">À revoir</span><span class="tab-compte" id="compte-revoir" hidden></span></a>
+  <a class="tab tab-ordi" href="#erreurs" data-vue="erreurs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg><span class="tab-label">Mes erreurs</span><span class="tab-compte discret" id="compte-erreurs" hidden></span></a>
+  <a class="tab tab-tel" href="#cours" data-vue="cours"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h6v14H4zM14 5h6v14h-6z"/></svg><span class="tab-label">Cours</span></a>
+  <a class="tab tab-tel" href="#recherche" data-vue="recherche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span class="tab-label">Recherche</span></a>
+  <a class="tab" href="#favoris" data-vue="favoris"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-9.3-9.2C1.4 7.4 3.6 4 7 4c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8C19.5 15.4 12 20 12 20z"/></svg><span class="tab-label">Favoris</span></a>
+  <div class="arbre" id="arbre-cours"></div>
+  <a class="tab" href="#admin" data-vue="admin" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span class="tab-label">Admin</span></a>
+  <a class="tab tab-profil" href="#profil" data-vue="profil"><span class="tab-avatar" id="tab-avatar"></span><span class="tab-label">Profil<small>Réglages, progression</small></span></a>
 </nav>
 
 <main id="vue" class="vue"></main>
@@ -56,8 +41,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=12";
-import * as C from "./compte.js?v=12";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=13";
+import * as C from "./compte.js?v=13";
 
 const R = window.Reglages;
 
@@ -204,12 +189,12 @@ const matieresAnnee = (a) => CAT.matieres.filter((m) => m.annee === a.id);
 const visuel = (x, defaut) => (x?.image ? `<img class="visuel" data-media="${esc(x.image)}" alt="">` : esc(x?.emoji || defaut));
 const ICONE_VERROU = svg('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>');
 
-/* ---------- Accueil : choisir son année ---------- */
+/* ---------- Aujourd'hui : plan du jour, maîtrise, cours ---------- */
 function carteBienvenue() {
   try { if (localStorage.getItem("bienvenue-vue")) return ""; } catch {}
   return `<div class="bienvenue" id="bienvenue" role="note">
     <b>Bienvenue sur EOPour les nuls 👋</b>
-    <p>Choisis ton année, puis ta matière. Touche ♡ sur un outil pour le garder en favori. Dans Profil, connecte-toi pour retrouver ta progression partout.</p>
+    <p>Choisis un cours dans « Mes cours ». Chaque QCM que tu fais revient ensuite ici au bon moment (À revoir), et tes erreurs sont gardées pour les refaire.</p>
     <button class="icon-btn" type="button" id="fermer-bienvenue" aria-label="Masquer ce message">${ICONE.fermer}</button>
   </div>`;
 }
@@ -218,10 +203,9 @@ function carteAnnonce() {
   const a = CAT.annonce;
   if (!a || !a.texte) return "";
   try { if (localStorage.getItem("annonce-vue") === a.id) return ""; } catch {}
-  const lien = a.lien ? (a.lien.startsWith("#") ? a.lien : a.lien) : "";
-  const cible = a.lien.startsWith("#") ? anneeDe(a.lien.slice(1))?.nom : OUTILS.find((o) => o.fichier === a.lien)?.titre;
+  const cible = !a.lien ? "" : a.lien.startsWith("#") ? anneeDe(a.lien.slice(1))?.nom : OUTILS.find((o) => o.fichier === a.lien)?.titre;
   return `<div class="annonce" id="annonce" role="note"><span class="annonce-ico" aria-hidden="true">📣</span>
-    <div class="annonce-txt"><b>${esc(a.titre || "Annonce")}</b><p>${esc(a.texte)}</p>${lien && cible ? `<a class="btn btn-primary annonce-btn" href="${esc(lien)}">${esc(cible)} →</a>` : ""}</div>
+    <div class="annonce-txt"><b>${esc(a.titre || "Annonce")}</b><p>${esc(a.texte)}</p>${a.lien && cible ? `<a class="btn btn-primary annonce-btn" href="${esc(a.lien)}">${esc(cible)} →</a>` : ""}</div>
     <button class="icon-btn" type="button" id="fermer-annonce" aria-label="Masquer l'annonce">${ICONE.fermer}</button></div>`;
 }
 
@@ -229,35 +213,161 @@ function dernierOutil() {
   try { return outilsVisibles().find((o) => o.id === localStorage.getItem("dernier-outil")) || null; } catch { return null; }
 }
 
+const COULEURS_ANNEES = ["#3b82f6", "#6366f1", "#14b8a6", "#f59e0b", "#ef6b5b", "#a855f7", "#64748b"];
+const couleurAnnee = (a) => COULEURS_ANNEES[Math.max(0, CAT.annees.indexOf(a)) % COULEURS_ANNEES.length];
+const pluriel = (n, mot) => `${n} ${mot}${n > 1 ? "s" : ""}`;
+const lienRevision = (mode, outil) => "outils/revision.html?mode=" + mode + (outil ? "&outil=" + encodeURIComponent(outil) : "");
+const ICONE_REVOIR = svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>');
+const ICONE_ERREUR = svg('<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/>');
+const ICONE_JOUER = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+
+function planFait() { try { return JSON.parse(localStorage.getItem("plan:" + C.jourCle())) || {}; } catch { return {}; } }
+function marquerPlan(i) {
+  const p = planFait();
+  p[i] = 1;
+  try {
+    localStorage.setItem("plan:" + C.jourCle(), JSON.stringify(p));
+    for (const k of Object.keys(localStorage)) if (k.startsWith("plan:") && k !== "plan:" + C.jourCle()) localStorage.removeItem(k);
+  } catch {}
+}
+
+function etapesDuJour() {
+  const dus = C.aRevoir(), err = C.erreurs(), dernier = dernierOutil(), fait = planFait();
+  const p = dernier ? place(dernier) : null;
+  return [
+    dus.length
+      ? { type: "À revoir", titre: pluriel(dus.length, "question"), duree: `≈ ${Math.max(1, Math.round(dus.length * 0.5))} min`, detail: "Ce que tu risques d'oublier, choisi par la répétition espacée. 20 au plus par jour.", href: lienRevision("revoir"), bouton: "Commencer", principal: true }
+      : { type: "À revoir", titre: "Rien pour aujourd'hui", duree: "", detail: "Fais quelques QCM : chaque question reviendra ici juste avant que tu l'oublies.", href: "#cours", bouton: "Mes cours" },
+    dernier
+      ? { type: "Reprendre", titre: dernier.titre, duree: "", detail: [p.matiere ? p.matiere.complet || p.matiere.nom : "", anneeDe(p.annee)?.nom].filter(Boolean).join(" · "), href: dernier.fichier, bouton: "Continuer", outil: dernier.id, principal: !dus.length }
+      : { type: "Commencer", titre: "Choisis un cours", duree: "", detail: "Une année, une matière, puis un outil : fiche, cartes ou QCM.", href: "#cours", bouton: "Mes cours", principal: !dus.length },
+    err.length
+      ? { type: "Mes erreurs", titre: `${err.length} QCM à refaire`, duree: `≈ ${Math.max(1, Math.round(err.length * 0.6))} min`, detail: "Les questions ratées, avec la correction. Elles sortent de la liste quand tu les réussis.", href: lienRevision("erreurs"), bouton: "Refaire" }
+      : { type: "Mes erreurs", titre: "Aucune erreur", duree: "", detail: "Les questions que tu rates arrivent ici toutes seules, pour les refaire plus tard.", href: "", bouton: "" },
+  ].map((e, i) => ({ ...e, fait: !!fait[i] }));
+}
+
+function blocPlan() {
+  const etapes = etapesDuJour();
+  const n = etapes.filter((e) => e.fait).length;
+  return `<section class="bloc" aria-labelledby="t-plan">
+    <div class="bloc-tete"><h2 id="t-plan">Ton plan du jour</h2><span class="sub">${n} sur 3 fait${n > 1 ? "s" : ""}</span></div>
+    <ol class="plan">${etapes.map((e, i) => `<li class="etape${e.fait ? " fait" : ""}">
+      <span class="etape-tete"><span class="etape-num" aria-hidden="true">${e.fait ? "✓" : i + 1}</span><span class="sub">${esc(e.duree)}</span></span>
+      <span class="etape-type">${esc(e.type)}</span>
+      <b class="etape-titre">${esc(e.titre)}</b>
+      <span class="etape-detail">${esc(e.detail)}</span>
+      ${e.bouton ? `<a class="btn${e.principal && !e.fait ? " btn-primary" : ""}" href="${esc(e.href)}" data-etape="${i}"${e.outil ? ` data-outil="${esc(e.outil)}"` : ""}>${e.principal && !e.fait ? ICONE_JOUER : ""}${esc(e.fait ? "Refaire" : e.bouton)}</a>` : ""}
+    </li>`).join("")}</ol>
+  </section>`;
+}
+
+/** Maîtrise par catégorie du dernier outil qui a des catégories (sinon le premier). */
+function blocMaitrise() {
+  const o = [dernierOutil(), ...outilsVisibles()].find((x) => x && (x.categories || []).length);
+  if (!o) return "";
+  const m = C.maitrise(o.id);
+  const masques = CAT.masques[o.id] || [];
+  const cats = o.categories.filter(([id]) => !masques.includes(id));
+  const vues = Object.values(m).reduce((a, x) => a + x.vues, 0);
+  return `<section class="bloc" aria-labelledby="t-maitrise">
+    <div class="bloc-tete"><h2 id="t-maitrise">Ta maîtrise · ${esc(o.titre)}</h2>
+      <span class="legende-maitrise" aria-hidden="true"><i class="n1"></i>Vu <i class="n2"></i>En progrès <i class="n3"></i>Familier <i class="n4"></i>Maîtrisé</span></div>
+    <div class="carte maitrise">${cats.map(([id, nom]) => {
+      const x = m[id], n = x?.niveau || 0;
+      return `<a class="maitrise-ligne" href="${esc(o.fichier)}" data-outil="${esc(o.id)}">
+        <span class="maitrise-nom"><b>${esc(nom)}</b><small>${C.NIVEAUX_MAITRISE[n]}${x ? ` · ${x.justes}/${x.vues} juste${x.justes > 1 ? "s" : ""}` : ""}</small></span>
+        <span class="segments n${n}" role="img" aria-label="${esc(nom)} : ${C.NIVEAUX_MAITRISE[n]}"><i></i><i></i><i></i><i></i></span></a>`;
+    }).join("")}
+    ${vues ? "" : `<p class="sub maitrise-vide">Fais un QCM de cet outil : chaque catégorie se remplit au fil de tes réponses.</p>`}</div>
+  </section>`;
+}
+
+/** Les années en cartes (accueil et page « Mes cours »). */
+function cartesAnnees() {
+  return `<div class="annees-cartes">${CAT.annees.map((a) => {
+    if (a.verrou) return `<div class="annee-carte verrou"><span class="annee-carte-tete"><b>${esc(a.nom)}</b>${ICONE_VERROU}</span><small>${esc(a.sous || "Bientôt")}</small></div>`;
+    const mats = matieresAnnee(a), nbO = outilsAnnee(a).length;
+    return `<a class="annee-carte" href="#${esc(a.id)}" style="--c: ${couleurAnnee(a)};">
+      <span class="annee-carte-tete"><b>${a.image ? `<img class="visuel" data-media="${esc(a.image)}" alt="">` : esc(a.nom)}</b><small>${esc(a.sous || "")}</small></span>
+      ${mats.length ? `<span class="puces-mat">${mats.slice(0, 4).map((m) => `<span>${esc(m.nom)}</span>`).join("")}</span>` : ""}
+      <small class="annee-carte-pied">${mats.length ? `${pluriel(mats.length, "matière")} · ${pluriel(nbO, "outil")}` : "Pas encore de matière"}</small>
+    </a>`;
+  }).join("")}</div>`;
+}
+
+/* Notion du jour : un mot du lexique de M.E. (chargé seulement si l'outil est visible) */
+let LEXIQUE = null;
+function chargerLexique() {
+  if (LEXIQUE) return Promise.resolve(LEXIQUE);
+  return new Promise((ok) => {
+    const s = document.createElement("script");
+    s.src = "outils/me-revision/content.js?v=4";
+    s.onload = () => { LEXIQUE = (window.CONTENT && window.CONTENT.terms) || []; ok(LEXIQUE); };
+    s.onerror = () => ok([]);
+    document.head.append(s);
+  });
+}
+async function remplirNotionDuJour(r) {
+  const el = $("#notion-jour");
+  const me = outilsVisibles().find((o) => o.id === "me-revision");
+  if (!el || !me) return;
+  const termes = await chargerLexique();
+  if (r !== rendu || !termes.length) return;
+  const n = Math.floor(Date.now() / 864e5) % termes.length;
+  const t = termes[n];
+  el.innerHTML = `<span class="rail-titre">Notion du jour</span><b class="notion-nom">${esc(t.t)}</b><p>${esc(t.d)}</p>${t.r ? `<p class="notion-astuce">${esc(t.r)}</p>` : ""}<a class="lien" href="${esc(me.fichier)}#lexique" data-outil="me-revision">Voir dans le lexique →</a>`;
+  el.hidden = false;
+}
+
+function railAujourdhui() {
+  const a = C.activiteLocale();
+  const objectif = Number(R.lire().objectif) || 3;
+  const ajd = a[C.jourCle()] || 0;
+  const serie = C.serieJours(a);
+  const pct = Math.min(1, ajd / objectif);
+  const nouveaux = outilsVisibles().filter((o) => place(o).nouveau);
+  return `<aside class="rail" aria-label="À côté">
+    ${modeFun() ? `<section class="carte rail-objectif">
+      <svg width="58" height="58" viewBox="0 0 64 64" role="img" aria-label="Objectif du jour : ${Math.min(ajd, objectif)} QCM sur ${objectif}"><circle cx="32" cy="32" r="26" fill="none" stroke-width="7" style="stroke: var(--bg-2);"/><circle cx="32" cy="32" r="26" fill="none" stroke-width="7" stroke-linecap="round" style="stroke: var(--accent);" stroke-dasharray="${(163.4 * pct).toFixed(1)} 163.4" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" style="fill: var(--text); font: 700 15px Inter, sans-serif;">${Math.min(ajd, objectif)}/${objectif}</text></svg>
+      <span><b>${serie ? `Série de ${pluriel(serie, "jour")}` : "Pas encore de série"}</b><small>Objectif du jour · mode fun</small></span></section>` : ""}
+    <section class="carte rail-notion" id="notion-jour" hidden></section>
+    ${nouveaux.length ? `<section class="carte"><span class="rail-titre">Nouveau</span>${nouveaux.slice(0, 4).map((o) => `<a class="rail-outil" href="${esc(o.fichier)}" data-outil="${esc(o.id)}"><span class="lo-emoji" style="--h:${teinte(o.matiere)}" aria-hidden="true">${esc(o.emoji || "📝")}</span><span><b>${esc(o.titre)}</b><small>${esc([o.type, anneeDe(place(o).annee)?.nom].filter(Boolean).join(" · "))}</small></span></a>`).join("")}</section>` : ""}
+  </aside>`;
+}
+
+/** Retient l'outil ouvert (pour « Reprendre ») quand on clique sur un lien qui porte data-outil. */
+function brancherDernierOutil(racine = vue) {
+  racine.querySelectorAll("[data-outil]").forEach((a) => a.addEventListener("click", () => { try { localStorage.setItem("dernier-outil", a.dataset.outil); } catch {} }));
+}
+
 function vueAccueil() {
+  const r = rendu;
   const u = C.utilisateur();
   const prenom = u?.nom ? String(u.nom).trim().split(/\s+/)[0] : "";
-  const dernier = dernierOutil();
-  vue.innerHTML = `
-    <div class="accueil-tete"><h1>${prenom ? "Salut " + esc(prenom) : "Salut"}</h1><p class="sub">Choisis ton année, puis ta matière.</p></div>
-    ${carteAnnonce()}
-    ${carteBienvenue()}
-    <div class="annees" role="list">
-      ${CAT.annees.map((a) => {
-        const n = matieresAnnee(a).length;
-        const etat = a.verrou ? " verrou" : n ? "" : " vide-annee";
-        return `<a class="annee${etat}" role="listitem" href="#${esc(a.id)}"${a.verrou ? ` aria-label="${esc(a.nom)}, verrouillé"` : ""}>
-          <span class="annee-ring"><span class="annee-bulle">${a.image ? `<img class="visuel" data-media="${esc(a.image)}" alt="">` : esc(a.nom)}</span>${a.verrou ? `<span class="annee-cadenas">${ICONE_VERROU}</span>` : ""}</span>
-          <b>${esc(a.sous)}</b>
-          <small>${a.verrou ? "Verrouillé" : n ? `${n} matière${n > 1 ? "s" : ""}` : "Aucune matière"}</small>
-        </a>`;
-      }).join("")}
+  vue.innerHTML = `<div class="page">
+    <div class="page-corps">
+      <header class="page-tete"><h1>${prenom ? "Bonjour " + esc(prenom) : "Bonjour"}</h1><p class="sub">Ton plan du jour : 3 étapes courtes, tu peux t'arrêter après chacune.</p></header>
+      ${carteAnnonce()}${carteBienvenue()}
+      ${blocPlan()}
+      ${blocMaitrise()}
+      <section class="bloc" aria-labelledby="t-cours"><div class="bloc-tete"><h2 id="t-cours">Tes cours</h2><a class="lien" href="#cours">Tout voir</a></div>${cartesAnnees()}</section>
     </div>
-    ${dernier ? `<h2 class="titre-section">Reprendre</h2><div class="lignes">${ligneOutil(dernier)}</div>` : ""}`;
-  $("#fermer-annonce")?.addEventListener("click", () => {
-    try { localStorage.setItem("annonce-vue", CAT.annonce.id); } catch {}
-    $("#annonce").remove();
-  });
-  $("#fermer-bienvenue")?.addEventListener("click", () => {
-    try { localStorage.setItem("bienvenue-vue", "1"); } catch {}
-    $("#bienvenue").remove();
-  });
-  brancherLignes();
+    ${railAujourdhui()}
+  </div>`;
+  $("#fermer-annonce")?.addEventListener("click", () => { try { localStorage.setItem("annonce-vue", CAT.annonce.id); } catch {} $("#annonce").remove(); });
+  $("#fermer-bienvenue")?.addEventListener("click", () => { try { localStorage.setItem("bienvenue-vue", "1"); } catch {} $("#bienvenue").remove(); });
+  vue.querySelectorAll("[data-etape]").forEach((a) => a.addEventListener("click", () => marquerPlan(+a.dataset.etape)));
+  brancherDernierOutil();
+  remplirNotionDuJour(r);
+}
+
+/* ---------- Mes cours : toutes les années ---------- */
+function vueCours() {
+  vue.innerHTML = `<div class="page"><div class="page-corps">
+    <header class="page-tete"><h1>Mes cours</h1><p class="sub">Choisis une année : ses matières et leurs outils (fiches, cartes, QCM).</p></header>
+    ${cartesAnnees()}
+  </div></div>`;
 }
 
 /* ---------- Une année : ses matières l'une sous l'autre, chacune avec ses outils ---------- */
@@ -265,35 +375,150 @@ const AUTRES = { id: "_autres", nom: "Autres", emoji: "📦", complet: "Autres o
 
 function vueAnnee(id) {
   const a = anneeDe(id);
-  const retour = `<div class="profil-barre" style="margin: 0; padding: 0 8px 0 4px;">
-    <a class="icon-btn" href="#accueil" aria-label="Retour aux années">${ICONE.retour}</a><b>${esc(a.nom)}${a.sous ? " · " + esc(a.sous) : ""}</b><span style="width: 44px;"></span></div>`;
-  if (a.verrou) {
-    vue.innerHTML = retour + `<div class="vide">${ICONE_VERROU}<h2>${esc(a.nom)} est verrouillé</h2><p>Ce parcours ouvrira plus tard.</p></div>`;
-    return;
-  }
+  const tete = `<nav class="ariane" aria-label="Fil d'Ariane"><a href="#cours">Mes cours</a><span aria-hidden="true">›</span><span>${esc(a.nom)}</span></nav>
+    <header class="page-tete"><h1><span class="pastille-annee" style="--c: ${couleurAnnee(a)};"></span>${esc(a.nom)}${a.sous ? ` <span class="titre-sous">· ${esc(a.sous)}</span>` : ""}</h1></header>`;
+  const page = (html) => `<div class="page"><div class="page-corps">${tete}${html}</div></div>`;
+  if (a.verrou) { vue.innerHTML = page(`<div class="vide">${ICONE_VERROU}<h2>${esc(a.nom)} est verrouillé</h2><p>Ce parcours ouvrira plus tard.</p></div>`); return; }
   const outils = outilsAnnee(a);
   const matieres = matieresAnnee(a).slice();
   if (outils.some((o) => !place(o).matiere)) matieres.push(AUTRES);
   if (!matieres.length) {
-    vue.innerHTML = retour + vide(ICONE.grille, `Pas encore de matière en ${a.nom}`, "Les matières s'ajouteront ici au fil des cours.")
-      + (jeSuisAdmin ? `<div class="admin-raccourcis"><span class="sub">Admin</span><a class="btn" href="#admin">Ajouter une matière dans Admin ▸ Organisation</a></div>` : "");
+    vue.innerHTML = page(vide(ICONE.grille, `Pas encore de matière en ${a.nom}`, "Les matières s'ajouteront ici au fil des cours.")
+      + (jeSuisAdmin ? `<div class="admin-raccourcis"><span class="sub">Admin</span><a class="btn" href="#admin">Ajouter une matière dans Admin ▸ Organisation</a></div>` : ""));
     return;
   }
-  vue.innerHTML = retour + matieres.map((m) => {
+  vue.innerHTML = page(matieres.map((m) => {
     const liste = outils.filter((o) => (place(o).matiere?.id || AUTRES.id) === m.id);
     return `<section class="matiere-bloc" aria-label="${esc(m.complet || m.nom)}">
       <div class="matiere-tete">
-        <span class="mini-ring grand"><span>${visuel(m, "📚")}</span></span>
-        <div><h1>${esc(m.complet || m.nom)}</h1><p class="sub">${[m.complet ? m.nom : "", m.prof, `${liste.length} outil${liste.length > 1 ? "s" : ""}`].filter(Boolean).map(esc).join(" · ")}</p></div>
+        <span class="matiere-visuel">${visuel(m, "📚")}</span>
+        <div><h2>${esc(m.complet || m.nom)}</h2><p class="sub">${[m.complet ? m.nom : "", m.prof, pluriel(liste.length, "outil")].filter(Boolean).map(esc).join(" · ")}</p></div>
       </div>
       ${liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>` : `<p class="vide-mini">Pas encore d'outil dans cette matière.</p>`}
       ${jeSuisAdmin ? `<div class="admin-raccourcis"><span class="sub">Admin · ${esc(m.nom)}</span><button class="btn" type="button" data-placer-m="${esc(m.id)}">Placer un outil ici</button><button class="btn" type="button" data-creer-m="${esc(m.id)}">Créer un outil ici</button></div>` : ""}
     </section>`;
-  }).join("");
+  }).join(""));
   const mat = (x) => (x === AUTRES.id ? null : x);
   vue.querySelectorAll("[data-placer-m]").forEach((b) => (b.onclick = () => placerOutil(id, mat(b.dataset.placerM))));
   vue.querySelectorAll("[data-creer-m]").forEach((b) => (b.onclick = () => formNouvelOutil(id, mat(b.dataset.creerM))));
   brancherLignes();
+}
+
+/* ---------- À revoir / Mes erreurs ---------- */
+function nomCategorie(outil, ch) {
+  const o = OUTILS.find((x) => x.id === outil);
+  return (o?.categories || []).find(([id]) => id === ch)?.[1] || "";
+}
+function parOutil(liste) {
+  const g = new Map();
+  for (const e of liste) {
+    if (!g.has(e.o)) g.set(e.o, { outil: e.o, total: 0, cats: new Map() });
+    const x = g.get(e.o);
+    x.total++;
+    const c = nomCategorie(e.o, e.ch) || "Sans catégorie";
+    x.cats.set(c, (x.cats.get(c) || 0) + 1);
+  }
+  return [...g.values()];
+}
+function listeParOutil(liste, mode) {
+  return `<div class="groupes-revision">${parOutil(liste).map((g) => {
+    const o = OUTILS.find((x) => x.id === g.outil);
+    return `<div class="carte groupe-revision">
+      <div class="groupe-revision-tete"><span class="lo-emoji" style="--h:${teinte(o?.matiere || g.outil)}" aria-hidden="true">${esc(o?.emoji || "📝")}</span>
+        <span><b>${esc(o?.titre || g.outil)}</b><small>${pluriel(g.total, "question")}</small></span>
+        <a class="btn" href="${lienRevision(mode, g.outil)}">${mode === "revoir" ? "Revoir" : "Refaire"}</a></div>
+      <div class="puces-mat">${[...g.cats].map(([c, n]) => `<span>${esc(c)} · ${n}</span>`).join("")}</div>
+    </div>`;
+  }).join("")}</div>`;
+}
+function vueRevoir() {
+  const dus = C.aRevoir();
+  const tous = C.revisionsLocales();
+  const total = Object.keys(tous).length;
+  vue.innerHTML = `<div class="page"><div class="page-corps">
+    <header class="page-tete"><h1>À revoir</h1><p class="sub">La répétition espacée te repropose chaque question juste avant que tu l'oublies : le lendemain, puis 2, 4, 7, 15 et 30 jours si tu réponds juste. Jamais plus de 20 par jour.</p></header>
+    ${dus.length ? `<div class="carte bandeau-action"><span><b>${pluriel(dus.length, "question")} pour aujourd'hui</b><small>≈ ${Math.max(1, Math.round(dus.length * 0.5))} min</small></span><a class="btn btn-primary" href="${lienRevision("revoir")}">${ICONE_JOUER}Commencer</a></div>${listeParOutil(dus, "revoir")}`
+      : vide(ICONE_REVOIR, "Rien à revoir aujourd'hui", total ? "Tout est à jour. Reviens demain, ou avance dans un cours." : "Fais des QCM dans un outil : les questions reviendront ici au bon moment.")}
+  </div></div>`;
+}
+function vueErreurs() {
+  const err = C.erreurs();
+  vue.innerHTML = `<div class="page"><div class="page-corps">
+    <header class="page-tete"><h1>Mes erreurs</h1><p class="sub">Chaque question ratée arrive ici. Elle en sort dès que tu la réussis, ou si tu choisis « Je la connais ».</p></header>
+    ${err.length ? `<div class="carte bandeau-action"><span><b>${pluriel(err.length, "question")} à refaire</b><small>avec la correction de chaque proposition</small></span><a class="btn btn-primary" href="${lienRevision("erreurs")}">${ICONE_JOUER}Tout refaire</a></div>${listeParOutil(err, "erreurs")}`
+      : vide(ICONE_ERREUR, "Aucune erreur pour l'instant", "Les questions que tu rates dans les QCM arrivent ici toutes seules.")}
+  </div></div>`;
+}
+
+/* ---------- Recherche rapide (Ctrl K) ---------- */
+function ouvrirPalette() {
+  ouvrirModal(`<div class="palette">
+      <label class="palette-champ">${ICONE.loupe}<input id="pal-q" type="search" placeholder="Un outil, une matière, une année, une page…" autocomplete="off" aria-label="Rechercher"><kbd>Échap</kbd></label>
+      <div class="palette-liste" id="pal-liste" role="listbox" aria-label="Résultats"></div>
+    </div>`, (m) => {
+    m.classList.add("modal-palette");
+    const champ = $("#pal-q", m), liste = $("#pal-liste", m);
+    const entrees = [
+      ...outilsVisibles().map((o) => ({ titre: o.titre, sous: [o.type, o.matiere, anneeDe(place(o).annee)?.nom].filter(Boolean).join(" · "), href: o.fichier, ico: esc(o.emoji || "📝"), outil: o.id })),
+      ...CAT.matieres.filter((x) => anneeDe(x.annee) && !anneeDe(x.annee).verrou).map((x) => ({ titre: x.complet || x.nom, sous: `Matière · ${anneeDe(x.annee).nom}${x.prof ? " · " + x.prof : ""}`, href: "#" + x.annee, ico: visuel(x, "📚") })),
+      ...CAT.annees.filter((a) => !a.verrou).map((a) => ({ titre: `${a.nom}${a.sous ? " · " + a.sous : ""}`, sous: "Année", href: "#" + a.id, ico: "📅" })),
+      ...outilsVisibles().flatMap((o) => (o.categories || []).filter(([id]) => !(CAT.masques[o.id] || []).includes(id))
+        .map(([, nom]) => ({ titre: nom, sous: `Catégorie · ${o.titre}`, href: o.fichier, ico: esc(o.emoji || "📝"), outil: o.id }))),
+      ...(LEXIQUE || []).map((t) => ({ titre: t.t, sous: "Lexique · " + String(t.d || "").slice(0, 70), href: "outils/me-revision.html#lexique", ico: "Aa", outil: "me-revision" })),
+      { titre: "À revoir", sous: "Page · répétition espacée", href: "#revoir", ico: "↻" },
+      { titre: "Mes erreurs", sous: "Page", href: "#erreurs", ico: "✗" },
+      { titre: "Favoris", sous: "Page", href: "#favoris", ico: "♡" },
+      { titre: "Réglages", sous: "Page · thème, taille du texte, QCM", href: "#reglages", ico: "⚙" },
+      { titre: "Profil", sous: "Page", href: "#profil", ico: "👤" },
+    ];
+    let sel = 0, vus = [];
+    const dessiner = () => {
+      const q = sansAccents(champ.value.trim());
+      vus = entrees.filter((e) => !q || sansAccents(e.titre + " " + e.sous).includes(q)).slice(0, 12);
+      sel = Math.min(sel, Math.max(0, vus.length - 1));
+      liste.innerHTML = vus.length ? vus.map((e, i) => `<a class="palette-item${i === sel ? " sel" : ""}" role="option" aria-selected="${i === sel}" href="${esc(e.href)}" data-i="${i}">
+        <span class="palette-ico" aria-hidden="true">${e.ico}</span><span class="palette-txt"><b>${esc(e.titre)}</b><small>${esc(e.sous)}</small></span></a>`).join("")
+        : `<p class="vide-mini">Aucun résultat.</p>`;
+      liste.querySelectorAll("a").forEach((a) => (a.onclick = () => {
+        const e = vus[+a.dataset.i];
+        if (e.outil) { try { localStorage.setItem("dernier-outil", e.outil); } catch {} }
+        fermerModal();
+      }));
+      liste.querySelector(".sel")?.scrollIntoView({ block: "nearest" });
+    };
+    champ.oninput = () => { sel = 0; dessiner(); };
+    champ.onkeydown = (ev) => {
+      if (ev.key === "ArrowDown") { sel = Math.min(sel + 1, vus.length - 1); dessiner(); ev.preventDefault(); }
+      else if (ev.key === "ArrowUp") { sel = Math.max(sel - 1, 0); dessiner(); ev.preventDefault(); }
+      else if (ev.key === "Enter" && vus[sel]) { ev.preventDefault(); liste.querySelectorAll("a")[sel].click(); }
+    };
+    dessiner();
+    champ.focus();
+  });
+}
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); ouvrirPaletteAvecLexique(); }
+});
+/** Le lexique de M.E. est chargé à la première ouverture, puis la recherche s'ouvre. */
+function ouvrirPaletteAvecLexique() {
+  if (LEXIQUE || !outilsVisibles().some((o) => o.id === "me-revision")) return ouvrirPalette();
+  chargerLexique().then(ouvrirPalette);
+}
+
+/* ---------- Barre latérale : compteurs et arbre « Mes cours » ---------- */
+function majBarreLaterale(actif) {
+  const dus = C.aRevoir().length, err = C.erreurs().length;
+  const b1 = $("#compte-revoir"), b2 = $("#compte-erreurs");
+  if (b1) { b1.textContent = dus > 19 ? "20" : String(dus); b1.hidden = !dus; }
+  if (b2) { b2.textContent = String(err); b2.hidden = !err; }
+  const arbre = $("#arbre-cours");
+  if (!arbre) return;
+  arbre.innerHTML = `<a class="arbre-titre${actif === "cours" ? " actif" : ""}" href="#cours">Mes cours</a>` + CAT.annees.map((a) => {
+    if (a.verrou) return `<span class="arbre-annee verrou">${ICONE_VERROU}${esc(a.nom)} · bientôt</span>`;
+    const mats = matieresAnnee(a);
+    return `<a class="arbre-annee${actif === a.id ? " actif" : ""}" href="#${esc(a.id)}"${actif === a.id ? ` aria-current="page"` : ""}><i style="background: ${couleurAnnee(a)};"></i>${esc(a.nom)}${a.sous ? `<small>${esc(a.sous)}</small>` : ""}</a>`
+      + mats.map((m) => `<a class="arbre-matiere" href="#${esc(a.id)}">${esc(m.nom)}</a>`).join("");
+  }).join("");
 }
 
 /* Un outil = une ligne : emoji, titre, type, meilleur score, favori. */
@@ -395,16 +620,18 @@ async function majCompteurs() {
 let recherche = "";
 
 function vueRecherche() {
-  vue.innerHTML = `
-    <div class="recherche"><input id="champ" class="champ" type="search" placeholder="Rechercher un QCM, une matière…" aria-label="Rechercher" autocomplete="off" enterkeyhint="search"></div>
-    <div id="resultats"></div>`;
+  vue.innerHTML = `<div class="page"><div class="page-corps">
+    <header class="page-tete"><h1>Recherche</h1><p class="sub">Astuce sur ordinateur : Ctrl K ouvre la recherche rapide depuis n'importe quelle page.</p></header>
+    <input id="champ" class="champ" type="search" placeholder="Rechercher un QCM, une matière…" aria-label="Rechercher" autocomplete="off" enterkeyhint="search">
+    <div id="resultats"></div></div></div>`;
   const champ = $("#champ");
   champ.value = recherche;
   const maj = () => {
     recherche = champ.value;
     const q = sansAccents(recherche.trim());
     const liste = outilsVisibles().filter((o) => !q || sansAccents(`${o.titre} ${o.matiere} ${o.description}`).includes(q));
-    $("#resultats").innerHTML = liste.length ? grille(liste) : vide(ICONE.loupe, "Aucun résultat", "Essaie un autre mot-clé.");
+    $("#resultats").innerHTML = liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>` : vide(ICONE.loupe, "Aucun résultat", "Essaie un autre mot-clé.");
+    brancherLignes();
   };
   champ.addEventListener("input", maj);
   maj();
@@ -415,8 +642,9 @@ function vueRecherche() {
 function vueFavoris() {
   const fav = C.favorisLocaux();
   const liste = outilsVisibles().filter((o) => fav.has(o.id));
-  vue.innerHTML = `<h1 class="titre-vue">Favoris</h1>` + (liste.length ? grille(liste)
-    : vide(ICONE.coeur, "Aucun favori", "Touche ♡ ou tape deux fois sur un QCM pour le retrouver ici."));
+  vue.innerHTML = `<div class="page"><div class="page-corps"><header class="page-tete"><h1>Favoris</h1><p class="sub">Les outils que tu as marqués d'un ♡.</p></header>` + (liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>`
+    : vide(ICONE.coeur, "Aucun favori", "Touche ♡ sur un outil pour le retrouver ici.")) + `</div></div>`;
+  brancherLignes();
 }
 
 /* ---------- Profil + connexion ---------- */
@@ -843,7 +1071,7 @@ function vueReglages() {
     <div class="groupe">
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
         "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 12 · site de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 13 · site de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div>`;
@@ -1734,7 +1962,8 @@ async function enregistrerBrouillon() {
 }
 
 /* ---------- Navigation ---------- */
-const VUES = { accueil: vueAccueil, recherche: vueRecherche, favoris: vueFavoris, profil: vueProfil, reglages: vueReglages, admin: vueAdmin };
+const VUES = { accueil: vueAccueil, cours: vueCours, revoir: vueRevoir, erreurs: vueErreurs, recherche: vueRecherche, favoris: vueFavoris, profil: vueProfil, reglages: vueReglages, admin: vueAdmin };
+const LARGEUR_VUE = { profil: "etroite", reglages: "etroite", admin: "moyenne", edit: "moyenne" };
 let rendu = 0;
 
 function route() {
@@ -1744,6 +1973,8 @@ function route() {
   arretVue = null;
   const nom = location.hash.slice(1) || "accueil";
   if (nom.startsWith("edit-")) {
+    vue.className = "vue vue-moyenne";
+    majBarreLaterale("admin");
     document.querySelectorAll(".tab").forEach((t) => {
       const actif = t.dataset.vue === "admin";
       t.classList.toggle("actif", actif);
@@ -1752,11 +1983,13 @@ function route() {
     return vueEditeur(nom.slice(5));
   }
   const annee = anneeDe(nom) ? nom : null;
-  const cle = annee ? "accueil" : Object.prototype.hasOwnProperty.call(VUES, nom) ? nom : "accueil";
-  const onglet = cle === "reglages" && !matchMedia("(min-width: 1000px)").matches ? "profil" : cle;
+  const cle = annee ? "cours" : Object.prototype.hasOwnProperty.call(VUES, nom) ? nom : "accueil";
+  const onglet = cle === "reglages" ? "profil" : cle;
+  vue.className = "vue vue-" + (annee ? "large" : LARGEUR_VUE[cle] || "large");
+  majBarreLaterale(annee || cle);
   if (annee) {
     document.querySelectorAll(".tab").forEach((t) => {
-      const actif = t.dataset.vue === "accueil";
+      const actif = t.dataset.vue === "cours";
       t.classList.toggle("actif", actif);
       if (actif) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
     });
@@ -1780,7 +2013,8 @@ function majOngletProfil(u) {
 
 window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); });
 window.addEventListener("pageshow", (e) => { if (e.persisted) route(); }); // retour d'un QCM : scores à jour
-$("#partager-site").onclick = () => partager("EOPour les nuls", lienSite());
+$("#ouvrir-recherche").onclick = ouvrirPaletteAvecLexique;
+$("#recherche-k").onclick = ouvrirPaletteAvecLexique;
 let jeSuisAdmin = false;
 C.surChangement(async (u) => {
   majOngletProfil(u);

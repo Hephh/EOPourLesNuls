@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Révision · EOPour les nuls</title>
+<meta name="theme-color" content="#ffffff">
+<script src="../reglages.js?v=13"></script>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icones/icone-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
+<link rel="stylesheet" href="../style.css?v=13">
+<style>
+  /* Révision : « À revoir » (répétition espacée) et « Mes erreurs », toutes sources mélangées */
+  .rv-tete { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 14px; padding: max(8px, env(safe-area-inset-top)) 16px 8px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .rv-tete .icon-btn svg { width: 24px; height: 24px; }
+  .rv-segments { flex: 1; display: flex; gap: 3px; }
+  .rv-segments i { flex: 1; height: 6px; border-radius: 3px; background: var(--bg-2); }
+  .rv-segments i.ok { background: var(--ok); }
+  .rv-segments i.ko { background: var(--ko); }
+  .rv-segments i.cour { background: var(--accent); }
+  .rv-compte { color: var(--muted); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .rv-corps { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px 28px; max-width: 1120px; margin: 0 auto; padding: 24px 16px 120px; }
+  .rv-main { flex: 999 1 520px; max-width: 760px; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+  .rv-puces { display: flex; flex-wrap: wrap; gap: 8px; }
+  .rv-puces span { padding: 5px 12px; border-radius: 99px; background: var(--bg-2); font-size: 13px; font-weight: 600; }
+  .rv-puces .src { background: var(--accent-soft); color: var(--accent-ink); }
+  #rv-question { margin: 0; font: 600 clamp(1.2rem, 3.4vw, 1.5rem)/1.35 "Space Grotesk", Inter, sans-serif; }
+  .rv-consigne { margin: 0; color: var(--muted); font-size: 14px; }
+  #rv-image { display: block; max-width: 100%; max-height: 340px; margin: 0 auto; border-radius: 12px; background: var(--bg-2); object-fit: contain; }
+  .rv-opts { display: flex; flex-direction: column; gap: 10px; }
+  .rv-opt { display: flex; align-items: flex-start; gap: 14px; width: 100%; padding: 14px 16px; border: 2px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+  .rv-opt:hover:not(:disabled) { border-color: var(--accent); }
+  .rv-opt:disabled { cursor: default; }
+  .rv-lettre { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: var(--bg-2); font-weight: 700; font-size: 14px; }
+  .rv-opt-txt { flex: 1; display: flex; flex-direction: column; gap: 4px; padding-top: 5px; }
+  .rv-pourquoi { color: var(--muted); font-size: 14px; line-height: 1.45; }
+  .rv-etat { flex: none; padding-top: 5px; font-weight: 800; }
+  .rv-opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .rv-opt[aria-pressed="true"] .rv-lettre { background: var(--accent); color: var(--accent-text); }
+  .rv-opt.ok { border-color: var(--ok); background: var(--ok-soft); }
+  .rv-opt.ok .rv-lettre { background: var(--ok); color: var(--bg); }
+  .rv-opt.ko { border-color: var(--ko); background: var(--ko-soft); }
+  .rv-opt.ko .rv-lettre { background: var(--ko); color: var(--bg); }
+  .rv-opt.manque { border-color: var(--ok); border-style: dashed; }
+  .rv-opt.ok .rv-etat, .rv-opt.manque .rv-etat { color: var(--ok); }
+  .rv-opt.ko .rv-etat { color: var(--ko); }
+  .rv-correction { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; border-radius: 16px; }
+  .rv-correction.ok { background: var(--ok-soft); }
+  .rv-correction.ko { background: var(--ko-soft); }
+  .rv-verdict { font: 700 1.1rem "Space Grotesk", Inter, sans-serif; }
+  .rv-correction.ok .rv-verdict { color: var(--ok); }
+  .rv-correction.ko .rv-verdict { color: var(--ko); }
+  .rv-correction p { margin: 0; line-height: 1.55; white-space: pre-line; }
+  .rv-quand { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  .rv-quand > span { flex: 1 1 220px; color: var(--muted); font-size: 14px; }
+  .rv-quand .btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+  .rv-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; justify-content: center; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); background: linear-gradient(to top, var(--bg) 70%, transparent); }
+  .rv-actions .inner { display: flex; justify-content: flex-end; gap: 10px; width: min(760px, 100%); }
+  .rv-actions .btn { min-height: 50px; padding: 0 24px; font-size: 1rem; }
+  .rv-aide { color: var(--muted); font-size: 13px; }
+  @media (pointer: coarse) { .rv-aide { display: none; } }
+  .rv-aside { flex: 1 1 240px; max-width: 300px; display: flex; flex-direction: column; gap: 14px; }
+  .rv-aside .carte { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .rv-aside small { color: var(--muted); }
+  .rv-etat-page { max-width: 560px; margin: 12vh auto 0; padding: 0 20px; text-align: center; }
+  .rv-etat-page h1 { margin: 0 0 8px; }
+  .rv-etat-page p { margin: 0 0 18px; color: var(--muted); }
+  .rv-etat-page .btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .rv-score { margin: 10px 0; font: 700 3rem/1 "Space Grotesk", Inter, sans-serif; color: var(--accent-ink); }
+</style>
+</head>
+<body>
+<header class="rv-tete">
+  <a class="icon-btn" id="rv-quitter" href="../index.html#accueil" aria-label="Quitter la révision"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></a>
+  <div class="rv-segments" id="rv-segments" aria-hidden="true"></div>
+  <span class="rv-compte" id="rv-compte"></span>
+</header>
+<div id="rv-page"><p class="rv-etat-page">Chargement…</p></div>
+
+<script type="module">
+import * as C from "../compte.js?v=13";
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const params = new URLSearchParams(location.search);
+const MODE = params.get("mode") === "erreurs" ? "erreurs" : "revoir";
+const FILTRE = params.get("outil") || "";
+const R = window.Reglages ? window.Reglages.lire() : {};
+const VIBRER = R.vibrations !== false && typeof navigator.vibrate === "function";
+/** Clé d'une question écrite dans l'admin (même calcul que outils/contenu.html). */
+const cleQ = (t) => { let h = 5381; for (const c of String(t)) h = ((h * 33) ^ c.codePointAt(0)) >>> 0; return "q" + h.toString(36); };
+$("#rv-quitter").href = "../index.html#" + (MODE === "erreurs" ? "erreurs" : "revoir");
+
+function charger(src) {
+  return new Promise((ok) => { const s = document.createElement("script"); s.src = src; s.onload = () => ok(true); s.onerror = () => ok(false); document.head.append(s); });
+}
+
+/* Questions de chaque source, sous une même forme : { q, opts: [{ texte, bonne, pourquoi }], ex, image, ch, source } */
+async function questions(entrees) {
+  const res = new Map();
+  const outils = [...new Set(entrees.map((e) => e.o))];
+  const cat = (await C.chargerCatalogue()) || C.catalogueLocal() || { outils: {} };
+  for (const o of outils) {
+    if (o === "me-revision") {
+      window.CONTENT = window.CONTENT || {};
+      if (!window.CONTENT.qcm) { await charger("me-revision/content.js?v=4"); await charger("me-revision/qcm.js?v=4"); }
+      const chs = Object.fromEntries((window.CONTENT.chapters || []).map((c) => [c.id, c.short || c.name]));
+      for (const q of window.CONTENT.qcm || []) {
+        res.set(o + "|" + q.id, { q: q.q, opts: q.o.map(([texte, bonne, pourquoi]) => ({ texte, bonne: !!bonne, pourquoi: pourquoi || "" })), ex: q.ex || "",
+          ch: q.ch, chNom: chs[q.ch] || "", source: q.src === "an" ? "Annale" + (q.ref ? " · " + q.ref.split(",")[0] : "") : q.src === "va" ? "Variante d'annale" : "Entraînement", outilNom: "Révision M.E." });
+      }
+    } else if (cat.outils?.[o]?.perso) {
+      const d = await C.contenu(o);
+      for (const q of d?.questions || []) {
+        res.set(o + "|" + cleQ(q.q), { q: q.q, opts: q.choix.map((texte, k) => ({ texte, bonne: q.bonnes.includes(k), pourquoi: "" })), ex: q.explication || "", image: q.image || "",
+          ch: null, chNom: "", source: "QCM", outilNom: cat.outils[o].titre || "QCM" });
+      }
+    }
+  }
+  return res;
+}
+
+let serie = [], i = 0, choisis = new Set(), corrige = false, resultats = [], quand = null;
+
+function segments() {
+  $("#rv-segments").innerHTML = serie.map((_, k) => `<i class="${resultats[k] === true ? "ok" : resultats[k] === false ? "ko" : k === i ? "cour" : ""}"></i>`).join("");
+  $("#rv-compte").textContent = serie.length ? `${Math.min(i + 1, serie.length)} / ${serie.length}` : "";
+}
+
+const texteBilan = () => {
+  const ok = resultats.filter((x) => x === true).length, ko = resultats.filter((x) => x === false).length;
+  return `${ok} juste${ok > 1 ? "s" : ""} · ${ko} fausse${ko > 1 ? "s" : ""} · ${serie.length - ok - ko} restante${serie.length - ok - ko > 1 ? "s" : ""}`;
+};
+
+function afficher() {
+  const it = serie[i];
+  choisis = new Set();
+  corrige = false;
+  quand = null;
+  segments();
+  $("#rv-page").innerHTML = `<div class="rv-corps">
+    <main class="rv-main">
+      <div class="rv-puces"><span class="src">${esc(it.source)}</span><span>${esc(it.outilNom)}${it.chNom ? " · " + esc(it.chNom) : ""}</span></div>
+      <h1 id="rv-question">${esc(it.q)}</h1>
+      <img id="rv-image" alt="" hidden>
+      <p class="rv-consigne">Une ou plusieurs réponses justes<span class="rv-aide"> · touches 1 à ${it.opts.length} pour cocher, Entrée pour valider</span></p>
+      <div class="rv-opts" id="rv-opts">${it.opts.map((o, k) => `<button class="rv-opt" type="button" data-k="${k}" aria-pressed="false">
+        <span class="rv-lettre">${"ABCDEFGH"[k]}</span><span class="rv-opt-txt"><span>${esc(o.texte)}</span><span class="rv-pourquoi" hidden>${esc(o.pourquoi)}</span></span><span class="rv-etat" aria-hidden="true"></span></button>`).join("")}</div>
+      <div id="rv-correction"></div>
+    </main>
+    <aside class="rv-aside">
+      <section class="carte"><span class="rail-titre">${MODE === "erreurs" ? "Mes erreurs" : "À revoir"}</span>
+        <span id="rv-bilan">${texteBilan()}</span>
+        <small>${MODE === "erreurs" ? "Une question réussie sort de « Mes erreurs »." : "Une question réussie revient plus tard ; ratée, elle revient demain."}</small></section>
+    </aside>
+  </div>
+  <div class="rv-actions"><div class="inner"><button class="btn btn-primary" type="button" id="rv-action" disabled>Valider</button></div></div>`;
+  if (it.image) C.media(it.image).then((d) => { const img = $("#rv-image"); if (d && img) { img.src = d; img.hidden = false; } });
+  document.querySelectorAll(".rv-opt").forEach((b) => (b.onclick = () => basculer(+b.dataset.k)));
+  $("#rv-action").onclick = action;
+  window.scrollTo({ top: 0 });
+}
+
+function basculer(k) {
+  if (corrige) return;
+  if (choisis.has(k)) choisis.delete(k); else choisis.add(k);
+  const b = document.querySelector(`.rv-opt[data-k="${k}"]`);
+  b?.setAttribute("aria-pressed", String(choisis.has(k)));
+  $("#rv-action").disabled = !choisis.size;
+}
+
+function valider() {
+  const it = serie[i];
+  corrige = true;
+  const juste = it.opts.every((o, k) => o.bonne === choisis.has(k));
+  resultats[i] = juste;
+  C.noterReponse(it.outil, it.qid, juste, { ch: it.ch });
+  const bil = $("#rv-bilan");
+  if (bil) bil.textContent = texteBilan();
+  if (VIBRER) navigator.vibrate(juste ? 35 : [70, 50, 70]);
+  document.querySelectorAll(".rv-opt").forEach((b) => {
+    const k = +b.dataset.k, o = it.opts[k], coche = choisis.has(k);
+    b.disabled = true;
+    if (o.bonne && coche) b.classList.add("ok");
+    else if (!o.bonne && coche) b.classList.add("ko");
+    else if (o.bonne) b.classList.add("manque");
+    $(".rv-etat", b).textContent = o.bonne ? (coche ? "✓" : "✓ à cocher") : coche ? "✗" : "";
+    const p = $(".rv-pourquoi", b);
+    p.hidden = !o.pourquoi;
+  });
+  const bonnes = it.opts.map((o, k) => (o.bonne ? "ABCDEFGH"[k] : "")).filter(Boolean).join(", ");
+  $("#rv-correction").innerHTML = `<section class="rv-correction ${juste ? "ok" : "ko"}" aria-live="polite">
+      <span class="rv-verdict">${juste ? "Juste ✓" : `Faux : la bonne réponse est ${esc(bonnes)}`}</span>
+      ${it.ex ? `<p>${esc(it.ex)}</p>` : ""}
+    </section>
+    <section class="rv-quand" aria-label="Quand la revoir">
+      <span>Quand la revoir ? Ton choix règle la répétition espacée.</span>
+      <button class="btn" type="button" data-quand="bientot" aria-pressed="false">Bientôt</button>
+      <button class="btn" type="button" data-quand="jours" aria-pressed="false">Dans quelques jours</button>
+      <button class="btn" type="button" data-quand="sue" aria-pressed="false">Je la connais</button>
+    </section>`;
+  document.querySelectorAll("[data-quand]").forEach((b) => (b.onclick = () => {
+    quand = b.dataset.quand;
+    C.planifierRevision(it.outil, it.qid, quand);
+    document.querySelectorAll("[data-quand]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  }));
+  segments();
+  const btn = $("#rv-action");
+  btn.textContent = i + 1 < serie.length ? "Question suivante →" : "Voir le bilan";
+  btn.disabled = false;
+  $("#rv-correction").scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+function action() {
+  if (!corrige) { if (choisis.size) valider(); return; }
+  i++;
+  if (i < serie.length) afficher(); else bilan();
+}
+
+function bilan() {
+  C.noterActivite();
+  const ok = resultats.filter((x) => x === true).length;
+  segments();
+  $("#rv-compte").textContent = "Terminé";
+  const reste = MODE === "erreurs" ? C.erreurs().length : C.aRevoir().length;
+  $("#rv-page").innerHTML = `<div class="rv-etat-page">
+    <h1>Bien joué</h1>
+    <p class="rv-score">${ok} / ${serie.length}</p>
+    <p>${ok === serie.length ? "Tout juste : ces questions reviendront plus tard." : "Les questions ratées reviennent demain et restent dans « Mes erreurs »."}${reste ? ` Il en reste ${reste} ${MODE === "erreurs" ? "dans tes erreurs" : "à revoir aujourd'hui"}.` : ""}</p>
+    <div class="btns">${reste ? `<a class="btn btn-primary" href="revision.html?mode=${MODE}">Continuer (${reste})</a>` : ""}<a class="btn${reste ? "" : " btn-primary"}" href="../index.html#accueil">Retour à Aujourd'hui</a></div>
+  </div>`;
+}
+
+document.addEventListener("keydown", (e) => {
+  if (!serie.length || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (/^[1-8]$/.test(e.key) && !corrige) { const k = +e.key - 1; if (k < serie[i].opts.length) { basculer(k); e.preventDefault(); } }
+  else if (e.key === "Enter" && document.activeElement?.tagName !== "A") { e.preventDefault(); action(); }
+});
+
+async function demarrer() {
+  let entrees = MODE === "erreurs" ? C.erreurs() : C.aRevoir();
+  if (FILTRE) entrees = entrees.filter((e) => e.o === FILTRE);
+  const banque = await questions(entrees);
+  serie = entrees.map((e) => ({ ...banque.get(e.o + "|" + e.q), outil: e.o, qid: e.q, ch: e.ch })).filter((x) => x.q);
+  if (MODE === "erreurs") serie = serie.slice(0, 20);
+  if (!serie.length) {
+    $("#rv-page").innerHTML = `<div class="rv-etat-page"><h1>${MODE === "erreurs" ? "Aucune erreur à refaire" : "Rien à revoir aujourd'hui"}</h1>
+      <p>${MODE === "erreurs" ? "Les questions que tu rates dans les QCM arrivent ici toutes seules." : "Fais des QCM : chaque question reviendra ici au bon moment."}</p>
+      <div class="btns"><a class="btn btn-primary" href="../index.html#cours">Mes cours</a><a class="btn" href="../index.html#accueil">Aujourd'hui</a></div></div>`;
+    return;
+  }
+  afficher();
+}
+demarrer();
+</script>
+</body>
+</html>

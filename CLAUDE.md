@@ -5,9 +5,13 @@ HTML/CSS/JS pur (modules ES) : pas de build, pas de npm, pas de framework, pas d
 Le propriétaire débute : réponds en français et résume en une phrase ce que tu as changé.
 
 ## Structure
-- `index.html` — l'appli : Accueil (bulles des années P1…P5, SOPK verrouillé), page d'une année `#p1`…`#p5`
-  (bulles des matières, puis les outils de la matière en lignes), Recherche, Favoris, Profil
-  (série 🔥, objectif du jour, 7 derniers jours), Réglages, Admin. Navigation par `#hash`.
+- `index.html` — l'appli, design « tableau de bord » (maquette validée : version ultime, base A) : barre latérale sur
+  ordinateur (Ctrl K, Aujourd'hui, À revoir, Mes erreurs, Favoris, arbre « Mes cours », Admin, Profil), barre du bas sur
+  téléphone. Vues `#accueil` (Aujourd'hui : plan du jour en 3 étapes, maîtrise par catégorie, cours, colonne de droite),
+  `#cours`, `#p1`…`#p5` (matières l'une sous l'autre, outils en cartes), `#revoir`, `#erreurs`, `#recherche`, `#favoris`,
+  `#profil`, `#reglages`, `#admin`, `#edit-<id>`. Recherche rapide Ctrl K (outils, matières, catégories, lexique M.E.).
+- `outils/revision.html?mode=revoir|erreurs[&outil=id]` — joue « À revoir » / « Mes erreurs » toutes sources mélangées
+  (M.E. : `me-revision/content.js` + `qcm.js` ; outils créés dans l'admin : `contenus/{id}`, clé = `cleQ(énoncé)`).
 - `outils.js` — **liste des outils** (`OUTILS`, avec leur `annee`), années (`ANNEES`), emoji des matières (`MATIERES`),
   nom complet et enseignant d'une matière (`INFOS_MATIERES`). Seul endroit à modifier pour qu'un outil apparaisse.
 - `style.css` — thème partagé (clair/sombre via `data-theme`, dégradé de la marque, composants). À réutiliser partout.
@@ -88,6 +92,9 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   et par outil `titre`, `emoji`, `nouveau`, `perso` (outil créé depuis l'admin).
 - Thème (par défaut `clair`) : `clair | papier | menthe | auto | sombre | oled | nuit` → `data-theme` (light/dark) + `data-nuance` (papier, menthe, oled, nuit). Mode fun (`fun` : null = pas
   encore demandé à la 1re connexion) : désactivé → `data-fun="off"`, plus de série, d'objectif ni de graphique de la semaine.
+- Répétition espacée (`compte.js`) : `noterReponse(outil, question, juste, { ch })` à chaque question corrigée (M.E. via
+  `record()` de `app.js`, `contenu.html`, `revision.html`), `planifierRevision(…, "bientot"|"jours"|"sue")`, `aRevoir()` (20/jour max),
+  `erreurs()`, `maitrise(outil)`. Données : localStorage `revisions` + `users/{uid}.revisions` (fusion dans `synchroniser()`).
 - Taille du texte : réglage `texte` (85 à 140 %) → variable CSS `--texte` posée par `reglages.js` sur `<html>`.
 
 ## Mise en ligne

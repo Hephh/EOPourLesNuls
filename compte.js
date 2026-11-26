@@ -5,7 +5,7 @@
      appareils dans Firestore (un document par membre : users/{uid}).
    Les pages n'écrivent jamais directement dans Firestore : elles passent ici.
    ===================================================================== */
-import { FIREBASE_CONFIG } from "./firebase-config.js?v=12";
+import { FIREBASE_CONFIG } from "./firebase-config.js?v=13";
 
 const CDN = "https://www.gstatic.com/firebasejs/13.4.0/";
 
@@ -66,7 +66,7 @@ export function serieJours(a = activiteLocale()) {
 function viderAppareil() {
   try {
     for (const cle of Object.keys(localStorage)) {
-      if (cle === "favoris" || cle === "activite" || cle.startsWith("score:outils/")) localStorage.removeItem(cle);
+      if (cle === "favoris" || cle === "activite" || cle === "revisions" || cle.startsWith("score:outils/")) localStorage.removeItem(cle);
     }
   } catch {}
 }
@@ -161,6 +161,16 @@ async function synchroniser() {
   const act = elaguer(activite);
   ecrire("activite", act);
 
+  // Révisions (répétition espacée) : la plus récente de chaque question gagne
+  const revs = { ...(distant.revisions && typeof distant.revisions === "object" ? distant.revisions : {}) };
+  for (const [k, e] of Object.entries(revisionsLocales())) { const d = revs[k]; if (!d || (Number(d.t) || 0) < (Number(e.t) || 0)) revs[k] = e; }
+  const revisions = {};
+  for (const [k, e] of Object.entries(revs).sort((a, b) => (Number(b[1]?.t) || 0) - (Number(a[1]?.t) || 0)).slice(0, MAX_REVISIONS)) {
+    const s = revisionSure(e);
+    if (s) revisions[k] = s;
+  }
+  ecrire("revisions", revisions);
+
   if (nomEnAttente) { u.nom = nomEnAttente; nomEnAttente = null; }
   else if (distant.nom) u.nom = String(distant.nom).slice(0, 40);
   u.avatar = avatarSur(distant.avatar);
@@ -175,6 +185,7 @@ async function synchroniser() {
     favoris: [...favoris],
     scores,
     activite: act,
+    revisions,
     creeLe: distant.creeLe || F.serverTimestamp(),
     vuLe: F.serverTimestamp(),
   });
@@ -252,18 +263,107 @@ export function basculerFavori(id, forcer) {
 export async function reinitialiserProgression() {
   try {
     for (const cle of Object.keys(localStorage)) {
-      if (cle === "activite" || cle.startsWith("score:outils/")) localStorage.removeItem(cle);
+      if (cle === "activite" || cle === "revisions" || cle.startsWith("score:outils/")) localStorage.removeItem(cle);
     }
   } catch {}
   await pret;
   if (!fb || !courant) return true;
   try {
-    await fb.F.updateDoc(fb.F.doc(fb.db, "users", courant.uid), { scores: {}, activite: {} });
+    await fb.F.updateDoc(fb.F.doc(fb.db, "users", courant.uid), { scores: {}, activite: {}, revisions: {} });
     return true;
   } catch (e) {
     console.warn("Réinitialisation non synchronisée :", e.code || e.message);
     return false;
   }
+}
+
+/* ---------- Répétition espacée (« À revoir ») et « Mes erreurs » ----------
+   revisions = { "<outil>|<question>": { o, q, ch (catégorie), b (boîte 0 à 5), d (jour où la revoir, AAAA-MM-JJ),
+   n (essais), ok (justes), j (dernière réponse juste ?), t (date en ms) } }.
+   Sur l'appareil (localStorage « revisions ») et dans le compte (users/{uid}.revisions, fusionné par synchroniser()). */
+const INTERVALLES = [1, 2, 4, 7, 15, 30];     // jours avant de revoir une question, selon sa boîte
+const MAX_A_REVOIR = 20;                       // jamais plus de 20 questions par jour (pas de « pile infinie »)
+const MAX_REVISIONS = 2500;
+const plusJours = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return jourCle(d); };
+export function revisionsLocales() {
+  const r = lire("revisions", {});
+  return r && typeof r === "object" && !Array.isArray(r) ? r : {};
+}
+function revisionSure(e) {
+  if (!e || typeof e !== "object" || typeof e.o !== "string" || typeof e.q !== "string") return null;
+  return {
+    o: e.o.slice(0, 80), q: e.q.slice(0, 80), ch: typeof e.ch === "string" ? e.ch.slice(0, 40) : null,
+    b: Math.min(5, Math.max(0, Number(e.b) | 0)), d: /^\d{4}-\d{2}-\d{2}$/.test(e.d) ? e.d : jourCle(),
+    n: Math.max(0, Number(e.n) | 0), ok: Math.max(0, Number(e.ok) | 0), j: !!e.j, t: Number(e.t) || 0,
+  };
+}
+let lotRevisions = {}, minuteurRevisions = null;
+function pousserRevision(cle, e) {
+  if (!fb || !courant) return;
+  lotRevisions[cle] = e;
+  clearTimeout(minuteurRevisions);
+  minuteurRevisions = setTimeout(async () => {
+    const lot = lotRevisions;
+    lotRevisions = {};
+    try { await fb.F.setDoc(fb.F.doc(fb.db, "users", courant.uid), { revisions: lot }, { merge: true }); }
+    catch (err) { console.warn("Révisions non synchronisées :", err.code || err.message); }
+  }, 1500);
+}
+function majRevision(cle, f) {
+  const toutes = revisionsLocales();
+  const e = revisionSure(f(revisionSure(toutes[cle])));
+  if (!e) return null;
+  toutes[cle] = e;
+  ecrire("revisions", toutes);
+  pousserRevision(cle, e);
+  return e;
+}
+/** À appeler quand une question est corrigée (juste = toutes les bonnes cases, aucune fausse). */
+export function noterReponse(outil, question, juste, info = {}) {
+  outil = String(outil);
+  question = String(question);
+  return majRevision(outil + "|" + question, (e) => {
+    const b = juste ? Math.min(5, (e ? e.b : 0) + 1) : 0;
+    return { o: outil, q: question, ch: info.ch || e?.ch || null, b, d: plusJours(juste ? INTERVALLES[b] : 1),
+      n: (e?.n || 0) + 1, ok: (e?.ok || 0) + (juste ? 1 : 0), j: !!juste, t: Date.now() };
+  });
+}
+/** Après la correction, l'élève choisit : « bientot » (demain), « jours » (dans 3 jours) ou « sue » (je la connais). */
+export function planifierRevision(outil, question, choix) {
+  const cle = outil + "|" + question;
+  if (!revisionsLocales()[cle]) return null;
+  return majRevision(cle, (e) => {
+    const b = choix === "sue" ? Math.min(5, e.b + 1) : choix === "bientot" ? 0 : Math.max(1, e.b);
+    const jours = choix === "bientot" ? 1 : choix === "jours" ? 3 : INTERVALLES[b] * 2;
+    return { ...e, b, d: plusJours(jours), j: choix === "sue" ? true : e.j, t: Date.now() };
+  });
+}
+/** Questions à revoir aujourd'hui (les plus en retard d'abord), 20 au plus. */
+export function aRevoir(limite = MAX_A_REVOIR) {
+  const auj = jourCle();
+  return Object.values(revisionsLocales()).map(revisionSure).filter((e) => e && e.d <= auj)
+    .sort((a, b) => a.d.localeCompare(b.d) || a.b - b.b).slice(0, limite);
+}
+/** Questions dont la dernière réponse était fausse, les plus récentes d'abord. */
+export function erreurs() {
+  return Object.values(revisionsLocales()).map(revisionSure).filter((e) => e && !e.j).sort((a, b) => b.t - a.t);
+}
+export const NIVEAUX_MAITRISE = ["À découvrir", "Vu", "En progrès", "Familier", "Maîtrisé"];
+/** Maîtrise d'un outil par catégorie : { <catégorie>: { vues, justes, niveau 0 à 4 } }. */
+export function maitrise(outil) {
+  const res = {};
+  for (const e of Object.values(revisionsLocales()).map(revisionSure)) {
+    if (!e || e.o !== outil || !e.ch) continue;
+    const m = (res[e.ch] ||= { vues: 0, justes: 0, sues: 0 });
+    m.vues++;
+    if (e.j) m.justes++;
+    if (e.b >= 3) m.sues++;
+  }
+  for (const m of Object.values(res)) {
+    const taux = m.justes / m.vues;
+    m.niveau = taux < 0.5 ? 1 : taux < 0.8 ? 2 : m.sues >= Math.max(3, m.vues * 0.6) ? 4 : 3;
+  }
+  return res;
 }
 
 /* ---------- Connexion ---------- */
