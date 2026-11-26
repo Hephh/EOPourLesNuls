@@ -46,3 +46,6 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
 ## Mise en ligne
 Site : https://hephh.github.io/EOPourLesNuls/ (respecter les majuscules).
 GitHub Pages, repo `Hephh/EOPourLesNuls`, branche `main`, racine : commit + push sur `main` → en ligne en ~1 min.
+Cache : `style.css`, `outils.js`, `compte.js` et `firebase-config.js` sont chargés avec `?v=N`.
+Dès qu'un commit modifie l'un d'eux, remplacer `?v=N` par `?v=N+1` **dans tous les fichiers**
+(chercher `?v=`) ; sinon les visiteurs gardent l'ancienne version jusqu'à 10 min, avec des pages cassées.
