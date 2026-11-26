@@ -348,14 +348,15 @@ td:first-child{font-family:var(--serif);font-weight:650;font-size:16px}
 .sch .axc{fill:var(--bg);stroke:var(--ink2);stroke-width:1.4}
 .sch .ar{fill:none;stroke:var(--red);stroke-width:2.4;stroke-linecap:round;marker-end:url(#ah)}
 .sch .ar2{fill:none;stroke:var(--red);stroke-width:2.4;stroke-linecap:round;marker-end:url(#ah);marker-start:url(#ah)}
-.sch .ld{fill:none;stroke:var(--ink2);stroke-width:.9}
+.sch .ld{fill:none;stroke:var(--ink2);stroke-width:1.1}
+.sch .trou{fill:var(--surface,var(--bg));stroke:var(--sk);stroke-width:1.2}
 .sch .dt{fill:var(--ink)}
 .sch .hl{fill:var(--red)}
-.sch .lb{font:italic 500 12px/1 var(--serif);fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
-.sch .lb.b{font-weight:700;font-style:normal;font-family:var(--sans);font-size:12.5px}
+.sch .lb{font:600 12.5px/1 var(--sans);fill:var(--ink);paint-order:stroke;stroke:var(--surface,var(--bg));stroke-width:4px;stroke-linejoin:round}
+.sch .lb.b{font-weight:800;font-size:13px}
 .sch .lb.r{fill:var(--red);font-weight:700}
-.sch .lb.m{fill:var(--ink2)}
-.sch .cap{font:600 13px/1 var(--sans);fill:var(--ink)}
+.sch .lb.m{fill:var(--ink2);font-weight:500;font-size:11.5px}
+.sch .cap{font:800 14px/1 var(--sans);fill:var(--ink)}
 .sch .ribo{fill:none;stroke:var(--sk);stroke-width:11;stroke-linecap:round}
 .sch .rib{fill:none;stroke:var(--bone);stroke-width:8;stroke-linecap:round}
 .sch .axb{fill:none;stroke:var(--pri);stroke-width:2.2;stroke-dasharray:7 5}

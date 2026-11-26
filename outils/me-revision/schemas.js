@@ -166,12 +166,27 @@ S.circumduction=()=>svg(330,230,'Circumduction : le segment décrit un cône',
  arc(110,180,70,22,25,320)+
  tx(204,96,['circumduction'],'start','r b')+tx(204,112,['combine 2 axes :','le bras dessine','un cône'],'start','m'));
 
-S.pronosup=()=>svg(330,262,'Supination et pronation de l\'avant-bras',
- `<rect class="sk" x="50" y="24" width="60" height="160" rx="26"/><rect class="bo" x="60" y="34" width="12" height="144" rx="5"/><rect class="bo" x="88" y="34" width="10" height="144" rx="5"/>`+
- `<rect class="sk" x="36" y="182" width="14" height="34" rx="7" transform="rotate(22 43 199)"/><path class="sk" d="M52 186H108V218C108 230 98 240 80 240C62 240 52 230 52 218Z"/>`+
- `<rect class="sk" x="216" y="24" width="60" height="160" rx="26"/><rect class="bo" x="254" y="34" width="10" height="144" rx="5"/><rect class="bo" x="232" y="32" width="138" height="12" rx="6" transform="rotate(79.2 232 38)"/>`+
- `<rect class="sk" x="276" y="182" width="14" height="34" rx="7" transform="rotate(-22 283 199)"/><path class="sk" d="M218 186H274V218C274 230 264 240 246 240C228 240 218 230 218 218Z"/>`+
- L(66,80,40,66,'radius','l')+L(93,80,124,66,'ulna')+L(240,80,206,66,'radius','l')+L(259,80,292,66,'ulna')+ CAP(80,256,'Supination')+CAP(246,256,'Pronation'));
+/* Avant-bras droit vu de face : humérus en haut, ulna (médial) fixe, radius (côté pouce) qui croise en pronation. */
+function avantBras(x0,pro){
+  const X=v=>x0+v;
+  const hum=`<path class="bo" d="M${X(66)} 0H${X(98)}V30C${X(98)} 38 ${X(112)} 42 ${X(118)} 50C${X(121)} 56 ${X(116)} 62 ${X(108)} 62H${X(56)}C${X(48)} 62 ${X(43)} 56 ${X(46)} 50C${X(52)} 42 ${X(66)} 38 ${X(66)} 30Z"/>`;
+  const uln=`<path class="bo" d="M${X(86)} 56C${X(92)} 52 ${X(104)} 54 ${X(106)} 62L${X(102)} 78L${X(99)} 178C${X(103)} 182 ${X(104)} 190 ${X(99)} 194H${X(89)}C${X(86)} 190 ${X(87)} 182 ${X(90)} 178L${X(88)} 80C${X(84)} 72 ${X(82)} 62 ${X(86)} 56Z"/>`;
+  const rad=pro
+    ?`<path class="bo" d="M${X(56)} 58H${X(74)}V66L${X(70)} 70L${X(70)} 84C${X(74)} 120 ${X(92)} 150 ${X(104)} 170C${X(110)} 178 ${X(114)} 186 ${X(112)} 194H${X(84)}C${X(84)} 186 ${X(88)} 180 ${X(90)} 174C${X(78)} 150 ${X(62)} 118 ${X(60)} 84L${X(60)} 70L${X(56)} 66Z"/>`
+    :`<path class="bo" d="M${X(52)} 58H${X(70)}V66L${X(66)} 70L${X(66)} 168C${X(70)} 176 ${X(76)} 184 ${X(78)} 194H${X(48)}C${X(50)} 184 ${X(54)} 176 ${X(56)} 168L${X(56)} 70L${X(52)} 66Z"/>`;
+  // main : paume (supination) ou dos (pronation) ; pouce du côté du radius
+  const th=pro?1:-1,hx=X(82);
+  const doigts=[-18,-6,6,18].map((d,i)=>`<rect class="sk" x="${hx+d-5.5}" y="232" width="11" height="${[22,27,26,20][pro?3-i:i]}" rx="5.5"/>`).join('');
+  const pouce=`<rect class="sk" x="${hx+th*30-6}" y="200" width="12" height="32" rx="6" transform="rotate(${th*-28} ${hx+th*30} 206)"/>`;
+  const paume=`<path class="sk" d="M${hx-26} 198H${hx+26}V226C${hx+26} 236 ${hx+18} 240 ${hx} 240C${hx-18} 240 ${hx-26} 236 ${hx-26} 226Z"/>`;
+  const traits=pro?[-18,-6,6,18].map(d=>`<path class="mul" d="M${hx+d} 204V226"/>`).join(''):`<path class="mul" d="M${hx-20} 214C${hx-8} 220 ${hx+8} 220 ${hx+20} 212"/><path class="mul" d="M${hx-14} 226C${hx-4} 222 ${hx+8} 224 ${hx+18} 228"/>`;
+  return hum+uln+rad+doigts+pouce+paume+traits;
+}
+S.pronosup=()=>svg(330,300,'Supination et pronation de l\'avant-bras',
+ avantBras(0,0)+avantBras(166,1)+
+ L(61,120,30,110,'radius','l','b')+L(95,130,130,120,'ulna','start','b')+L(240,118,206,108,'radius','l','b')+L(261,100,296,92,'ulna','start','b')+
+ tx(36,210,['pouce','dehors'],'end','m')+tx(312,206,['pouce','dedans'],'start','m')+
+ CAP(82,280,'Supination','paume en avant, os parallèles')+CAP(248,280,'Pronation','dos de la main, os croisés'));
 
 /* ---------- schémas propres au cours ME ---------- */
 const rot=(x,y,cx,cy,d)=>{const a=d*R,c=Math.cos(a),s=Math.sin(a);return[f(cx+(x-cx)*c-(y-cy)*s),f(cy+(x-cx)*s+(y-cy)*c)]};
@@ -194,51 +209,97 @@ function elbow(x0,mode){
 }
 S.coude_abd_add=()=>svg(336,284,'Dysfonctions d\'abduction et d\'adduction du coude',elbow(0,'abd')+elbow(176,'add'));
 
-S.pronation_douloureuse=()=>svg(330,250,'Pronation douloureuse de l\'enfant',
- `<path class="bo" d="M52 0H112V40C112 62 100 76 82 78C64 76 52 62 52 40Z"/>`+cl('M58 58C64 72 74 78 82 78C90 78 100 72 106 58')+
- `<path class="bo" d="M62 88C72 84 92 84 102 88V106C102 110 98 112 94 114L92 204H72L70 114C66 112 62 110 62 106Z"/>`+cl('M64 88C74 85 90 85 100 88')+
- `<rect class="li" x="56" y="94" width="52" height="13" rx="6"/>`+
- `<path class="bo" d="M216 0H276V40C276 62 264 76 246 78C228 76 216 62 216 40Z"/>`+cl('M222 58C228 72 238 78 246 78C254 78 264 72 270 58')+
- `<path class="bo" d="M226 104C236 100 256 100 266 104V122C266 126 262 128 258 130L256 214H236L234 130C230 128 226 126 226 122Z"/>`+cl('M228 104C238 101 254 101 264 104')+
- `<rect class="li" x="220" y="84" width="52" height="13" rx="6"/>`+
- `<path class="ar" d="M292 150V196"/>`+arc(246,186,18,6,20,320)+
- L(108,100,128,128,'ligament','r')+tx(132,146,'annulaire','start')+L(266,90,292,66,'interposé','r','r')+tx(296,214,'traction','middle','r b')+
- CAP(82,226,'Coude normal','autour de la tête')+CAP(246,226,'Pronation douloureuse','entre capitulum et tête'));
-
-S.epaule_complexe=()=>svg(330,250,'Le complexe articulaire de l\'épaule',
- `<path class="bo" style="opacity:.6" d="M160 62L222 58L238 72L236 102L202 206L192 202L154 74Z"/>`+
- [0,1,2].map(i=>rib(`M64 ${88+i*40}C120 ${72+i*40} 188 ${80+i*42} 232 ${120+i*44}`)).join('')+
- `<path class="bo" d="M236 104H266L262 246H244Z"/><circle class="bo" cx="251" cy="90" r="24"/>`+cl('M232 78A24 24 0 0 0 233 104')+
- `<path class="bo" d="M212 40C232 32 256 36 270 50L264 60C252 52 234 50 216 54Z"/>`+
- `<path class="bo" d="M60 44C92 36 118 56 150 48C176 42 198 32 220 36L222 48C200 46 180 56 152 62C120 70 92 52 62 58Z"/>`+
- `<path class="bo" d="M28 44C28 38 32 36 36 36H60C64 36 68 38 68 44V60L64 66V222C64 228 60 230 54 230H40C34 230 32 228 32 222V66L28 60Z"/>`+
- NUM(74,38,1)+NUM(212,24,2)+NUM(222,92,3)+NUM(188,150,4));
-
-S.clavicule=()=>svg(330,196,'Dysfonctions de la clavicule : présternale et suprasternale',
- `<rect class="bo" x="22" y="64" width="44" height="30" rx="6"/>`+
- `<path class="gh" d="M66 76L154 60L156 72L68 88Z"/><path class="bo" d="M66 92L154 62L158 74L70 104Z"/>`+
- `<path class="ar" d="M72 76V112"/>`+tx(80,128,'vers l\'avant','start','r b')+tx(44,56,'sternum','middle','m')+tx(96,22,'vue de dessus','middle','m')+
- `<path class="bo" d="M190 64C190 60 194 58 198 58H206C206 64 214 66 218 66C222 66 230 64 230 58H238C242 58 246 60 246 64V150C246 156 242 158 238 158H198C194 158 190 156 190 150Z"/>`+
- `<path class="gh" d="M246 64L318 60L318 72L246 76Z"/><path class="bo" d="M244 48C268 52 292 64 318 72L316 84C290 76 266 66 244 60Z"/>`+
- `<path class="ar" d="M234 74V40"/><path class="ar" d="M306 96V118"/>`+tx(226,36,'vers le haut','end','r b')+tx(296,134,'épaule basse','middle','m')+tx(318,22,'vue de face','end','m')+
- CAP(84,170,'Présternale','extrémité médiale en avant')+CAP(254,170,'Suprasternale','extrémité médiale en haut'));
-
-function vert(cx,cy,deg,sp,cls){return `<g transform="rotate(${deg} ${cx} ${cy})"><rect class="${cls||'bo'}" x="${cx-32}" y="${cy-10}" width="64" height="20" rx="8"/><rect class="bo" x="${cx+sp-4}" y="${cy+6}" width="8" height="12" rx="3"/></g>`}
-S.fryette=()=>svg(330,252,'Lois de Fryette : NSR (type 1) et FRS (type 2)',
- [0,1,2,3,4].map(i=>vert(84+[0,9,13,9,0][i],36+i*32,[-12,-6,0,6,12][i],-9)).join('')+
- vert(246,52,0,0)+vert(246,96,-12,9,'bo hlo')+vert(246,140,0,0)+
- tx(18,18,'G','middle','b')+tx(150,18,'D','middle','b')+tx(182,18,'G','middle','b')+tx(312,18,'D','middle','b')+
- tx(84,202,['side G, rotation D','= côtés opposés'],'middle','r')+tx(246,188,['side G + rotation G','= même côté'],'middle','r')+
- CAP(84,236,'NSR gauche','1re loi, plurisegmentaire')+CAP(246,236,'FRS gauche','2e loi, unisegmentaire'));
-
-function facet(x0,mode){
-  const frs=mode==='frs',t=frs?`rotate(-7 ${x0+122} 96)`:`rotate(6 ${x0+38} 96)`;
-  return `<path class="bo" d="M${x0+20} 130H${x0+140}V162H${x0+20}Z"/><rect class="bo" x="${x0+28}" y="100" width="22" height="30" rx="3"/><rect class="bo" x="${x0+110}" y="100" width="22" height="30" rx="3"/>`+
-  `<g transform="${t}"><path class="bo" d="M${x0+20} 28H${x0+140}V64H${x0+20}Z"/><rect class="bo" x="${x0+28}" y="64" width="22" height="32" rx="3"/><rect class="bo" x="${x0+110}" y="64" width="22" height="32" rx="3"/></g>`+
-  (frs?`<path class="ar2" d="M${x0+14} 86V112"/>`+tx(x0+40,186,'divergence max à G','middle','r'):`<path class="ar" d="M${x0+150} 74V94"/><path class="ar" d="M${x0+150} 124V104"/>`+tx(x0+120,186,'convergence max à D','middle','r'))+
-  tx(x0+10,18,'G','start','b')+tx(x0+150,18,'D','end','b');
+/* Coude de l'enfant vu de profil : capitulum, tête radiale, ligament annulaire (bande devant + derrière). */
+function coudeEnfant(x0,pd){
+  const X=v=>x0+v,dy=pd?16:0;
+  const hum=`<path class="bo" d="M${X(52)} 0H${X(96)}V34C${X(96)} 44 ${X(104)} 52 ${X(108)} 60C${X(112)} 70 ${X(108)} 78 ${X(98)} 82H${X(60)}C${X(52)} 80 ${X(46)} 72 ${X(48)} 62C${X(50)} 50 ${X(52)} 44 ${X(52)} 34Z"/>`;
+  const capit=`<ellipse class="bo" cx="${X(76)}" cy="78" rx="20" ry="13"/>`+cl(`M${X(57)} 82C${X(64)} 92 ${X(88)} 92 ${X(95)} 82`);
+  const uln=`<path class="bo" style="opacity:.55" d="M${X(98)} 76C${X(112)} 78 ${X(118)} 92 ${X(112)} 106L${X(106)} 230H${X(92)}L${X(94)} 106C${X(92)} 96 ${X(94)} 84 ${X(98)} 76Z"/>`;
+  const tete=`<path class="bo" d="M${X(58)} ${96+dy}H${X(94)}V${110+dy}C${X(94)} ${114+dy} ${X(88)} ${116+dy} ${X(84)} ${118+dy}L${X(84)} ${132+dy}L${X(86)} ${230}H${X(66)}L${X(68)} ${132+dy}L${X(68)} ${118+dy}C${X(64)} ${116+dy} ${X(58)} ${114+dy} ${X(58)} ${110+dy}Z"/>`+cl(`M${X(60)} ${97+dy}H${X(92)}`);
+  const ligY=pd?90:112;
+  const lig=`<path class="li" d="M${X(54)} ${ligY}H${X(98)}V${ligY+10}H${X(54)}Z" ${pd?'style="stroke:var(--red);stroke-width:2"':''}/>`;
+  return uln+hum+capit+tete+lig;
 }
-S.facettes=()=>svg(330,226,'Facettes : FRS et ERS',facet(0,'frs')+facet(168,'ers')+CAP(80,210,'FRS droite')+CAP(248,210,'ERS droite'));
+S.pronation_douloureuse=()=>svg(330,268,'Pronation douloureuse de l\'enfant',
+ coudeEnfant(0,0)+coudeEnfant(166,1)+
+ L(98,117,126,140,['ligament','annulaire'])+L(60,104,30,104,['tête','radiale'],'l')+L(64,74,30,58,'capitulum','l')+
+ L(264,95,292,76,['ligament','coincé'],'start','r')+
+ `<path class="ar" d="M296 150V196"/>`+tx(298,214,'traction','middle','r b')+arc(242,180,16,5,20,320)+tx(242,170,'pronation','middle','r')+
+ CAP(76,248,'Coude normal','le ligament entoure la tête')+CAP(242,248,'Pronation douloureuse','ligament entre capitulum et tête'));
+
+/* Épaule droite vue de face : sternum, clavicule, scapula (derrière les côtes), humérus. */
+S.epaule_complexe=()=>svg(330,278,'Le complexe articulaire de l\'épaule',
+ [0,1,2,3].map(i=>rib(`M58 ${86+i*36}C108 ${70+i*36} 172 ${78+i*38} 224 ${112+i*40}`)).join('')+
+ `<path class="bo" style="opacity:.72" d="M154 62L214 58C222 58 228 64 230 72L232 104C226 140 210 180 198 214L190 212C176 170 164 120 154 62Z"/>`+
+ `<path class="bo" d="M200 70C210 64 222 66 226 76L222 82C218 76 210 74 204 78Z"/>`+
+ `<path class="bo" d="M24 40C24 34 30 30 36 32L44 36L52 32C58 30 64 34 64 40L62 70L58 74V226C58 232 52 236 44 236C36 236 30 232 30 226V74L26 70Z"/>`+
+ `<path class="bo" d="M60 38C84 28 104 50 132 46C160 42 186 30 214 36L232 40L230 54L212 50C188 46 162 58 134 62C104 66 84 52 62 56Z"/>`+
+ `<path class="bo" d="M206 44C222 36 244 38 258 50L254 60C242 52 226 52 212 56Z"/>`+
+ `<path class="bo" d="M234 104H258L256 246H240Z"/><circle class="bo" cx="246" cy="92" r="22"/>`+cl('M226 78A22 22 0 0 0 228 106')+
+ NUM(72,22,1)+NUM(226,28,2)+NUM(212,98,3)+NUM(186,156,4)+
+ tx(8,262,['1 sterno-costo-claviculaire · 2 acromio-claviculaire','3 scapulo-humérale · 4 scapulo-thoracique'],'start','m'));
+
+/* Clavicule : présternale (vue de dessus, extrémité médiale en avant) et suprasternale (vue de face, médiale en haut). */
+const clav=(d,g)=>g?`<path class="gh" d="${d}"/>`:rib(d);
+S.clavicule=()=>svg(330,226,'Dysfonctions de la clavicule : présternale et suprasternale',
+ tx(84,16,'vue de dessus','middle','b')+tx(84,32,'arrière en haut · avant en bas','middle','m')+
+ `<path class="bo" d="M14 66Q14 58 22 58H48Q56 58 56 66V86Q56 94 48 94H22Q14 94 14 86Z"/>`+tx(35,108,'sternum','middle','m')+
+ clav('M58 70C80 78 98 76 114 68C126 62 138 58 150 58',1)+
+ `<g transform="rotate(-16 150 58)">`+clav('M58 70C80 78 98 76 114 68C126 62 138 58 150 58')+`</g>`+
+ `<path class="ar" d="M70 106V140"/>`+tx(78,134,'vers l\'avant','start','r b')+tx(150,46,'clavicule','end','m')+
+ tx(258,16,'vue de face','middle','b')+
+ `<path class="bo" d="M180 74C180 68 186 66 192 68L200 72L208 68C214 66 220 68 220 74L218 104L214 108V176H186V108L182 104Z"/>`+tx(200,190,'sternum','middle','m')+
+ rib('M218 120C250 116 280 124 308 140')+tx(310,158,'K1','end','m')+
+ clav('M222 78C242 72 258 76 276 80C290 83 302 80 314 78',1)+
+ `<g transform="rotate(9 268 78)">`+clav('M222 78C242 72 258 76 276 80C290 83 302 80 314 78')+`</g>`+
+ `<path class="ar" d="M226 62V34"/><path class="ar" d="M312 100V126"/>`+tx(234,44,'vers le haut','start','r b')+tx(300,114,'épaule basse','end','r')+
+ CAP(84,200,'Présternale','extrémité médiale en avant')+CAP(258,200,'Suprasternale','extrémité médiale en haut'));
+
+/* Vertèbre thoracique vue de dos : corps, transverses, épineuse (décalée du côté opposé à la rotation du corps). */
+function vert(cx,cy,deg,sp,cls){
+  return `<g transform="rotate(${deg} ${cx} ${cy})"><rect class="${cls||'bo'}" x="${cx-26}" y="${cy-11}" width="52" height="22" rx="7"/>`+
+  `<path class="bo" d="M${cx-12} ${cy-4}L${cx-36} ${cy-8}C${cx-40} ${cy-6} ${cx-40} ${cy+2} ${cx-36} ${cy+4}L${cx-12} ${cy+5}Z"/><path class="bo" d="M${cx+12} ${cy-4}L${cx+36} ${cy-8}C${cx+40} ${cy-6} ${cx+40} ${cy+2} ${cx+36} ${cy+4}L${cx+12} ${cy+5}Z"/>`+
+  `<path class="bo" d="M${cx+sp-6} ${cy-2}C${cx+sp-6} ${cy-8} ${cx+sp+6} ${cy-8} ${cx+sp+6} ${cy-2}L${cx+sp+2} ${cy+18}C${cx+sp+1} ${cy+21} ${cx+sp-1} ${cy+21} ${cx+sp-2} ${cy+18}Z"/></g>`;
+}
+S.fryette=()=>svg(330,262,'Lois de Fryette : NSR (type 1) et FRS (type 2)',
+ [0,1,2,3,4].map(i=>vert(80+[0,9,13,9,0][i],36+i*32,[-12,-6,0,6,12][i],-8)).join('')+
+ vert(246,52,0,0)+vert(246,98,-12,8,'bo hlo')+vert(246,144,0,0)+
+ tx(14,18,'G','middle','b')+tx(156,18,'D','middle','b')+tx(180,18,'G','middle','b')+tx(316,18,'D','middle','b')+tx(165,232,'vue de dos','middle','m')+
+ tx(84,206,['side G, rotation D','= côtés opposés'],'middle','r')+tx(246,190,['side G + rotation G','= même côté'],'middle','r')+
+ CAP(84,244,'NSR gauche','1re loi, en groupe')+CAP(246,244,'FRS gauche','2e loi, une seule vertèbre'));
+
+/* Facettes vues de dos : deux vertèbres, articulations inter-apophysaires G et D. */
+function facet(x0,mode){
+  const frs=mode==='frs',c=x0+80,t=frs?`rotate(7 ${c+30} 96)`:`rotate(6 ${c-30} 96)`;
+  const bas=`<rect class="bo" x="${c-44}" y="120" width="88" height="34" rx="8"/><rect class="bo" x="${c-40}" y="100" width="18" height="22" rx="4"/><rect class="bo" x="${c+22}" y="100" width="18" height="22" rx="4"/>`+cl(`M${c-39} 101H${c-23}`)+cl(`M${c+23} 101H${c+39}`);
+  const haut=`<g transform="${t}"><rect class="bo" x="${c-44}" y="30" width="88" height="34" rx="8"/><rect class="bo" x="${c-40}" y="62" width="18" height="32" rx="4"/><rect class="bo" x="${c+22}" y="62" width="18" height="32" rx="4"/>`+cl(`M${c-39} 93H${c-23}`)+cl(`M${c+23} 93H${c+39}`)+`<path class="bo" d="M${c-6} 58H${c+6}L${c+2} 92H${c-2}Z"/></g>`;
+  return bas+haut+(frs?`<path class="ar2" d="M${c-52} 82V106"/>`+tx(c,182,['divergence','maximale à gauche'],'middle','r')
+    :`<path class="ar" d="M${c+52} 78V94"/><path class="ar" d="M${c+52} 118V102"/>`+tx(c,182,['convergence','maximale à droite'],'middle','r'))+
+    tx(x0+6,18,'G','start','b')+tx(x0+154,18,'D','end','b');
+}
+S.facettes=()=>svg(330,240,'Facettes : FRS et ERS',facet(0,'frs')+facet(170,'ers')+tx(165,204,'vue de dos','middle','m')+CAP(80,226,'FRS droite')+CAP(250,226,'ERS droite'));
+
+/* Vertèbre thoracique vue de dessus (avant en haut) + côtes jusqu'au sternum. */
+function vertDessus(cx,cy,deg){
+  return `<g transform="rotate(${deg||0} ${cx} ${cy})">`+
+  `<path class="bo" d="M${cx-12} ${cy-6}L${cx-34} ${cy+6}Q${cx-38} ${cy+13} ${cx-31} ${cy+15}L${cx-10} ${cy+10}Z"/><path class="bo" d="M${cx+12} ${cy-6}L${cx+34} ${cy+6}Q${cx+38} ${cy+13} ${cx+31} ${cy+15}L${cx+10} ${cy+10}Z"/>`+
+  `<path class="bo" d="M${cx-13} ${cy-8}C${cx-16} ${cy+6} ${cx-10} ${cy+18} ${cx-4} ${cy+20}L${cx-3} ${cy+42}Q${cx} ${cy+47} ${cx+3} ${cy+42}L${cx+4} ${cy+20}C${cx+10} ${cy+18} ${cx+16} ${cy+6} ${cx+13} ${cy-8}Z"/>`+
+  `<ellipse class="bo" cx="${cx}" cy="${cy-18}" rx="24" ry="17"/><ellipse class="trou" cx="${cx}" cy="${cy+5}" rx="7" ry="6.5"/></g>`;
+}
+const COTE_G='M141 162L132 184C118 196 92 198 70 186C42 170 28 120 36 84C44 52 72 34 104 30L126 28';
+const COTE_D='M189 162L198 184C212 196 238 198 260 186C288 170 302 120 294 84C286 52 258 34 226 30L204 28';
+const sternumHaut=cl('M126 28L150 24')+cl('M204 28L180 24')+`<rect class="bo" x="150" y="10" width="30" height="26" rx="6"/>`;
+S.cotes_axes=()=>svg(330,250,'Axes du bras de pompe et de l\'anse de seau',
+ rib(COTE_G)+rib(COTE_D)+sternumHaut+vertDessus(165,178)+
+ `<path class="axb" d="M158 120L112 232"/><path class="axr" d="M192 182L179 6"/>`+
+ `<circle class="dt" cx="141" cy="162" r="3"/><circle class="dt" cx="132" cy="184" r="3"/><circle class="dt" cx="189" cy="162" r="3"/><circle class="dt" cx="180" cy="25" r="3"/>`+
+ tx(54,110,['axe du','bras de pompe','(côtes hautes)'],'start','p')+tx(198,104,['axe de','l\'anse de seau','(côtes basses)'],'start','r')+
+ tx(165,4,'avant','middle','m')+tx(165,246,'vue de dessus · arrière en bas','middle','m'));
+S.cote_pl=()=>svg(330,250,'T5 en FRS gauche : K5 gauche en PL, K5 droite en ASI',
+ `<path class="gh" d="${COTE_G}"/>`+`<g transform="translate(-7 9) rotate(-4 141 162)">`+rib(COTE_G)+`</g>`+rib(COTE_D)+sternumHaut+vertDessus(165,178,-16)+
+ arc(165,160,40,40,-60,-120)+`<path class="ar" d="M70 190L52 210"/><path class="ar" d="M300 104H318"/>`+
+ tx(18,228,['K5 G en PL : angle','en arrière et en dehors'],'start','r')+tx(318,132,['K5 D','en ASI'],'end','r')+tx(165,112,'T5 rotation G','middle','b')+
+ tx(165,4,'avant','middle','m')+tx(320,246,'vue de dessus','end','m'));
 
 S.ufs_ufm=()=>{const lv=['C0','C1','C2','C3','C4','C5','C6','C7'].concat([...Array(12)].map((_,i)=>'T'+(i+1)),['L1','L2','L3']),Y=i=>24+i*13.2,ix=n=>lv.indexOf(n);
  const box=(n,i)=>{const w=n==='C0'?54:n[0]==='C'?34:n[0]==='T'?42:52,y=Y(i);return n==='C0'?`<path class="bo" d="M${168-27} ${y+5}C${168-27} ${y-8} ${168+27} ${y-8} ${168+27} ${y+5}Z"/>`:`<rect class="${n==='T6'?'bo hlo':'bo'}" x="${168-w/2}" y="${y-4.5}" width="${w}" height="9.5" rx="3"/>`};
@@ -249,23 +310,6 @@ S.ufs_ufm=()=>{const lv=['C0','C1','C2','C3','C4','C5','C6','C7'].concat([...Arr
   brl(112,'C0','C2','sup')+brl(92,'C0','T2','moy.')+brl(72,'C0','T6','inf')+brr(198,'C0','T6','UFS',1)+brr(206,'T6','L3','UFM')+
   lv.map((n,i)=>tx(140-(n[0]==='T'?0:n[0]==='L'?5:-4)-(n==='C0'?8:0),Y(i)+4,n,'end','m')).join('')+
   k('T1','T1 charnière')+k('T4','T4 carène')+k('T5','T5 estomac')+k('T6','T6 apex')+k('T7','T7–T9 ceintures','T9')+k('T11','T11–T12 mobiles','T12'));};
-
-S.cotes_axes=()=>svg(330,236,'Axes du bras de pompe et de l\'anse de seau',
- rib('M146 170C126 162 96 162 72 152C46 140 30 110 36 80C42 52 72 34 104 30L128 28')+rib('M184 170C204 162 234 162 258 152C284 140 300 110 294 80C288 52 258 34 226 30L202 28')+
- cl('M128 28L150 24')+cl('M202 28L180 24')+`<rect class="bo" x="150" y="10" width="30" height="26" rx="5"/>`+
- `<path class="bo" d="M147 166L116 156L114 168L146 180Z"/><path class="bo" d="M183 166L214 156L216 168L184 180Z"/><path class="bo" d="M159 196H171L168 228H162Z"/><circle class="bo" cx="165" cy="176" r="24"/>`+
- `<path class="axb" d="M178 182L34 136"/><path class="axr" d="M186 196L180 4"/>`+
- `<circle class="dt" cx="146" cy="170" r="3"/><circle class="dt" cx="116" cy="161" r="3"/><circle class="dt" cx="184" cy="170" r="3"/><circle class="dt" cx="180" cy="25" r="3"/>`+
- tx(62,98,['axe du','bras de pompe','(côtes hautes)'],'start','p')+tx(192,98,['axe de','l\'anse de seau','(côtes basses)'],'start','r')+tx(165,220,'vue de dessus, arrière en bas','middle','m'));
-
-S.cote_pl=()=>svg(330,236,'T5 en FRS gauche : K5 gauche en PL, K5 droite en ASI',
- `<path class="gh" d="M146 160C126 162 96 164 72 156C46 144 30 112 36 80C42 52 72 34 104 30L128 28"/>`+
- `<g transform="rotate(-7 146 160)">`+rib('M146 160C126 162 96 164 72 156C46 144 30 112 36 80C42 52 72 34 104 30L128 28')+`</g>`+
- rib('M184 160C204 156 234 152 260 142C290 128 306 104 300 76C294 50 262 34 228 30L202 28')+
- cl('M128 26L150 24')+cl('M202 28L180 24')+`<rect class="bo" x="150" y="10" width="30" height="26" rx="5"/>`+
- `<g transform="rotate(-16 165 166)"><path class="bo" d="M147 158L116 150L114 162L146 172Z"/><path class="bo" d="M183 158L214 150L216 162L184 172Z"/><path class="bo" d="M159 186H171L168 218H162Z"/><circle class="bo" cx="165" cy="166" r="24"/></g>`+
- arc(165,166,34,34,-62,-122)+`<path class="ar" d="M70 162L52 182"/><path class="ar" d="M296 108H316"/>`+
- tx(24,206,['K5 G en PL','angle en arrière-dehors'],'start','r')+tx(318,138,['K5 D','en ASI'],'end','r')+tx(165,124,'T5 rotation G','middle','b')+tx(165,232,'vue de dessus, arrière en bas','middle','m'));
 
 S.defs=`<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
 <linearGradient id="gBone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--bone)"/><stop offset="1" style="stop-color:var(--bone2)"/></linearGradient>
