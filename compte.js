@@ -5,7 +5,7 @@
      appareils dans Firestore (un document par membre : users/{uid}).
    Les pages n'écrivent jamais directement dans Firestore : elles passent ici.
    ===================================================================== */
-import { FIREBASE_CONFIG } from "./firebase-config.js?v=11";
+import { FIREBASE_CONFIG } from "./firebase-config.js?v=12";
 
 const CDN = "https://www.gstatic.com/firebasejs/13.4.0/";
 
@@ -561,9 +561,9 @@ export async function supprimerContenu(id) {
   await fb.F.deleteDoc(fb.F.doc(fb.db, "contenus", id));
 }
 
-/* ---------- Social : profils publics, commentaires, messagerie privée ----------
+/* ---------- Social : profils publics, commentaires ----------
    Réservé aux membres connectés. Les pages passent toujours par ces fonctions. */
-const LIM_COMMENTAIRE = 500, LIM_MESSAGE = 1000;
+const LIM_COMMENTAIRE = 500;
 const texteSur = (t, max) => String(t || "").replace(/\s+$/g, "").replace(/^\s+/g, "").slice(0, max);
 const profilsCache = new Map();
 const profilSur = (uid, d) => ({ uid, nom: (d && typeof d.nom === "string" && d.nom) || "Membre", photo: photoSure(d?.photo), image: imageSure(d?.image), avatar: avatarSur(d?.avatar) });
@@ -583,17 +583,6 @@ export async function profils(uids) {
   for (const u of uids) res[u] = profilsCache.get(u) || profilSur(u, null);
   return res;
 }
-/** Tous les membres qui ont un profil public (pour écrire à quelqu'un), sauf soi. */
-export async function annuaire() {
-  exigerComptes();
-  await pret;
-  if (!courant) return [];
-  const { F, db } = fb;
-  const snap = await F.getDocs(F.query(F.collection(db, "profils"), F.limit(500)));
-  return snap.docs.filter((d) => d.id !== courant.uid).map((d) => { const p = profilSur(d.id, d.data()); profilsCache.set(d.id, p); return p; })
-    .sort((a, b) => a.nom.localeCompare(b.nom, "fr"));
-}
-
 /* Commentaires d'un outil : commentaires/{outil}/liste/{id} = { de, nom, photo, avatar, texte, le } */
 const listeCommentaires = (outil) => fb.F.collection(fb.db, "commentaires", outil, "liste");
 /** Suit les commentaires d'un outil en direct. cb(liste du plus ancien au plus récent). Renvoie la fonction d'arrêt. */
@@ -629,58 +618,6 @@ export async function nbCommentaires(ids) {
     try { res[id] = (await F.getCountFromServer(listeCommentaires(id))).data().count; } catch { res[id] = 0; }
   }));
   return res;
-}
-
-/* Messagerie privée : conversations/{a_b} = { membres: [a, b] (triés), dernier: { texte, de }, majLe, lu: { uid: date } }
-   et conversations/{a_b}/messages/{id} = { de, texte, le }. Seuls les deux membres lisent et écrivent. */
-const idConv = (a, b) => [a, b].sort().join("_");
-const ms = (t) => (t && typeof t.toMillis === "function" ? t.toMillis() : 0);
-/** Suit mes conversations en direct. cb([{ id, autre, dernier, majLe, nonLu }]) du plus récent au plus ancien. */
-export function ecouterConversations(cb, surErreur) {
-  if (!fb || !courant) return () => {};
-  const { F, db } = fb;
-  const moi = courant.uid;
-  return F.onSnapshot(F.query(F.collection(db, "conversations"), F.where("membres", "array-contains", moi), F.limit(200)),
-    (snap) => cb(snap.docs.map((d) => {
-      const v = d.data();
-      const majLe = ms(v.majLe) || Date.now();
-      return { id: d.id, autre: (v.membres || []).find((u) => u !== moi) || moi, dernier: v.dernier || null, majLe,
-        nonLu: !!v.dernier && v.dernier.de !== moi && majLe > ms(v.lu?.[moi]) };
-    }).sort((a, b) => b.majLe - a.majLe)),
-    (e) => surErreur?.(e));
-}
-/** Suit les messages échangés avec un membre. cb(liste du plus ancien au plus récent). */
-export function ecouterMessages(autre, cb, surErreur) {
-  if (!fb || !courant) return () => {};
-  const { F, db } = fb;
-  return F.onSnapshot(F.query(F.collection(db, "conversations", idConv(courant.uid, autre), "messages"), F.orderBy("le", "asc"), F.limit(500)),
-    (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data(), le: ms(d.data().le) || Date.now() }))),
-    (e) => surErreur?.(e));
-}
-export async function envoyerMessage(autre, texte) {
-  exigerComptes();
-  if (!courant) throw Object.assign(new Error("Connexion requise"), { code: "app/connexion-requise" });
-  texte = texteSur(texte, LIM_MESSAGE);
-  if (!texte || autre === courant.uid) return;
-  const { F, db } = fb;
-  const moi = courant.uid, id = idConv(moi, autre);
-  const lot = F.writeBatch(db);
-  lot.set(F.doc(db, "conversations", id), {
-    membres: [moi, autre].sort(), dernier: { texte: texte.slice(0, 120), de: moi }, majLe: F.serverTimestamp(), lu: { [moi]: F.serverTimestamp() },
-  }, { merge: true });
-  lot.set(F.doc(F.collection(db, "conversations", id, "messages")), { de: moi, texte, le: F.serverTimestamp() });
-  await lot.commit();
-}
-/** Marque la conversation comme lue (efface le point bleu). */
-export async function marquerLu(autre) {
-  if (!fb || !courant) return;
-  const { F, db } = fb;
-  try { await F.updateDoc(F.doc(db, "conversations", idConv(courant.uid, autre)), { [`lu.${courant.uid}`]: F.serverTimestamp() }); } catch {}
-}
-/** Supprime un de mes messages. */
-export async function supprimerMessage(autre, id) {
-  exigerComptes();
-  await fb.F.deleteDoc(fb.F.doc(fb.db, "conversations", idConv(courant.uid, autre), "messages", id));
 }
 
 /* ---------- Messages d'erreur ---------- */

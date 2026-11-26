@@ -6,7 +6,7 @@
    ===================================================================== */
 (function () {
   var DEFAUTS = {
-    theme: "auto",            // auto | clair (papier) | sombre | oled (noir pur)
+    theme: "clair",           // clair | papier | menthe | auto (suit le téléphone) | sombre | oled (noir pur) | nuit
     texte: 100,               // taille du texte en %, de 85 à 140
     animations: true,
     correction: "immediate",  // immediate | fin (mode examen)
@@ -33,15 +33,15 @@
   function appliquer(r) {
     r = r || lire();
     var d = document.documentElement;
-    var oled = r.theme === "oled";
-    var sombre = oled || r.theme === "sombre" || (r.theme === "auto" && !!(sombreSysteme && sombreSysteme.matches));
+    var NUANCES = { papier: 1, menthe: 1, oled: 1, nuit: 1 };
+    var sombre = r.theme === "sombre" || r.theme === "oled" || r.theme === "nuit" || (r.theme === "auto" && !!(sombreSysteme && sombreSysteme.matches));
     d.setAttribute("data-theme", sombre ? "dark" : "light");
-    if (oled) d.setAttribute("data-nuance", "oled"); else d.removeAttribute("data-nuance");
+    if (NUANCES[r.theme]) d.setAttribute("data-nuance", r.theme); else d.removeAttribute("data-nuance");
     d.style.setProperty("--texte", String(r.texte / 100));
     if (r.animations === false) d.setAttribute("data-anim", "off"); else d.removeAttribute("data-anim");
     if (r.fun === false) d.setAttribute("data-fun", "off"); else d.removeAttribute("data-fun");
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", oled ? "#000000" : sombre ? "#16181d" : "#f6f1e7");
+    if (meta) meta.setAttribute("content", ({ papier: "#f4efe4", menthe: "#eef6f3", oled: "#000000", nuit: "#0e1726" })[r.theme] || (sombre ? "#16181d" : "#f6f7f9"));
   }
 
   function ecrire(cle, valeur) {

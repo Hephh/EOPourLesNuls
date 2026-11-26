@@ -5,7 +5,31 @@
    Thème choisi par reglages.js : data-theme="light" (papier) ou "dark", + data-nuance="oled" (noir pur).
    ===================================================================== */
 :root {
-  /* Clair « papier » : fond crème, encre brun-noir, filets chauds */
+  /* Clair (par défaut) : blanc net, gris doux, accent indigo */
+  --bg: #f6f7f9;
+  --bg-2: #eef0f4;
+  --surface: #ffffff;
+  --text: #15171c;
+  --muted: #5b6270;
+  --line: #dfe3ea;
+  --line-2: #eceff3;
+  --accent: #4f46e5;
+  --accent-ink: #3730a3;
+  --accent-text: #ffffff;
+  --accent-soft: #eceafe;
+  --grad: linear-gradient(45deg, #14b8a6 0%, #6366f1 55%, #a855f7 100%);
+  --like: #e0383e;
+  --ok: #15803d;
+  --ok-soft: #e5f4ea;
+  --ko: #b91c1c;
+  --ko-soft: #fdeaea;
+  --ombre: 0 1px 2px rgba(15, 20, 30, .06), 0 4px 14px rgba(15, 20, 30, .05);
+  --nav-h: 56px;
+  --side-w: 240px;
+  color-scheme: light;
+}
+/* Papier : fond crème, encre brun-noir, filets chauds */
+:root[data-nuance="papier"] {
   --bg: #f6f1e7;
   --bg-2: #ece5d6;
   --surface: #fffcf5;
@@ -13,20 +37,27 @@
   --muted: #6b6255;
   --line: #d6cbb6;
   --line-2: #e6dece;
-  --accent: #4f46e5;
-  --accent-ink: #4338ca;
-  --accent-text: #ffffff;
-  --accent-soft: #e9e6f7;
-  --grad: linear-gradient(45deg, #14b8a6 0%, #6366f1 55%, #a855f7 100%);
-  --like: #e0383e;
+  --accent: #2c4a8c;
+  --accent-ink: #2c4a8c;
+  --accent-soft: #e6e4ea;
   --ok: #2f7a3a;
   --ok-soft: #e3eedb;
   --ko: #b3261e;
   --ko-soft: #f7e2da;
   --ombre: 0 1px 2px rgba(60, 45, 20, .08), 0 2px 8px rgba(60, 45, 20, .06);
-  --nav-h: 56px;
-  --side-w: 240px;
-  color-scheme: light;
+}
+/* Menthe : clair, teinté de vert d'eau */
+:root[data-nuance="menthe"] {
+  --bg: #eef6f3;
+  --bg-2: #e0eee9;
+  --surface: #ffffff;
+  --text: #11201b;
+  --muted: #4b6159;
+  --line: #cfe2db;
+  --line-2: #e2efea;
+  --accent: #0f766e;
+  --accent-ink: #0f766e;
+  --accent-soft: #d5ede7;
 }
 /* Sombre : gris anthracite en paliers (fond < cartes < éléments levés) pour bien distinguer les blocs */
 :root[data-theme="dark"] {
@@ -60,6 +91,19 @@
   --ok-soft: #0f2a19;
   --ko-soft: #2e1212;
   --ombre: none;
+}
+/* Nuit bleue : sombre, bleu profond */
+:root[data-theme="dark"][data-nuance="nuit"] {
+  --bg: #0e1726;
+  --bg-2: #1d2d48;
+  --surface: #16233a;
+  --text: #eef3fa;
+  --muted: #a3b3c9;
+  --line: #2a3d5e;
+  --line-2: #1f2f4b;
+  --accent: #3b82f6;
+  --accent-ink: #93c5fd;
+  --accent-soft: #1c3354;
 }
 :root[data-theme="dark"] .segmente button[aria-pressed="true"] { background: var(--line); }
 
@@ -811,19 +855,8 @@ dialog.modal::backdrop { background: rgba(0, 0, 0, .55); }
 .adm-form .champ { margin-bottom: 6px; }
 .adm-emojis { margin-bottom: 8px; }
 
-/* ---------- Social : commentaires, messages ---------- */
+/* ---------- Social : commentaires ---------- */
 .topbar-actions { display: flex; align-items: center; }
-.msg-btn, .tab { position: relative; }
-.pastille-msg {
-  position: absolute; top: 4px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px;
-  background: var(--like); color: #fff; font-size: .68rem; font-weight: 800; line-height: 18px; text-align: center;
-  border: 2px solid var(--bg); box-sizing: content-box;
-}
-.tab-grand { display: none; }
-@media (min-width: 1000px) {
-  .tab.tab-grand { display: flex; }
-  .tab .pastille-msg { position: static; margin-left: auto; }
-}
 .lo-actions { display: flex; align-items: center; flex: none; }
 .action.com { position: relative; }
 .com-n { position: absolute; right: 2px; bottom: 4px; font-size: .68rem; font-weight: 800; color: var(--muted); }
@@ -844,37 +877,12 @@ dialog.modal-com .modal-corps { display: flex; flex-direction: column; max-heigh
 .com-vide svg { width: 44px; height: 44px; color: var(--text); }
 .com-vide b { color: var(--text); }
 .com-vide p { margin: 0; }
-.com-form, .dm-form { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line-2); background: var(--bg); }
+.com-form { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line-2); background: var(--bg); }
 .com-form .champ { flex: 1; min-width: 0; border-radius: 99px; }
-.dest-liste { max-height: 50vh; overflow: auto; margin-top: 8px; }
-dialog.modal #dest-cherche { margin-top: 4px; }
-.msg-barre { justify-content: space-between; }
-.convs { display: grid; }
-.conv { display: flex; align-items: center; gap: 12px; padding: 10px 16px; color: var(--text); text-decoration: none; }
-.conv:hover { background: var(--bg-2); }
-.conv .avatar-ring { width: 56px; height: 56px; flex: none; }
-.conv-txt { flex: 1; min-width: 0; display: grid; }
-.conv-txt small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.conv.non-lu b, .conv.non-lu small { font-weight: 800; color: var(--text); }
-.point-bleu { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: none; }
-.dm { display: flex; flex-direction: column; height: calc(100dvh - 52px - env(safe-area-inset-top) - var(--nav-h) - env(safe-area-inset-bottom)); }
-@media (min-width: 1000px) { .dm { height: calc(100dvh - 40px); } }
-body.en-dm .vue { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); }
-@media (min-width: 1000px) { body.en-dm .vue { padding-bottom: 0; } }
-.dm-barre { gap: 10px; justify-content: flex-start; border-bottom: 1px solid var(--line-2); }
-.dm-barre b { flex: 1; }
-.dm-fil { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; }
-.dm-jour { margin: 10px 0 4px; text-align: center; color: var(--muted); font-size: .75rem; }
-.bulle { max-width: 78%; align-self: flex-start; padding: 9px 14px; border-radius: 20px; background: var(--bg-2); overflow-wrap: anywhere; white-space: pre-wrap; }
-.bulle.moi { align-self: flex-end; background: var(--grad); color: #fff; cursor: pointer; }
-.dm-form textarea { flex: 1; min-width: 0; resize: none; border-radius: 22px; max-height: 140px; line-height: 1.4; }
-.dm-envoi { color: var(--accent-ink); }
 dialog.modal-com .com-form { display: flex; flex-direction: row; align-items: center; flex-wrap: nowrap; }
 dialog.modal-com .com-form .lien { flex: none; }
 .action.com { display: inline-flex; align-items: center; gap: 3px; width: auto; min-width: 44px; padding: 0 4px; }
 .com-n { position: static; font-size: .78rem; color: var(--text); }
-.msg-barre { margin: 0; padding: 0 8px 0 16px; }
-.dm-barre { margin: 0; padding: 0 8px 0 4px; }
 
 /* ---------- Relief des cartes (thèmes papier / sombre ; rien en OLED) ---------- */
 .groupe, .ligne-outil, .bienvenue, .activite, .connexion, .tuile { box-shadow: var(--ombre); }
@@ -1022,3 +1030,6 @@ body:has(.invite-install.avec-fleche) .invite-install { bottom: calc(env(safe-ar
 
 /* ---------- Page d'une année : matières l'une sous l'autre ---------- */
 .matiere-bloc + .matiere-bloc { margin-top: 18px; padding-top: 8px; border-top: 1px solid var(--line-2); }
+
+/* ---------- Réglages : choix du thème en grille ---------- */
+.segmente.grille-themes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }

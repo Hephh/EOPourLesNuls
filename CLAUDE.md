@@ -78,9 +78,7 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
     par `synchroniser()`, `changerNom()`, `majAvatar()`, effacé avec le compte.
   - Commentaires d'un outil : `commentaires/{outil}/liste/{id}` = `{ de, nom, photo, avatar, texte (≤ 500), le }` ;
     bouton bulle sur chaque ligne d'outil ; l'auteur ou l'admin supprime.
-  - Messagerie privée : `conversations/{uidA_uidB triés}` = `{ membres, dernier { texte, de }, majLe, lu { uid: date } }`
-    + `messages/{id}` = `{ de, texte (≤ 1000), le }`. Seuls les deux membres lisent (pas l'admin).
-    Vues `#messages` et `#dm-<uid>` ; pastille des non-lus dans la barre du haut et la barre latérale.
+  - Pas de messagerie privée (retirée à la demande du propriétaire).
 - Admin : onglets Tableau de bord (stats des comptes), Organisation (annonce, années, matières, outils, images,
   sauvegarde JSON), Membres (recherche, tri, fiche). Éditeur `#edit-<id>` pour les outils créés ici (import de QCM collés
   en texte : `Q:` / `+` juste / `-` faux / `E:` explication, ou `A)…` + `Réponse : A, C`).
@@ -88,7 +86,7 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   (admin) ; `<img data-media="id">` est rempli tout seul (`hydraterMedias`). Photo de profil importée : champ `image`
   (≤ 90 000 caractères) dans `users` et `profils`. Catalogue : `annonce`, `images: { <outil>: { <catégorie>: mediaId } }`,
   et par outil `titre`, `emoji`, `nouveau`, `perso` (outil créé depuis l'admin).
-- Thème : `auto | clair` (papier) `| sombre | oled` → `data-theme` + `data-nuance="oled"`. Mode fun (`fun` : null = pas
+- Thème (par défaut `clair`) : `clair | papier | menthe | auto | sombre | oled | nuit` → `data-theme` (light/dark) + `data-nuance` (papier, menthe, oled, nuit). Mode fun (`fun` : null = pas
   encore demandé à la 1re connexion) : désactivé → `data-fun="off"`, plus de série, d'objectif ni de graphique de la semaine.
 - Taille du texte : réglage `texte` (85 à 140 %) → variable CSS `--texte` posée par `reglages.js` sur `<html>`.
 

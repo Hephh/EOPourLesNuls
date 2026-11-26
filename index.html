@@ -6,18 +6,17 @@
 <title>EOPour les nuls</title>
 <meta name="description" content="QCM et outils de révision ostéo, de P1 à P5 — sur téléphone comme sur PC.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=11"></script>
+<script src="reglages.js?v=12"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 <body class="app">
 
 <header class="topbar">
   <a class="logo" href="#accueil">EO<span>Pour les nuls</span></a>
   <span class="topbar-actions">
-  <a class="icon-btn msg-btn" href="#messages" aria-label="Messages"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C7 3 3 6.6 3 11c0 2.4 1.2 4.6 3.1 6.1L5.5 21l4-2.1c.8.2 1.6.3 2.5.3 5 0 9-3.6 9-8.1S17 3 12 3z"/><path d="m8 12 2.6-2.6L13 12l3-3"/></svg><span class="pastille-msg" hidden></span></a>
   <button class="icon-btn" id="partager-site" type="button" aria-label="Partager le site">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 3 10 14"/><path d="M21 3l-6.5 18-4.5-7-7-4.5z"/></svg>
   </button>
@@ -38,10 +37,6 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 7.9 3.6 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>
     <span class="tab-label">Favoris</span>
   </a>
-  <a class="tab tab-grand" href="#messages" data-vue="messages" aria-label="Messages">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C7 3 3 6.6 3 11c0 2.4 1.2 4.6 3.1 6.1L5.5 21l4-2.1c.8.2 1.6.3 2.5.3 5 0 9-3.6 9-8.1S17 3 12 3z"/><path d="m8 12 2.6-2.6L13 12l3-3"/></svg>
-    <span class="tab-label">Messages</span><span class="pastille-msg" hidden></span>
-  </a>
   <a class="tab" href="#admin" data-vue="admin" aria-label="Admin" hidden>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
     <span class="tab-label">Admin</span>
@@ -61,8 +56,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=11";
-import * as C from "./compte.js?v=11";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=12";
+import * as C from "./compte.js?v=12";
 
 const R = window.Reglages;
 
@@ -338,16 +333,11 @@ function brancherLignes() {
   majCompteurs();
 }
 
-/* ---------- Social : commentaires des outils + messagerie privée ---------- */
+/* ---------- Social : commentaires des outils ---------- */
 let arretVue = null;          // écoute en direct de la vue ouverte (coupée à chaque changement de page)
-let convs = [];               // mes conversations (écoute globale, pour la pastille)
-let arretConvs = null;
 const ICONE_BULLE = svg('<path d="M20.5 11.5a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.6-4.2A8.5 8.5 0 1 1 20.5 11.5z"/>');
-const ICONE_MSG = svg('<path d="M12 3C7 3 3 6.6 3 11c0 2.4 1.2 4.6 3.1 6.1L5.5 21l4-2.1c.8.2 1.6.3 2.5.3 5 0 9-3.6 9-8.1S17 3 12 3z"/><path d="m8 12 2.6-2.6L13 12l3-3"/>');
-const ICONE_ENVOI = svg('<path d="M21 3 10 14"/><path d="M21 3l-6.5 18-4.5-7-7-4.5z"/>');
 const petitAvatar = (u) => `<span class="av-s">${avatar(u)}</span>`;
 const quand = (t) => depuis(t).replace("il y a ", "");
-const connecteOu = (titre) => C.utilisateur() ? "" : vide(ICONE.user, titre, "Connecte-toi dans l'onglet Profil pour discuter avec les autres membres.");
 
 /* Commentaires d'un outil, dans la fenêtre maison */
 function ouvrirCommentaires(o) {
@@ -399,110 +389,6 @@ async function majCompteurs() {
   if (!boutons.length) return;
   const n = await C.nbCommentaires([...new Set(boutons.map((b) => b.dataset.com))]);
   boutons.forEach((b) => { const v = n[b.dataset.com] || 0; const s = $(".com-n", b); if (s) s.textContent = v ? String(v) : ""; });
-}
-
-/* Pastille des messages non lus (barre du haut + barre latérale) */
-function suivreConversations(u) {
-  arretConvs?.();
-  arretConvs = null;
-  convs = [];
-  majPastille();
-  if (!u) return;
-  arretConvs = C.ecouterConversations((liste) => {
-    convs = liste;
-    majPastille();
-    if (location.hash === "#messages") vueMessages();
-  });
-}
-function majPastille() {
-  const n = convs.filter((c) => c.nonLu).length;
-  document.querySelectorAll(".pastille-msg").forEach((p) => { p.hidden = !n; p.textContent = n > 9 ? "9+" : String(n); });
-}
-
-/* Messages : la liste des conversations */
-async function vueMessages() {
-  const r = rendu;
-  const u = C.utilisateur();
-  const tete = `<div class="profil-barre msg-barre"><b>Messages</b>${u ? `<button class="icon-btn" type="button" id="nouveau-msg" aria-label="Nouveau message">${svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>')}</button>` : ""}</div>`;
-  if (!u) { vue.innerHTML = tete + connecteOu("Tes messages privés"); return; }
-  const ps = await C.profils(convs.map((c) => c.autre));
-  if (r !== rendu) return;
-  vue.innerHTML = tete + (convs.length ? `<div class="convs">${convs.map((c) => {
-    const p = ps[c.autre];
-    const apercu = c.dernier ? (c.dernier.de === u.uid ? "Toi : " : "") + c.dernier.texte : "";
-    return `<a class="conv${c.nonLu ? " non-lu" : ""}" href="#dm-${esc(c.autre)}">${avatar(p)}
-      <span class="conv-txt"><b>${esc(p.nom)}</b><small>${esc(apercu)} · ${quand(c.majLe)}</small></span>${c.nonLu ? `<i class="point-bleu" aria-label="Non lu"></i>` : ""}</a>`;
-  }).join("")}</div>` : `<div class="vide">${ICONE_MSG}<h2>Tes messages</h2><p>Écris à un membre de ta promo pour réviser à deux, poser une question ou partager une astuce.</p>
-    <p style="margin-top: 16px;"><button class="btn btn-primary" type="button" id="premier-msg">Envoyer un message</button></p></div>`);
-  $("#nouveau-msg")?.addEventListener("click", choisirDestinataire);
-  $("#premier-msg")?.addEventListener("click", choisirDestinataire);
-}
-
-/* Nouveau message : choisir un membre */
-async function choisirDestinataire() {
-  ouvrirModal(`<div class="com-tete"><b>Nouveau message</b><small>À qui veux-tu écrire ?</small><button class="icon-btn" type="button" data-fermer aria-label="Fermer">${ICONE.fermer}</button></div>
-    <input class="champ" id="dest-cherche" type="search" placeholder="Rechercher un membre" autocomplete="off" aria-label="Rechercher un membre">
-    <div class="dest-liste" id="dest-liste"><p class="vide-mini">Chargement…</p></div>`, async (m) => {
-    let membres = [];
-    const liste = $("#dest-liste", m), champ = $("#dest-cherche", m);
-    const dessiner = () => {
-      const q = sansAccents(champ.value.trim());
-      const l = membres.filter((p) => !q || sansAccents(p.nom).includes(q));
-      liste.innerHTML = l.length ? l.map((p) => `<a class="conv" href="#dm-${esc(p.uid)}">${avatar(p)}<span class="conv-txt"><b>${esc(p.nom)}</b></span></a>`).join("")
-        : `<p class="vide-mini">${membres.length ? "Personne ne correspond." : "Aucun autre membre pour l'instant."}</p>`;
-      liste.querySelectorAll("a").forEach((a) => (a.onclick = () => fermerModal()));
-    };
-    champ.addEventListener("input", dessiner);
-    try { membres = await C.annuaire(); } catch (e) { liste.innerHTML = `<p class="erreur vide-mini">${esc(C.messageErreur(e))}</p>`; return; }
-    dessiner();
-    if (matchMedia("(pointer: fine)").matches) champ.focus();
-  });
-}
-
-/* Une conversation */
-async function vueConversation(autre) {
-  const r = rendu;
-  const u = C.utilisateur();
-  if (!u) { vue.innerHTML = connecteOu("Tes messages privés"); return; }
-  const p = (await C.profils([autre]))[autre];
-  if (r !== rendu) return;
-  vue.innerHTML = `<div class="dm">
-    <div class="profil-barre dm-barre"><a class="icon-btn" href="#messages" aria-label="Retour aux messages">${ICONE.retour}</a>${petitAvatar(p)}<b>${esc(p.nom)}</b><span style="width: 44px;"></span></div>
-    <div class="dm-fil" id="dm-fil"><p class="vide-mini">Chargement…</p></div>
-    <form class="dm-form" id="dm-form">
-      <textarea class="champ" id="dm-texte" rows="1" maxlength="1000" placeholder="Écris un message…" aria-label="Ton message"></textarea>
-      <button class="icon-btn dm-envoi" type="submit" aria-label="Envoyer">${ICONE_ENVOI}</button>
-    </form></div>`;
-  const fil = $("#dm-fil"), champ = $("#dm-texte");
-  const dessiner = (msgs) => {
-    if (!msgs.length) { fil.innerHTML = `<div class="com-vide">${avatar(p)}<b>${esc(p.nom)}</b><p>Écris le premier message.</p></div>`; return; }
-    let jour = "";
-    fil.innerHTML = msgs.map((m) => {
-      const d = new Date(m.le), j = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
-      const sep = j !== jour ? `<p class="dm-jour">${esc(j)}</p>` : "";
-      jour = j;
-      return `${sep}<div class="bulle${m.de === u.uid ? " moi" : ""}" data-id="${esc(m.id)}" title="${esc(d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }))}">${esc(m.texte)}</div>`;
-    }).join("");
-    fil.scrollTop = fil.scrollHeight;
-    fil.querySelectorAll(".bulle.moi").forEach((b) => (b.onclick = () => confirmer("Supprimer ce message ?", "Il disparaît aussi chez ton correspondant.", "Supprimer",
-      async () => { try { await C.supprimerMessage(autre, b.dataset.id); } catch (e) { toast(C.messageErreur(e)); } })));
-    C.marquerLu(autre);
-  };
-  // Conversation pas encore créée : la lecture est refusée tant qu'aucun message n'existe → on réécoute après l'envoi.
-  const ecouter = () => { arretVue?.(); arretVue = C.ecouterMessages(autre, dessiner, () => dessiner([])); };
-  ecouter();
-  champ.addEventListener("input", () => { champ.style.height = "auto"; champ.style.height = Math.min(champ.scrollHeight, 140) + "px"; });
-  champ.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && matchMedia("(pointer: fine)").matches) { e.preventDefault(); $("#dm-form").requestSubmit(); } });
-  $("#dm-form").onsubmit = async (e) => {
-    e.preventDefault();
-    const t = champ.value.trim();
-    if (!t) return;
-    const nouvelle = !convs.some((c) => c.autre === autre);
-    champ.value = "";
-    champ.style.height = "auto";
-    try { await C.envoyerMessage(autre, t); if (nouvelle) ecouter(); } catch (err) { champ.value = t; toast(C.messageErreur(err)); }
-  };
-  if (matchMedia("(pointer: fine)").matches) champ.focus();
 }
 
 /* ---------- Recherche ---------- */
@@ -916,7 +802,7 @@ function vueReglages() {
 
     <h2>Apparence</h2>
     <div class="groupe">
-      <div class="ligne colonne">${texte("Thème")}${seg("theme", [["auto", "Auto"], ["clair", "Papier"], ["sombre", "Sombre"], ["oled", "OLED"]])}</div>
+      <div class="ligne colonne">${texte("Thème", "Auto suit le réglage clair ou sombre du téléphone.")}${seg("theme", [["clair", "Clair"], ["papier", "Papier"], ["menthe", "Menthe"], ["auto", "Auto"], ["sombre", "Sombre"], ["oled", "OLED"], ["nuit", "Nuit bleue"]]).replace('class="segmente"', 'class="segmente grille-themes"')}</div>
       <div class="ligne colonne">${texte("Taille du texte", "Glisse pour agrandir ou réduire tout le texte du site.")}
         <div class="curseur"><span aria-hidden="true" style="font-size: .8rem;">A</span><input type="range" id="taille-texte" min="85" max="140" step="5" value="${r.texte}" aria-label="Taille du texte"><span aria-hidden="true" style="font-size: 1.35rem;">A</span><output id="taille-val">${r.texte} %</output></div></div>
       ${inter("animations", "✨", "Animations")}
@@ -957,7 +843,7 @@ function vueReglages() {
     <div class="groupe">
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
         "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 11 · site de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 12 · site de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div>`;
@@ -1169,11 +1055,8 @@ function ficheMembre(m) {
     ${barresJours(jours.map((d) => Number(a[C.jourCle(d)]) || 0), jours, "parties")}
     ${scores.length ? `<p class="sub fiche-sous">Meilleurs scores</p><div class="fiche-scores">${scores.map(({ o, s }) => `<div><span>${esc(o.emoji || "📝")} ${esc(o.titre)}</span><b>${s.best}/${s.total}</b></div>`).join("")}</div>` : ""}
     <div class="modal-btns">
-      ${moi ? "" : `<button class="btn btn-primary" type="button" data-ecrire>Écrire un message</button>`}
       <button class="btn" type="button" data-fermer>Fermer</button>
     </div>`, (f) => {
-    const e = $("[data-ecrire]", f);
-    if (e) e.onclick = () => { fermerModal(); location.hash = "#dm-" + m.uid; };
   });
 }
 
@@ -1431,7 +1314,7 @@ function formAnnee(a) {
       if (a) Object.assign(c.annees.find((x) => x.id === a.id), { nom, sous, image });
       else {
         let id = slug(nom), n = 2;
-        while (c.annees.some((x) => x.id === id) || ["accueil", "recherche", "favoris", "messages", "profil", "reglages", "admin"].includes(id) || /^(dm|edit)-/.test(id)) id = slug(nom) + "-" + n++;
+        while (c.annees.some((x) => x.id === id) || ["accueil", "recherche", "favoris", "profil", "reglages", "admin"].includes(id) || /^(dm|edit)-/.test(id)) id = slug(nom) + "-" + n++;
         c.annees.push({ id, nom, sous, image, verrou: false });
         anneeAdmin = id;
       }
@@ -1851,7 +1734,7 @@ async function enregistrerBrouillon() {
 }
 
 /* ---------- Navigation ---------- */
-const VUES = { accueil: vueAccueil, recherche: vueRecherche, favoris: vueFavoris, messages: vueMessages, profil: vueProfil, reglages: vueReglages, admin: vueAdmin };
+const VUES = { accueil: vueAccueil, recherche: vueRecherche, favoris: vueFavoris, profil: vueProfil, reglages: vueReglages, admin: vueAdmin };
 let rendu = 0;
 
 function route() {
@@ -1860,7 +1743,6 @@ function route() {
   arretVue?.();
   arretVue = null;
   const nom = location.hash.slice(1) || "accueil";
-  document.body.classList.toggle("en-dm", nom.startsWith("dm-"));
   if (nom.startsWith("edit-")) {
     document.querySelectorAll(".tab").forEach((t) => {
       const actif = t.dataset.vue === "admin";
@@ -1868,14 +1750,6 @@ function route() {
       if (actif) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
     });
     return vueEditeur(nom.slice(5));
-  }
-  if (nom.startsWith("dm-")) {
-    document.querySelectorAll(".tab").forEach((t) => {
-      const actif = t.dataset.vue === "messages";
-      t.classList.toggle("actif", actif);
-      if (actif) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
-    });
-    return vueConversation(nom.slice(3));
   }
   const annee = anneeDe(nom) ? nom : null;
   const cle = annee ? "accueil" : Object.prototype.hasOwnProperty.call(VUES, nom) ? nom : "accueil";
@@ -1910,7 +1784,6 @@ $("#partager-site").onclick = () => partager("EOPour les nuls", lienSite());
 let jeSuisAdmin = false;
 C.surChangement(async (u) => {
   majOngletProfil(u);
-  suivreConversations(u);
   jeSuisAdmin = await C.estAdmin();
   route();
   $('.tab[data-vue="admin"]').hidden = !jeSuisAdmin;

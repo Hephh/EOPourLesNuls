@@ -94,36 +94,5 @@ service cloud.firestore {
       allow delete: if request.auth != null && (resource.data.de == request.auth.uid || estAdmin());
     }
 
-    // Messagerie privée : seuls les deux membres d'une conversation la lisent et y écrivent (pas même l'admin).
-    match /conversations/{cid} {
-      allow read: if request.auth != null && (resource == null || request.auth.uid in resource.data.membres);
-      allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['membres', 'dernier', 'majLe', 'lu'])
-        && request.resource.data.membres is list && request.resource.data.membres.size() == 2
-        && request.auth.uid in request.resource.data.membres
-        && request.resource.data.membres[0] + '_' + request.resource.data.membres[1] == cid;
-      allow update: if request.auth != null && request.auth.uid in resource.data.membres
-        && request.resource.data.membres == resource.data.membres
-        && request.resource.data.keys().hasOnly(['membres', 'dernier', 'majLe', 'lu']);
-      match /messages/{mid} {
-        allow read: if request.auth != null
-          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(cid)).data.membres;
-        allow create: if request.auth != null
-          && request.auth.uid in getAfter(/databases/$(database)/documents/conversations/$(cid)).data.membres
-          && request.resource.data.keys().hasOnly(['de', 'texte', 'le'])
-          && request.resource.data.de == request.auth.uid
-          && request.resource.data.texte is string && request.resource.data.texte.size() > 0 && request.resource.data.texte.size() <= 1000
-          && request.resource.data.le == request.time;
-        allow delete: if request.auth != null && resource.data.de == request.auth.uid;
-      }
-    }
-
-    // Chaque membre lit et écrit uniquement son profil ; l'admin peut tout lire.
-    match /users/{uid} {
-      allow read: if request.auth != null && (request.auth.uid == uid || estAdmin());
-      allow create, update: if request.auth != null && request.auth.uid == uid
-                            && profilValide(request.resource.data);
-      allow delete: if request.auth != null && request.auth.uid == uid;
-    }
   }
 }
