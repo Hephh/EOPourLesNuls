@@ -1,0 +1,7 @@
+{
+  "hosting": {
+    "site": "eopourlesnuls",
+    "public": ".",
+    "ignore": ["firebase.json", "firestore.rules", "CLAUDE.md", "**/.*", "**/.*/**", "**/node_modules/**"]
+  }
+}
