@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Révision · EOPour les nuls</title>
 <meta name="theme-color" content="#ffffff">
-<script src="../reglages.js?v=13"></script>
+<script src="../reglages.js?v=14"></script>
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icones/icone-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
-<link rel="stylesheet" href="../style.css?v=13">
+<link rel="stylesheet" href="../style.css?v=14">
 <style>
   /* Révision : « À revoir » (répétition espacée) et « Mes erreurs », toutes sources mélangées */
   .rv-tete { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 14px; padding: max(8px, env(safe-area-inset-top)) 16px 8px; background: var(--surface); border-bottom: 1px solid var(--line); }
@@ -81,7 +81,7 @@
 <div id="rv-page"><p class="rv-etat-page">Chargement…</p></div>
 
 <script type="module">
-import * as C from "../compte.js?v=13";
+import * as C from "../compte.js?v=14";
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -106,7 +106,7 @@ async function questions(entrees) {
   for (const o of outils) {
     if (o === "me-revision") {
       window.CONTENT = window.CONTENT || {};
-      if (!window.CONTENT.qcm) { await charger("me-revision/content.js?v=4"); await charger("me-revision/qcm.js?v=4"); }
+      if (!window.CONTENT.qcm) { await charger("me-revision/content.js?v=5"); await charger("me-revision/qcm.js?v=5"); }
       const chs = Object.fromEntries((window.CONTENT.chapters || []).map((c) => [c.id, c.short || c.name]));
       for (const q of window.CONTENT.qcm || []) {
         res.set(o + "|" + q.id, { q: q.q, opts: q.o.map(([texte, bonne, pourquoi]) => ({ texte, bonne: !!bonne, pourquoi: pourquoi || "" })), ex: q.ex || "",
@@ -197,7 +197,7 @@ function valider() {
       ${it.ex ? `<p>${esc(it.ex)}</p>` : ""}
     </section>
     <section class="rv-quand" aria-label="Quand la revoir">
-      <span>Quand la revoir ? Ton choix règle la répétition espacée.</span>
+      <span>Quand la revoir ? Ce choix règle la répétition espacée.</span>
       <button class="btn" type="button" data-quand="bientot" aria-pressed="false">Bientôt</button>
       <button class="btn" type="button" data-quand="jours" aria-pressed="false">Dans quelques jours</button>
       <button class="btn" type="button" data-quand="sue" aria-pressed="false">Je la connais</button>
@@ -227,9 +227,9 @@ function bilan() {
   $("#rv-compte").textContent = "Terminé";
   const reste = MODE === "erreurs" ? C.erreurs().length : C.aRevoir().length;
   $("#rv-page").innerHTML = `<div class="rv-etat-page">
-    <h1>Bien joué</h1>
+    <h1>Série terminée</h1>
     <p class="rv-score">${ok} / ${serie.length}</p>
-    <p>${ok === serie.length ? "Tout juste : ces questions reviendront plus tard." : "Les questions ratées reviennent demain et restent dans « Mes erreurs »."}${reste ? ` Il en reste ${reste} ${MODE === "erreurs" ? "dans tes erreurs" : "à revoir aujourd'hui"}.` : ""}</p>
+    <p>${ok === serie.length ? "Tout juste : ces questions reviendront plus tard." : "Les questions manquées reviennent demain et restent dans « Mes erreurs »."}${reste ? ` Il en reste ${reste} ${MODE === "erreurs" ? "dans vos erreurs" : "à revoir aujourd'hui"}.` : ""}</p>
     <div class="btns">${reste ? `<a class="btn btn-primary" href="revision.html?mode=${MODE}">Continuer (${reste})</a>` : ""}<a class="btn${reste ? "" : " btn-primary"}" href="../index.html#accueil">Retour à Aujourd'hui</a></div>
   </div>`;
 }
@@ -248,7 +248,7 @@ async function demarrer() {
   if (MODE === "erreurs") serie = serie.slice(0, 20);
   if (!serie.length) {
     $("#rv-page").innerHTML = `<div class="rv-etat-page"><h1>${MODE === "erreurs" ? "Aucune erreur à refaire" : "Rien à revoir aujourd'hui"}</h1>
-      <p>${MODE === "erreurs" ? "Les questions que tu rates dans les QCM arrivent ici toutes seules." : "Fais des QCM : chaque question reviendra ici au bon moment."}</p>
+      <p>${MODE === "erreurs" ? "Les questions manquées dans les QCM s'ajoutent ici automatiquement." : "Faites des QCM : chaque question reviendra ici au bon moment."}</p>
       <div class="btns"><a class="btn btn-primary" href="../index.html#cours">Mes cours</a><a class="btn" href="../index.html#accueil">Aujourd'hui</a></div></div>`;
     return;
   }

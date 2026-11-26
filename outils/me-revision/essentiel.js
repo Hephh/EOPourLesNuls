@@ -1,4 +1,4 @@
-/* « Si tu n'as que 2 minutes » : l'essentiel de chaque catégorie, tiré des fiches */
+/* « L'essentiel en 2 minutes » : l'essentiel de chaque catégorie, tiré des fiches */
 window.CONTENT.ess={
 coude:[
  '<b>3 articulations</b> : huméro-ulnaire (trochléenne, flexion-extension), huméro-radiale, radio-ulnaire sup. (trochoïde, prono-supination).',

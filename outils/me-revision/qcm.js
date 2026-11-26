@@ -62,7 +62,7 @@ window.CONTENT.qcm=[
  ['du rachis thoracique inférieur',0,'Même raison.'],
  ['du cadran thoracique inférieur',0,'Les côtes basses travaillent surtout en anse de seau.'],
  ['aucune réponse n\'est correcte',1,'Réponse du corrigé.']],
- ex:"Lecture probable du corrigé : le bras de pompe concerne surtout les côtes hautes, et aucune proposition ne parle des côtes. Vérifie la formulation de ton cours sur les côtes.",t:['bras-de-pompe']},
+ ex:"Lecture probable du corrigé : le bras de pompe concerne surtout les côtes hautes, et aucune proposition ne parle des côtes. À vérifier dans la formulation du cours sur les côtes.",t:['bras-de-pompe']},
 {id:'a10',src:'an',ch:'cotes',ref:'Sujet A Q10, sujet B Q1',q:"La dysfonction de côte en PL, amène :",o:[
  ['l\'arc moyen de la côte en arrière, dehors',0,'C\'est l\'angle postérieur qui se déplace, pas l\'arc moyen.'],
  ['l\'angle postérieur de côte en arrière, dehors',1,'PL : angle postérieur en arrière et en dehors.'],
@@ -87,7 +87,7 @@ window.CONTENT.qcm=[
 {id:'a13',src:'an',ch:'coude',ref:'Sujet A Q13, sujet B Q8',q:"La dysfonction de la tête radiale en postériorité est toujours d'origine traumatique :",o:[
  ['Vrai',0,'Elle peut être secondaire : supination (RE) ou ligament annulaire détendu.'],
  ['Faux',1,'Elle est primaire ou secondaire.']],
- ex:"Méfie-toi de « toujours » : le cours donne des causes primaires ET secondaires.",t:['tr-post']},
+ ex:"Attention à « toujours » : le cours donne des causes primaires ET secondaires.",t:['tr-post']},
 {id:'a14',src:'an',ch:'cotes',ch2:'thorax',ref:'Sujet A Q14, sujet B Q7',q:"La dysfonction de T5 en FRS gauche sera préférentiellement associée à :",o:[
  ['K5 gauche en PL',1,'Rotation gauche : la transverse gauche recule et emmène l\'angle de K5 gauche en arrière-dehors.'],
  ['K5 gauche en BPI',0,'Non retenu : à gauche, la côte part en PL.'],
@@ -142,7 +142,7 @@ window.CONTENT.qcm=[
  ['l\'abduction est plus ample que l\'adduction',0,'ABD ≈ 15°, ADD ≈ 45°.'],
  ['en extension, la médio-carpienne fait environ 50°',1,'Et la radio-carpienne 35°.'],
  ['en ABD-ADD, la médio-carpienne fait les 2/3 de l\'amplitude',0,'2/3 dans la radio-carpienne, 1/3 dans la médio-carpienne.'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"Chiffres discutés entre enseignants : apprends ceux de ton cours.",t:['amplitudes-poignet']},
+ ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"Chiffres discutés entre enseignants : retenir ceux du cours.",t:['amplitudes-poignet']},
 {id:'v08',src:'va',of:'a06',ch:'thorax',q:"La dysfonction d'une vertèbre thoracique en FRS gauche :",o:[
  ['induit une rotation gauche',1,'FRS gauche = rotation gauche.'],
  ['induit une inclinaison droite',0,'Side du même côté : gauche.'],
@@ -184,7 +184,7 @@ window.CONTENT.qcm=[
  ['est toujours d\'origine traumatique',0,'Elle peut être secondaire (RI, supination).'],
  ['avec un ligament normal, peut être secondaire à une RI du coude',1,'Oui.'],
  ['n\'a aucun muscle fixateur',0,'Biceps (et pronateurs ou supinateurs selon le ligament).'],
- ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"Tête antérieure = pense biceps.",t:['tr-ant']},
+ ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"Tête antérieure : penser au biceps.",t:['tr-ant']},
 {id:'v15',src:'va',of:'a14',ch:'cotes',ch2:'thorax',q:"La dysfonction de T5 en FRS droite sera préférentiellement associée à :",o:[
  ['K5 droite en PL',1,'Rotation droite : la transverse droite recule et emmène l\'angle de K5 droite.'],
  ['K5 gauche en ASI',1,'Le side droit écarte les côtes gauches.'],
@@ -268,7 +268,7 @@ window.CONTENT.qcm=[
  ['fixée par le supinateur, le brachio-radial et le biceps',1,'Fixateurs de la RE.'],
  ['fixée par le carré pronateur',0,'Fixateur de la RI.'],
  ['elle limite la supination',0,'Elle l\'exagère.']],
- ex:"Inverse de la RI. Retiens le croisement : RI ↔ coude en ABD ; RE ↔ coude en ADD.",t:['re-coude']},
+ ex:"Inverse de la RI. À retenir, le croisement : RI ↔ coude en ABD ; RE ↔ coude en ADD.",t:['re-coude']},
 {id:'v27',src:'va',of:'a13',ch:'coude',q:"Tête radiale en postériorité, ligament annulaire tonique (normal) :",o:[
  ['primaire : extension rapide et forcée, chute',1,'Cause primaire du cours.'],
  ['secondaire : supination, donc RE du coude',1,'Avec un ligament tonique, la RE postériorise la tête.'],
@@ -299,7 +299,7 @@ window.CONTENT.qcm=[
  ex:"Inverse de la flexion : fléchisseurs ↔ extenseurs, épitrochléite ↔ épicondylite.",t:['rc-extension','epicondylite']},
 {id:'v31',src:'va',of:'a11',ch:'cotes',q:"À propos de K1 en supériorité :",o:[
  ['elle est maintenue par le scalène moyen',1,'Réponse du corrigé.'],
- ['le scalène postérieur s\'insère sur K2, pas sur K1',1,'C\'est pour ça qu\'il ne fixe pas K1.'],
+ ['le scalène postérieur s\'insère sur K2, pas sur K1',1,'C\'est pourquoi il ne fixe pas K1.'],
  ['c\'est uniquement une élévation de l\'arc antérieur',0,'Le corrigé refuse le « uniquement ».'],
  ['elle est maintenue par le scalène postérieur',0,'Il s\'insère sur K2.'],
  ['aucune réponse n\'est correcte',0,'A et B sont justes.']],
@@ -347,7 +347,7 @@ window.CONTENT.qcm=[
  ['elle n\'est jamais traumatique',0,'Elle est traumatique.'],
  ['aucune réponse n\'est correcte',0,'A et C sont justes.']],ex:"",t:['ac-rot-ant','cinetique-balistique']},
 {id:'c15',src:'cl',ch:'epaule',q:"Acromio-claviculaire en rotation postérieure :",o:[
- ['mécanisme cinétique : flexion trop rapide',0,'Ça, c\'est la rotation antérieure. Ici : extension trop rapide.'],
+ ['mécanisme cinétique : flexion trop rapide',0,'Cela correspond à la rotation antérieure. Ici : extension trop rapide.'],
  ['mécanisme balistique : extension exagérée',0,'Rotation antérieure aussi. Ici : flexion forcée, trop loin.'],
  ['implique le deltoïde faisceau antérieur',0,'Le faisceau postérieur.'],
  ['détend le ligament trapézoïde',0,'Trapézoïde tendu, conoïde détendu.'],
@@ -378,7 +378,7 @@ window.CONTENT.qcm=[
 /* côtes */
 
 /* bases */
-{id:'c43',src:'cl',ch:'bases',q:"Types d'articulations de ton cours :",o:[
+{id:'c43',src:'cl',ch:'bases',q:"Types d'articulations du cours :",o:[
  ['l\'huméro-ulnaire est une trochléenne',1,'Oui.'],
  ['la radio-ulnaire supérieure est une condylienne',0,'Une trochoïde.'],
  ['la radio-carpienne est une condylienne',1,'Oui.'],

@@ -1,6 +1,6 @@
 # EOPour les nuls — consignes pour Claude
 
-Site statique de révision ostéo (P1 à P5) façon réseau social, partagé entre étudiants.
+Plateforme de révision ostéo (P1 à P5), partagée entre étudiants, au ton **professionnel** (voir « Ton et rédaction »).
 HTML/CSS/JS pur (modules ES) : pas de build, pas de npm, pas de framework, pas de serveur.
 Le propriétaire débute : réponds en français et résume en une phrase ce que tu as changé.
 
@@ -9,7 +9,9 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   ordinateur (Ctrl K, Aujourd'hui, À revoir, Mes erreurs, Favoris, arbre « Mes cours », Admin, Profil), barre du bas sur
   téléphone. Vues `#accueil` (Aujourd'hui : plan du jour en 3 étapes, maîtrise par catégorie, cours, colonne de droite),
   `#cours`, `#p1`…`#p5` (matières l'une sous l'autre, outils en cartes), `#revoir`, `#erreurs`, `#recherche`, `#favoris`,
-  `#profil`, `#reglages`, `#admin`, `#edit-<id>`. Recherche rapide Ctrl K (outils, matières, catégories, lexique M.E.).
+  `#profil`, `#reglages`, `#a-propos`, `#admin`, `#edit-<id>`. Recherche rapide Ctrl K (outils, matières, catégories, lexique M.E.).
+  Nouveau visiteur (rien de commencé) : présentation du site en tête d'Aujourd'hui (`carteBienvenue`). Pied de page
+  commun (À propos, Réglages). Chaque vue pose `document.title` (`TITRES_VUE`) ; entrée en fondu seulement quand la page change.
 - `outils/revision.html?mode=revoir|erreurs[&outil=id]` — joue « À revoir » / « Mes erreurs » toutes sources mélangées
   (M.E. : `me-revision/content.js` + `qcm.js` ; outils créés dans l'admin : `contenus/{id}`, clé = `cleQ(énoncé)`).
 - `outils.js` — **liste des outils** (`OUTILS`, avec leur `annee`), années (`ANNEES`), emoji des matières (`MATIERES`),
@@ -32,7 +34,7 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   s'il peut passer par Admin ▸ Organisation ▸ Créer un outil.
 - `outils/qcm-hemato-exemple.html` — modèle de QCM à copier (mode examen, chrono, vibrations déjà gérés).
 - `outils/me-revision.html` + dossier `outils/me-revision/` — révision M.E. (P2, M. Boucherat) : parcours, fiche en blocs,
-  cartes, QCM (annales + Claude), lexique ; catégories à cocher (coude, épaule…). Exception à « CSS/JS en ligne » :
+  cartes, QCM (annales, variantes d'annales, entraînement), lexique ; catégories à cocher (coude, épaule…). Exception à « CSS/JS en ligne » :
   le contenu est trop gros, il vit dans le dossier (`content.js` lexique, `fiches.js`, `qcm.js`, `schemas.js` schémas SVG,
   `anim.js` schémas animés, `notions.js` mots-clés → lexique pour les notions cliquables, `essentiel.js`, `app.js`, `style.css`).
   Progression détaillée sur l'appareil (localStorage `me-revision`) ; score des séries et activité via `compte.js`.
@@ -52,8 +54,7 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
 ## Règles
 - Chemins **relatifs** uniquement (le site reste ainsi déplaçable), sauf `404.html`.
 - Mobile d'abord : lisible à 360 px, zones tactiles ≥ 44 px, rien qui dépende du survol.
-- Couleurs : variables de `style.css` uniquement. Esprit réseau social, mais jamais le logo, le nom,
-  les icônes ni les couleurs d'Instagram.
+- Couleurs : variables de `style.css` uniquement. Jamais le logo, le nom, les icônes ni les couleurs d'Instagram.
 - Données venant des membres (noms, avatars, photos…) : toujours échappées avec `esc()`, jamais injectées brutes en HTML.
 - Progression et comptes : passer par `compte.js`, ne pas écrire dans Firestore depuis une page.
 - `synchroniser()` (compte.js) réécrit tout le document du membre : tout nouveau champ doit y être ajouté,
@@ -64,6 +65,17 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   avec React 18 UMD + Babel standalone en CDN (+ Tailwind CDN s'il utilise des classes Tailwind).
 - Contenu médical : vérifier l'exactitude. Pas de copie intégrale des supports de la fac (le site est public).
 - Avant de finir : relire chaque page modifiée et vérifier qu'aucun lien n'est cassé.
+
+## Ton et rédaction (demande du propriétaire : « pro, pas familier »)
+- **Vouvoiement partout, jamais « tu »** : pages, outils, messages d'erreur (`compte.js`), toasts, corrections des QCM,
+  fiches. Le site est présenté comme un vrai service de révision proposé à des camarades.
+- Boutons et liens à l'infinitif ou en nom (« Commencer », « Se connecter », « Créer un compte ») ; « Mes cours »,
+  « Mes erreurs », « Mes QCM » pour les espaces personnels. Consignes impersonnelles possibles (« cocher puis valider »).
+- Ton sobre : pas de « Bien joué », « Pas mal », « Pas de panique », « Ça… » ; préférer « Série terminée », « Bon résultat ».
+  « Manquée » plutôt que « ratée ». Éviter les accords qui supposent le genre du membre (« Déconnexion effectuée », pas « Déconnecté »).
+- Pas d'emoji dans l'interface (menus, réglages, titres, toasts, boutons) : icônes SVG au trait (`ICONE`, `ICONES` dans
+  `index.html`). Les emojis restent seulement pour le contenu choisi par l'admin (outils, matières) et les avatars.
+- « Mode ludique » (clé `fun`) : série de jours, objectif quotidien, graphique de la semaine ; « Mode sobre » sinon.
 
 ## Comptes (Firebase, plan gratuit Spark)
 - Connexion Google (popup) + e-mail/mot de passe. Domaines autorisés dans Firebase Auth : `eopourlesnuls.web.app` (et `hephh.github.io`, ancienne adresse).
@@ -90,7 +102,7 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   (admin) ; `<img data-media="id">` est rempli tout seul (`hydraterMedias`). Photo de profil importée : champ `image`
   (≤ 90 000 caractères) dans `users` et `profils`. Catalogue : `annonce`, `images: { <outil>: { <catégorie>: mediaId } }`,
   et par outil `titre`, `emoji`, `nouveau`, `perso` (outil créé depuis l'admin).
-- Thème (par défaut `clair`) : `clair | papier | menthe | auto | sombre | oled | nuit` → `data-theme` (light/dark) + `data-nuance` (papier, menthe, oled, nuit). Mode fun (`fun` : null = pas
+- Thème (par défaut `clair`) : `clair | papier | menthe | auto | sombre | oled | nuit` → `data-theme` (light/dark) + `data-nuance` (papier, menthe, oled, nuit). Mode ludique (`fun` : null = pas
   encore demandé à la 1re connexion) : désactivé → `data-fun="off"`, plus de série, d'objectif ni de graphique de la semaine.
 - Répétition espacée (`compte.js`) : `noterReponse(outil, question, juste, { ch })` à chaque question corrigée (M.E. via
   `record()` de `app.js`, `contenu.html`, `revision.html`), `planifierRevision(…, "bientot"|"jours"|"sue")`, `aRevoir()` (20/jour max),

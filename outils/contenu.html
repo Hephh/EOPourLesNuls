@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EOPour les nuls</title>
 <meta name="theme-color" content="#ffffff">
-<script src="../reglages.js?v=13"></script>
+<script src="../reglages.js?v=14"></script>
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icones/icone-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
-<link rel="stylesheet" href="../style.css?v=13">
+<link rel="stylesheet" href="../style.css?v=14">
 <style>
   .qcm { max-width: 560px; margin: 0 auto; padding: max(8px, env(safe-area-inset-top)) 14px 0; }
   /* Barre segmentée façon stories : un segment par question */
@@ -159,7 +159,7 @@
 </div>
 
 <script type="module">
-import { enregistrerScore, noterActivite, comptesActifs, contenu, chargerCatalogue, catalogueLocal, media, noterReponse, planifierRevision } from "../compte.js?v=13";
+import { enregistrerScore, noterActivite, comptesActifs, contenu, chargerCatalogue, catalogueLocal, media, noterReponse, planifierRevision } from "../compte.js?v=14";
 // Page commune des outils écrits depuis l'admin (Admin ▸ Organisation ▸ Créer un outil) : outils/contenu.html?id=…
 
 let QUESTIONS = [];
@@ -217,7 +217,7 @@ function demarrer(liste) {
   $("#fin").hidden = true;
   $("#revue").hidden = true;
   $("#jeu").hidden = false;
-  $("#consigne").textContent = "Une ou plusieurs réponses exactes · coche puis valide" + (EXAMEN ? " · correction à la fin" : "");
+  $("#consigne").textContent = "Une ou plusieurs réponses exactes · cocher puis valider" + (EXAMEN ? " · correction à la fin" : "");
   afficher();
   window.scrollTo({ top: 0 });
 }
@@ -314,8 +314,8 @@ function montrerCorrection(juste, tempsEcoule) {
   v.hidden = false;
   v.className = "verdict " + (juste ? "ok" : "ko");
   v.textContent = juste ? "Juste ✓"
-    : tempsEcoule ? "Temps écoulé ⏱ — les bonnes réponses sont marquées ✓"
-    : "Faux ✗ — les bonnes réponses sont marquées ✓";
+    : tempsEcoule ? "Temps écoulé : les bonnes réponses sont marquées ✓"
+    : "Faux : les bonnes réponses sont marquées ✓";
   const e = $("#explication");
   e.textContent = q.explication || "";
   e.hidden = !q.explication;
@@ -358,7 +358,7 @@ function afficherRevue() {
       const coche = r.choisis.has(j);
       const item = document.createElement("li");
       item.className = [o.bonne ? "bonne" : "", coche ? "cochee" : "", coche && !o.bonne ? "fausse" : ""].join(" ").trim();
-      item.textContent = `${"ABCDEFGH"[j]}. ${o.texte}${coche ? "  ← ta réponse" : ""}`;
+      item.textContent = `${"ABCDEFGH"[j]}. ${o.texte}${coche ? "  ← votre réponse" : ""}`;
       ul.append(item);
     });
     li.append(ul);
@@ -385,7 +385,7 @@ async function terminer() {
   $("#fin").hidden = false;
   $("#score").textContent = `${score} / ${total}`;
   $("#pct").textContent = `${pct} % de bonnes réponses`;
-  $("#msg").textContent = pct >= 80 ? "Excellent 🔥" : pct >= 50 ? "Pas mal — encore un tour pour fixer 💪" : "On refait les erreurs ? C'est comme ça qu'on retient 📚";
+  $("#msg").textContent = pct >= 80 ? "Excellent résultat." : pct >= 50 ? "Bon résultat : une nouvelle série permettra de consolider." : "Refaire les erreurs reste la meilleure façon de retenir.";
   const r = $("#refaire");
   r.hidden = erreurs.length === 0;
   r.textContent = `Refaire mes erreurs (${erreurs.length})`;
@@ -401,9 +401,9 @@ async function terminer() {
   if (total !== QUESTIONS.length) return; // le record ne compte que sur le QCM complet
   const res = await enregistrerScore(ID, score, total);
   record.textContent = `Meilleur score : ${res.score.best} / ${res.score.total}`;
-  if (res.synchro === true) synchro.textContent = "☁️ Progression sauvegardée sur ton compte";
-  else if (res.synchro === false) synchro.textContent = "⚠️ Hors connexion : sauvegardé sur cet appareil seulement";
-  else if (comptesActifs) synchro.innerHTML = `<a href="../index.html#profil">Connecte-toi</a> pour retrouver ta progression sur tous tes appareils`;
+  if (res.synchro === true) synchro.textContent = "Progression enregistrée sur votre compte";
+  else if (res.synchro === false) synchro.textContent = "Hors connexion : progression enregistrée sur cet appareil uniquement";
+  else if (comptesActifs) synchro.innerHTML = `<a href="../index.html#profil">Connectez-vous</a> pour retrouver votre progression sur tous vos appareils`;
 }
 
 $("#action").onclick = () => {

@@ -1233,3 +1233,131 @@ dialog.modal-palette .modal-corps { padding: 0; }
   .etape .btn { grid-area: btn; margin: 0; min-height: 44px; padding: 0 14px; }
   .etape-num { width: 34px; height: 34px; }
 }
+
+/* =====================================================================
+   Version 14 : ton professionnel. Présentation du site aux nouveaux visiteurs, connexion et profil soignés,
+   icônes SVG dans les menus (plus d'emoji d'interface), pied de page, page « À propos », entrée des pages
+   en fondu, survols discrets. Ce bloc passe après tous les autres.
+   ===================================================================== */
+:root { --flamme: #ea580c; }
+:root[data-theme="dark"] { --flamme: #fb923c; }
+::selection { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+
+/* Le pied de page reste en bas même quand la page est courte */
+body.app { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+body.app > .vue { flex: 1 0 auto; width: 100%; padding-bottom: 32px; }
+@media (min-width: 1000px) { body.app > .vue { padding-bottom: 40px; } }
+
+/* Boutons : transitions, survol et appui */
+.btn { transition: background-color .15s, border-color .15s, box-shadow .15s, transform .1s; }
+.btn svg { width: 18px; height: 18px; }
+.btn:active:not(:disabled) { transform: scale(.98); }
+@media (hover: hover) {
+  .btn:hover:not(:disabled) { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  .btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 86%, #000); border-color: color-mix(in srgb, var(--accent) 86%, #000); }
+  .btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--ko) 86%, #000); border-color: color-mix(in srgb, var(--ko) 86%, #000); }
+}
+
+/* Entrée des pages en fondu (coupée par le réglage « Animations » et par « réduire les animations ») */
+.vue.entree { animation: vue-entree .24s ease-out both; }
+@keyframes vue-entree { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .vue.entree { animation: none; } }
+
+/* Survols discrets (souris seulement : rien ne dépend du survol) */
+.ligne-outil, .annee-carte, .groupe-revision, .ap-point { transition: border-color .15s, box-shadow .15s, transform .15s; }
+@media (hover: hover) {
+  .ligne-outil:hover, a.annee-carte:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(15, 20, 30, .08); }
+}
+
+/* En-têtes de page */
+.page-sur { display: block; margin-bottom: 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.page-tete-ligne { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 20px; }
+
+/* Présentation du site (1re visite) */
+.accueil-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: center; gap: 22px 36px; padding: 30px 32px; border: 1px solid var(--line); border-radius: calc(var(--rayon) + 4px); background: linear-gradient(135deg, var(--accent-soft) 0%, var(--surface) 72%); box-shadow: var(--ombre); }
+@media (max-width: 760px) { .accueil-hero { grid-template-columns: minmax(0, 1fr); padding: 24px 18px 20px; } }
+.hero-sur { display: block; padding-right: 36px; color: var(--accent-ink); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.accueil-hero h2 { margin: 8px 0 10px; font-size: clamp(1.45rem, 3.4vw, 1.95rem); line-height: 1.15; }
+.hero-txt p { margin: 0; max-width: 52ch; color: var(--muted); font-size: 15px; line-height: 1.55; }
+.hero-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.hero-points { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.hero-points li { display: flex; align-items: flex-start; gap: 14px; }
+.hero-points li > svg { flex: none; width: 40px; height: 40px; padding: 9px; border-radius: 12px; background: var(--surface); color: var(--accent-ink); box-shadow: var(--ombre); }
+.hero-points b { display: block; font-size: 15px; }
+.hero-points small { display: block; margin-top: 2px; color: var(--muted); font-size: 13.5px; line-height: 1.45; }
+.hero-fermer { position: absolute; top: 6px; right: 6px; color: var(--muted); }
+.hero-fermer svg { width: 20px; height: 20px; }
+
+/* Icônes d'interface */
+.annonce-ico svg { width: 26px; height: 26px; color: var(--accent-ink); }
+.palette-ico svg { width: 18px; height: 18px; color: var(--muted); }
+.ligne-ico { display: grid; place-items: center; }
+.ligne-ico svg { width: 20px; height: 20px; color: var(--muted); }
+.ligne.danger .ligne-ico svg { color: var(--ko); }
+.marque-eo-mini { width: 22px; height: 22px; border-radius: 7px; font-size: 9.5px; }
+.story-nom svg { width: 12px; height: 12px; margin-right: 3px; vertical-align: -1px; }
+.choix-carte > span { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: var(--accent-soft); color: var(--accent-ink); }
+.choix-carte > span svg { width: 24px; height: 24px; }
+
+/* Réglages dans la mise en page commune */
+.page .reglages { padding: 0; }
+.page .reglages > h2 { margin: 24px 2px 8px; }
+.page .reglages > h2:first-child { margin-top: 0; }
+.page .groupe { margin: 0; }
+.page .reglages .note { margin: 16px 0 0; }
+
+/* Profil */
+.profil-carte { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 18px; }
+.profil-carte .avatar-ring { width: 68px; height: 68px; padding: 2px; background: var(--accent); }
+.profil-carte .avatar { border-width: 2px; border-color: var(--surface); font-size: 1.5rem; }
+.profil-carte .avatar.emoji { font-size: 1.9rem; }
+.profil-id { flex: 1 1 180px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.profil-id b { font: 600 1.25rem/1.25 var(--titre); overflow-wrap: anywhere; }
+.profil-id span { color: var(--muted); font-size: 14px; overflow-wrap: anywhere; }
+.stat-cartes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stat-carte { display: flex; flex-direction: column; gap: 2px; padding: 16px; }
+.stat-carte b { font: 700 1.6rem/1.1 var(--titre); font-variant-numeric: tabular-nums; }
+.stat-carte span { color: var(--muted); font-size: 13px; }
+.page .activite { margin: 0; padding: 18px; }
+.serie { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.serie b { font-size: 1.2rem; }
+.serie svg { width: 24px; height: 24px; color: var(--flamme); }
+.serie.zero svg { color: var(--muted); }
+
+/* Connexion et création de compte */
+.page .connexion { width: 100%; max-width: 440px; margin: 0; padding: 26px 24px 20px; text-align: left; }
+.connexion h2 { margin: 0 0 6px; font-size: 1.35rem; }
+.connexion > p { margin: 0 0 18px; color: var(--muted); font-size: 14.5px; line-height: 1.5; }
+.btn-google { gap: 10px; background: var(--surface); }
+.btn-google svg { width: 18px; height: 18px; }
+.connexion .sep { margin: 18px 0; text-transform: uppercase; }
+.connexion form { display: flex; flex-direction: column; gap: 6px; }
+.champ-lab { color: var(--text); font-size: 13.5px; font-weight: 600; }
+.connexion form > label.champ-lab:not(:first-child) { margin-top: 8px; }
+.champ-lab-ligne { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 8px; }
+.champ-lab-ligne .lien { padding: 0; font-size: 13px; }
+.connexion form .btn-primary { margin-top: 14px; }
+.connexion .bascule { margin: 16px 0 0; padding-top: 14px; color: var(--muted); }
+.connexion-note { margin: 0; text-align: left; }
+
+/* Page « À propos » */
+.ap-h2 { margin: 0; font-size: 1.15rem; font-weight: 600; }
+.ap-points { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.ap-point { display: flex; flex-direction: column; gap: 6px; }
+.ap-point svg { width: 38px; height: 38px; margin-bottom: 4px; padding: 8px; border-radius: 11px; background: var(--accent-soft); color: var(--accent-ink); }
+.ap-point b { font-size: 15px; }
+.ap-point span { color: var(--muted); font-size: 14px; line-height: 1.5; }
+.ap-texte p { margin: 0; max-width: 75ch; line-height: 1.6; }
+.ap-texte p + p { margin-top: 10px; }
+.ap-version { margin: 0; text-align: left; }
+
+/* Pied de page */
+.pied { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 18px; padding: 18px 16px calc(var(--nav-h) + env(safe-area-inset-bottom) + 22px); border-top: 1px solid var(--line-2); color: var(--muted); font-size: 12.5px; text-align: center; }
+.pied a { color: var(--muted); text-decoration: none; }
+.pied a:hover { color: var(--text); text-decoration: underline; }
+.pied-marque { color: var(--text); font-weight: 650; }
+@media (min-width: 1000px) { .pied { padding: 18px 32px 26px; } }
+
+/* Message éphémère */
+.toast { padding: 12px 18px; border-radius: 12px; font-weight: 600; animation: toast-entree .2s ease-out; }
+@keyframes toast-entree { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }

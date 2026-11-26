@@ -14,7 +14,7 @@ export const OUTILS = [
     annee: "P1",
     matiere: "Hématologie",
     type: "QCM · 7 questions",
-    description: "Réponses multiples, correction expliquée, refaire ses erreurs.",
+    description: "Réponses multiples, correction expliquée, erreurs à refaire.",
     fichier: "outils/qcm-hemato-exemple.html",
     emoji: "🩸"
   },
@@ -24,7 +24,7 @@ export const OUTILS = [
     annee: "P2",
     matiere: "M.E.",
     type: "Fiche, cartes, 61 QCM",
-    description: "Coude, épaule, poignet-main, rachis thoracique, côtes : coche les catégories à réviser, puis suis le parcours.",
+    description: "Coude, épaule, poignet-main, rachis thoracique et côtes : fiche en blocs, cartes et QCM d'annales, avec un parcours guidé.",
     fichier: "outils/me-revision.html",
     emoji: "🦴",
     categories: [["coude", "Coude"], ["epaule", "Épaule"], ["poignet", "Poignet-main"], ["thorax", "Rachis thoracique"], ["cotes", "Côtes"], ["bases", "Bases d'arthrologie"]]

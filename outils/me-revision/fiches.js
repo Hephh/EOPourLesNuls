@@ -56,7 +56,7 @@ epaule:`
 <tr><td>[[sst|Scapulo-serrato-thoracique]]</td><td colspan="2">6 dysfonctions = les 6 mouvements de la scapula, dues à des hypertonies et/ou une scoliose</td><td>Muscles moteurs de chaque mouvement</td></tr>
 </tbody></table></div>
 <div class="box ret"><h4>À retenir</h4><ul><li>[[cinetique-balistique|Cinétique]] = trop vite ; balistique = trop loin.</li><li>PRÉsternale = en avant ; SUPRAsternale = en haut.</li><li>Rotation antérieure : grand pectoral, conoïde tendu. Rotation postérieure : deltoïde postérieur, trapézoïde tendu.</li></ul></div>
-<div class="box ast"><h4>Pas d'annale sur l'épaule</h4><p>Tes deux sujets n'ont aucune question d'épaule : ce chapitre ne contient que des questions d'entraînement tirées du cours.</p></div>
+<div class="box ast"><h4>Pas d'annale sur l'épaule</h4><p>Les deux sujets d'annales n'ont aucune question sur l'épaule : ce chapitre ne contient que des questions d'entraînement tirées du cours.</p></div>
 `,
 
 poignet:`
@@ -128,7 +128,7 @@ thorax:`
 `,
 
 cotes:`
-<div class="box ast"><h4>Pas de cours sur les côtes dans tes fichiers</h4><p>Cette fiche regroupe ce que tes annales demandent. Complète-la avec ton cours sur les côtes s'il existe : les explications marquées « lecture probable » sont déduites du corrigé.</p></div>
+<div class="box ast"><h4>Pas de cours sur les côtes dans les supports</h4><p>Cette fiche regroupe ce que demandent les annales. Elle est à compléter avec le cours sur les côtes s'il existe : les explications marquées « lecture probable » sont déduites du corrigé.</p></div>
 <h3>Bras de pompe et anse de seau</h3>
 <figure data-fig="cotes_axes" data-cap="Bras de pompe : axe costo-corporéale + costo-transversaire du même côté. Anse de seau : axe costo-vertébrale → chondro-sternale."></figure>
 <ul><li>[[bras-de-pompe|Bras de pompe]] (BP) : surtout les côtes hautes ; l'extrémité antérieure monte et avance. Son axe suit le col de la côte : articulations <b>costo-corporéale et costo-transversaire homolatérales</b> (corrigé).</li><li>[[anse-de-seau|Anse de seau]] (AS) : surtout les côtes basses ; la partie latérale monte.</li><li>[[cote-inspi-expi|BPI, BPE, ASI, ASE]] : côte bloquée en inspiration (I) ou en expiration (E).</li></ul>
@@ -141,9 +141,9 @@ cotes:`
 `,
 
 bases:`
-<div class="box ast"><h4>Rappels de vocabulaire</h4><p>Ce chapitre n'est pas un cours de ton CC : il explique le vocabulaire que tes cours utilisent sans le définir (arthrodie, condylienne, toroïde…).</p></div>
-<h3>Les types d'articulations de ton cours</h3>
-<div class="scroll"><table class="stack"><thead><tr><th>Type</th><th>Surfaces</th><th>Axes</th><th>Dans ton cours</th></tr></thead><tbody>
+<div class="box ast"><h4>Rappels de vocabulaire</h4><p>Ce chapitre ne correspond pas à un cours du CC : il explique le vocabulaire que les cours utilisent sans le définir (arthrodie, condylienne, toroïde…).</p></div>
+<h3>Les types d'articulations du cours</h3>
+<div class="scroll"><table class="stack"><thead><tr><th>Type</th><th>Surfaces</th><th>Axes</th><th>Dans le cours</th></tr></thead><tbody>
 <tr><td>[[arthrodie|Arthrodie]]</td><td>Planes</td><td>Glissements</td><td>Os du carpe, médio-carpienne externe, acromio-claviculaire</td></tr>
 <tr><td>[[trochleenne|Trochléenne]]</td><td>Poulie + crête</td><td>1</td><td>Huméro-ulnaire</td></tr>
 <tr><td>[[trochoide|Trochoïde]]</td><td>Pivot dans un anneau</td><td>1</td><td>Radio-ulnaire supérieure</td></tr>

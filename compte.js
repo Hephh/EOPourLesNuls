@@ -5,7 +5,7 @@
      appareils dans Firestore (un document par membre : users/{uid}).
    Les pages n'écrivent jamais directement dans Firestore : elles passent ici.
    ===================================================================== */
-import { FIREBASE_CONFIG } from "./firebase-config.js?v=13";
+import { FIREBASE_CONFIG } from "./firebase-config.js?v=14";
 
 const CDN = "https://www.gstatic.com/firebasejs/13.4.0/";
 
@@ -726,26 +726,26 @@ const MESSAGES = {
   "auth/wrong-password": "Mot de passe incorrect.",
   "auth/user-not-found": "E-mail ou mot de passe incorrect.",
   "auth/invalid-email": "Adresse e-mail invalide.",
-  "auth/missing-email": "Entre ton adresse e-mail.",
-  "auth/missing-password": "Entre ton mot de passe.",
-  "auth/email-already-in-use": "Un compte existe déjà avec cet e-mail : connecte-toi.",
+  "auth/missing-email": "Saisissez votre adresse e-mail.",
+  "auth/missing-password": "Saisissez votre mot de passe.",
+  "auth/email-already-in-use": "Un compte existe déjà avec cette adresse : connectez-vous.",
   "auth/weak-password": "Mot de passe trop court (6 caractères minimum).",
-  "auth/too-many-requests": "Trop d'essais. Réessaie dans quelques minutes.",
-  "auth/network-request-failed": "Pas de connexion internet.",
-  "auth/popup-blocked": "Fenêtre bloquée par le navigateur : autorise les pop-ups ou utilise ton e-mail.",
-  "auth/operation-not-supported-in-this-environment": "Connexion Google impossible ici : ouvre le site dans Chrome ou Safari, ou utilise ton e-mail.",
-  "auth/web-storage-unsupported": "Connexion Google impossible ici : ouvre le site dans Chrome ou Safari, ou utilise ton e-mail.",
+  "auth/too-many-requests": "Trop de tentatives. Réessayez dans quelques minutes.",
+  "auth/network-request-failed": "Connexion internet indisponible.",
+  "auth/popup-blocked": "Fenêtre bloquée par le navigateur : autorisez les fenêtres pop-up ou utilisez votre adresse e-mail.",
+  "auth/operation-not-supported-in-this-environment": "Connexion Google impossible ici : ouvrez le site dans Chrome ou Safari, ou utilisez votre adresse e-mail.",
+  "auth/web-storage-unsupported": "Connexion Google impossible ici : ouvrez le site dans Chrome ou Safari, ou utilisez votre adresse e-mail.",
   "auth/unauthorized-domain": "Ce site n'est pas encore autorisé dans Firebase (domaine à ajouter).",
   "auth/operation-not-allowed": "Ce mode de connexion n'est pas encore activé dans Firebase.",
-  "auth/requires-recent-login": "Pour ta sécurité, reconnecte-toi puis réessaie.",
-  "auth/user-mismatch": "Ce n'est pas le compte Google connecté au site.",
-  "permission-denied": "Action refusée par les règles de sécurité (as-tu publié les dernières règles Firestore ?).",
-  "app/email-requis": "Entre ton e-mail, puis touche « Mot de passe oublié ? ».",
-  "app/nom-requis": "Choisis un prénom ou un pseudo.",
+  "auth/requires-recent-login": "Pour votre sécurité, reconnectez-vous puis réessayez.",
+  "auth/user-mismatch": "Ce compte Google n'est pas celui qui est connecté au site.",
+  "permission-denied": "Action refusée par les règles de sécurité (les dernières règles Firestore sont-elles publiées ?).",
+  "app/email-requis": "Saisissez votre adresse e-mail, puis choisissez « Mot de passe oublié ? ».",
+  "app/nom-requis": "Indiquez un prénom ou un pseudo.",
   "app/comptes-indisponibles": "Les comptes ne sont pas disponibles pour le moment.",
   "app/image": "Ce fichier n'est pas une image lisible (JPEG, PNG ou WebP).",
-  "app/image-lourde": "Image trop lourde, même réduite. Essaie une image plus petite.",
-  "app/connexion-requise": "Connecte-toi (onglet Profil) pour commenter et écrire aux autres.",
+  "app/image-lourde": "Image trop lourde, même réduite. Choisissez une image plus petite.",
+  "app/connexion-requise": "Connectez-vous (onglet Profil) pour commenter.",
 };
 export function messageErreur(e) {
   const code = e?.code || "";

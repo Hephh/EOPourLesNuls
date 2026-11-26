@@ -4,16 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>EOPour les nuls</title>
-<meta name="description" content="QCM et outils de révision ostéo, de P1 à P5 — sur téléphone comme sur PC.">
+<meta name="description" content="Plateforme de révision pour les études d'ostéopathie, de la P1 à la P5 : cours structurés, QCM corrigés et répétition espacée, sur téléphone comme sur ordinateur.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=13"></script>
+<script src="reglages.js?v=14"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=14">
 </head>
 <body class="app">
 
@@ -37,12 +37,18 @@
 </nav>
 
 <main id="vue" class="vue"></main>
+<footer class="pied" aria-label="Pied de page">
+  <span class="pied-marque">EOPour les nuls</span>
+  <span>Révision en ostéopathie, de la P1 à la P5</span>
+  <a href="#a-propos">À propos</a>
+  <a href="#reglages">Réglages</a>
+</footer>
 <div id="toast" class="toast" role="status" hidden></div>
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=13";
-import * as C from "./compte.js?v=13";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=14";
+import * as C from "./compte.js?v=14";
 
 const R = window.Reglages;
 
@@ -68,6 +74,28 @@ const ICONE = {
   retour: svg('<path d="M15 5l-7 7 7 7"/>'),
   fermer: svg('<path d="M6 6l12 12M18 6 6 18"/>'),
 };
+/* Icônes de l'interface (même trait que la navigation) : pas d'emoji dans les menus, les réglages ni les messages. */
+const ICONES = {
+  livre: svg('<path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H20v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H20v-3"/><path d="M8 7h8M8 11h6"/>'),
+  qcm: svg('<rect x="3" y="3.5" width="7" height="7" rx="1.5"/><rect x="3" y="13.5" width="7" height="7" rx="1.5"/><path d="M13.5 7h7.5M13.5 17h7.5M4.8 7l1.5 1.5 2.4-3"/>'),
+  megaphone: svg('<path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12"/>'),
+  calendrier: svg('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
+  reglages: svg('<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>'),
+  crayon: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>'),
+  badge: svg('<rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16c.5-1.6 1.8-2.4 3.2-2.4s2.7.8 3.2 2.4M14.5 10h4M14.5 13.5h3"/>'),
+  sortie: svg('<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/>'),
+  etincelle: svg('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>'),
+  melanger: svg('<path d="M16 4h4v4M4 20 20 4M20 16v4h-4M15 15l5 5M4 4l5 5"/>'),
+  liste: svg('<path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/>'),
+  vibreur: svg('<rect x="8" y="3" width="8" height="18" rx="2"/><path d="M4 8v8M20 8v8"/>'),
+  trophee: svg('<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>'),
+  flamme: svg('<path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.2-5.4 3.6-7.6.3 1.9 1.3 3 2.4 3.6-.2-3 1.1-5.6 3.4-7.8.2 3.1 1.2 4.9 2.3 6.6.8 1.3 1.3 2.9 1.3 5.2 0 3.6-2.6 6.2-6.5 6.2z"/>'),
+  etoile: svg('<path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>'),
+  installer: svg('<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/>'),
+  poubelle: svg('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
+  info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
+  graphique: svg('<path d="M5 20v-7M10.5 20V5M16 20v-10M21 20H3"/>'),
+};
 
 let minuteurToast;
 function toast(msg) {
@@ -83,7 +111,7 @@ async function partager(titre, url) {
     try { await navigator.share({ title: titre, url }); return; }
     catch (e) { if (e.name === "AbortError") return; }
   }
-  try { await navigator.clipboard.writeText(url); toast("Lien copié 📋"); }
+  try { await navigator.clipboard.writeText(url); toast("Lien copié"); }
   catch { toast(url); }
 }
 
@@ -98,16 +126,6 @@ function avatar(u) {
 
 const vide = (icone, titre, texte) => `<div class="vide">${icone}<h2>${esc(titre)}</h2><p>${esc(texte)}</p></div>`;
 
-function grille(liste) {
-  return `<div class="grille">${liste.map((o) => {
-    const s = C.scoreLocal(o.id);
-    return `<a class="tuile" href="${esc(o.fichier)}" style="--h:${teinte(o.matiere)}" aria-label="${esc(o.titre)}">
-      <span class="tuile-emoji" aria-hidden="true">${esc(o.emoji || "📝")}</span>
-      <span class="tuile-titre">${esc(o.titre)}</span>
-      ${s ? `<span class="tuile-badge">${s.best}/${s.total}</span>` : ""}
-    </a>`;
-  }).join("")}</div>`;
-}
 
 /* ---------- Fenêtre modale ---------- */
 const modal = $("#modal");
@@ -190,13 +208,25 @@ const visuel = (x, defaut) => (x?.image ? `<img class="visuel" data-media="${esc
 const ICONE_VERROU = svg('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>');
 
 /* ---------- Aujourd'hui : plan du jour, maîtrise, cours ---------- */
+/** Présentation du site pour un nouveau visiteur (rien de commencé sur cet appareil), jusqu'à ce qu'il la ferme. */
 function carteBienvenue() {
   try { if (localStorage.getItem("bienvenue-vue")) return ""; } catch {}
-  return `<div class="bienvenue" id="bienvenue" role="note">
-    <b>Bienvenue sur EOPour les nuls 👋</b>
-    <p>Choisis un cours dans « Mes cours ». Chaque QCM que tu fais revient ensuite ici au bon moment (À revoir), et tes erreurs sont gardées pour les refaire.</p>
-    <button class="icon-btn" type="button" id="fermer-bienvenue" aria-label="Masquer ce message">${ICONE.fermer}</button>
-  </div>`;
+  if (Object.keys(C.revisionsLocales()).length || OUTILS.some((o) => C.scoreLocal(o.id))) return "";
+  const u = C.utilisateur();
+  return `<section class="accueil-hero" id="bienvenue" aria-labelledby="t-hero">
+    <div class="hero-txt">
+      <span class="hero-sur">Révision en ostéopathie · P1 à P5</span>
+      <h2 id="t-hero">Bienvenue sur EOPour les nuls</h2>
+      <p>Des cours structurés, des QCM corrigés proposition par proposition et une répétition espacée qui repropose chaque question au bon moment.</p>
+      <div class="hero-btns"><a class="btn btn-primary" href="#cours">Parcourir les cours</a>${!u && C.comptesActifs ? `<a class="btn" href="#profil" id="hero-inscription">Créer un compte</a>` : ""}</div>
+    </div>
+    <ul class="hero-points">
+      <li>${ICONES.livre}<span><b>Cours structurés</b><small>Fiches, cartes et schémas, rangés par année et par matière</small></span></li>
+      <li>${ICONES.qcm}<span><b>QCM corrigés</b><small>Annales et variantes, avec l'explication de chaque proposition</small></span></li>
+      <li>${ICONE_REVOIR}<span><b>Répétition espacée</b><small>Chaque question revient juste avant d'être oubliée</small></span></li>
+    </ul>
+    <button class="icon-btn hero-fermer" type="button" id="fermer-bienvenue" aria-label="Masquer la présentation">${ICONE.fermer}</button>
+  </section>`;
 }
 
 function carteAnnonce() {
@@ -204,7 +234,7 @@ function carteAnnonce() {
   if (!a || !a.texte) return "";
   try { if (localStorage.getItem("annonce-vue") === a.id) return ""; } catch {}
   const cible = !a.lien ? "" : a.lien.startsWith("#") ? anneeDe(a.lien.slice(1))?.nom : OUTILS.find((o) => o.fichier === a.lien)?.titre;
-  return `<div class="annonce" id="annonce" role="note"><span class="annonce-ico" aria-hidden="true">📣</span>
+  return `<div class="annonce" id="annonce" role="note"><span class="annonce-ico" aria-hidden="true">${ICONES.megaphone}</span>
     <div class="annonce-txt"><b>${esc(a.titre || "Annonce")}</b><p>${esc(a.texte)}</p>${a.lien && cible ? `<a class="btn btn-primary annonce-btn" href="${esc(a.lien)}">${esc(cible)} →</a>` : ""}</div>
     <button class="icon-btn" type="button" id="fermer-annonce" aria-label="Masquer l'annonce">${ICONE.fermer}</button></div>`;
 }
@@ -236,14 +266,14 @@ function etapesDuJour() {
   const p = dernier ? place(dernier) : null;
   return [
     dus.length
-      ? { type: "À revoir", titre: pluriel(dus.length, "question"), duree: `≈ ${Math.max(1, Math.round(dus.length * 0.5))} min`, detail: "Ce que tu risques d'oublier, choisi par la répétition espacée. 20 au plus par jour.", href: lienRevision("revoir"), bouton: "Commencer", principal: true }
-      : { type: "À revoir", titre: "Rien pour aujourd'hui", duree: "", detail: "Fais quelques QCM : chaque question reviendra ici juste avant que tu l'oublies.", href: "#cours", bouton: "Mes cours" },
+      ? { type: "À revoir", titre: pluriel(dus.length, "question"), duree: `≈ ${Math.max(1, Math.round(dus.length * 0.5))} min`, detail: "Les questions sur le point d'être oubliées, choisies par la répétition espacée (20 au maximum par jour).", href: lienRevision("revoir"), bouton: "Commencer", principal: true }
+      : { type: "À revoir", titre: "Rien pour aujourd'hui", duree: "", detail: "Faites quelques QCM : chaque question reviendra ici juste avant d'être oubliée.", href: "#cours", bouton: "Mes cours" },
     dernier
       ? { type: "Reprendre", titre: dernier.titre, duree: "", detail: [p.matiere ? p.matiere.complet || p.matiere.nom : "", anneeDe(p.annee)?.nom].filter(Boolean).join(" · "), href: dernier.fichier, bouton: "Continuer", outil: dernier.id, principal: !dus.length }
-      : { type: "Commencer", titre: "Choisis un cours", duree: "", detail: "Une année, une matière, puis un outil : fiche, cartes ou QCM.", href: "#cours", bouton: "Mes cours", principal: !dus.length },
+      : { type: "Commencer", titre: "Choisir un cours", duree: "", detail: "Une année, une matière, puis un outil : fiche, cartes ou QCM.", href: "#cours", bouton: "Mes cours", principal: !dus.length },
     err.length
-      ? { type: "Mes erreurs", titre: `${err.length} QCM à refaire`, duree: `≈ ${Math.max(1, Math.round(err.length * 0.6))} min`, detail: "Les questions ratées, avec la correction. Elles sortent de la liste quand tu les réussis.", href: lienRevision("erreurs"), bouton: "Refaire" }
-      : { type: "Mes erreurs", titre: "Aucune erreur", duree: "", detail: "Les questions que tu rates arrivent ici toutes seules, pour les refaire plus tard.", href: "", bouton: "" },
+      ? { type: "Mes erreurs", titre: `${err.length} QCM à refaire`, duree: `≈ ${Math.max(1, Math.round(err.length * 0.6))} min`, detail: "Les questions manquées, avec leur correction. Elles quittent la liste dès qu'elles sont réussies.", href: lienRevision("erreurs"), bouton: "Refaire" }
+      : { type: "Mes erreurs", titre: "Aucune erreur", duree: "", detail: "Les questions manquées s'ajoutent ici automatiquement, pour être refaites plus tard.", href: "", bouton: "" },
   ].map((e, i) => ({ ...e, fait: !!fait[i] }));
 }
 
@@ -251,7 +281,7 @@ function blocPlan() {
   const etapes = etapesDuJour();
   const n = etapes.filter((e) => e.fait).length;
   return `<section class="bloc" aria-labelledby="t-plan">
-    <div class="bloc-tete"><h2 id="t-plan">Ton plan du jour</h2><span class="sub">${n} sur 3 fait${n > 1 ? "s" : ""}</span></div>
+    <div class="bloc-tete"><h2 id="t-plan">Plan du jour</h2><span class="sub">${n} étape${n > 1 ? "s" : ""} sur 3 terminée${n > 1 ? "s" : ""}</span></div>
     <ol class="plan">${etapes.map((e, i) => `<li class="etape${e.fait ? " fait" : ""}">
       <span class="etape-tete"><span class="etape-num" aria-hidden="true">${e.fait ? "✓" : i + 1}</span><span class="sub">${esc(e.duree)}</span></span>
       <span class="etape-type">${esc(e.type)}</span>
@@ -270,8 +300,9 @@ function blocMaitrise() {
   const masques = CAT.masques[o.id] || [];
   const cats = o.categories.filter(([id]) => !masques.includes(id));
   const vues = Object.values(m).reduce((a, x) => a + x.vues, 0);
+  if (!vues) return ""; // rien de commencé : le bloc apparaît avec les premières réponses
   return `<section class="bloc" aria-labelledby="t-maitrise">
-    <div class="bloc-tete"><h2 id="t-maitrise">Ta maîtrise · ${esc(o.titre)}</h2>
+    <div class="bloc-tete"><h2 id="t-maitrise">Maîtrise · ${esc(o.titre)}</h2>
       <span class="legende-maitrise" aria-hidden="true"><i class="n1"></i>Vu <i class="n2"></i>En progrès <i class="n3"></i>Familier <i class="n4"></i>Maîtrisé</span></div>
     <div class="carte maitrise">${cats.map(([id, nom]) => {
       const x = m[id], n = x?.niveau || 0;
@@ -279,7 +310,7 @@ function blocMaitrise() {
         <span class="maitrise-nom"><b>${esc(nom)}</b><small>${C.NIVEAUX_MAITRISE[n]}${x ? ` · ${x.justes}/${x.vues} juste${x.justes > 1 ? "s" : ""}` : ""}</small></span>
         <span class="segments n${n}" role="img" aria-label="${esc(nom)} : ${C.NIVEAUX_MAITRISE[n]}"><i></i><i></i><i></i><i></i></span></a>`;
     }).join("")}
-    ${vues ? "" : `<p class="sub maitrise-vide">Fais un QCM de cet outil : chaque catégorie se remplit au fil de tes réponses.</p>`}</div>
+    </div>
   </section>`;
 }
 
@@ -302,7 +333,7 @@ function chargerLexique() {
   if (LEXIQUE) return Promise.resolve(LEXIQUE);
   return new Promise((ok) => {
     const s = document.createElement("script");
-    s.src = "outils/me-revision/content.js?v=4";
+    s.src = "outils/me-revision/content.js?v=5";
     s.onload = () => { LEXIQUE = (window.CONTENT && window.CONTENT.terms) || []; ok(LEXIQUE); };
     s.onerror = () => ok([]);
     document.head.append(s);
@@ -330,7 +361,7 @@ function railAujourdhui() {
   return `<aside class="rail" aria-label="À côté">
     ${modeFun() ? `<section class="carte rail-objectif">
       <svg width="58" height="58" viewBox="0 0 64 64" role="img" aria-label="Objectif du jour : ${Math.min(ajd, objectif)} QCM sur ${objectif}"><circle cx="32" cy="32" r="26" fill="none" stroke-width="7" style="stroke: var(--bg-2);"/><circle cx="32" cy="32" r="26" fill="none" stroke-width="7" stroke-linecap="round" style="stroke: var(--accent);" stroke-dasharray="${(163.4 * pct).toFixed(1)} 163.4" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" style="fill: var(--text); font: 700 15px Inter, sans-serif;">${Math.min(ajd, objectif)}/${objectif}</text></svg>
-      <span><b>${serie ? `Série de ${pluriel(serie, "jour")}` : "Pas encore de série"}</b><small>Objectif du jour · mode fun</small></span></section>` : ""}
+      <span><b>${serie ? `Série de ${pluriel(serie, "jour")}` : "Pas encore de série"}</b><small>Objectif du jour</small></span></section>` : ""}
     <section class="carte rail-notion" id="notion-jour" hidden></section>
     ${nouveaux.length ? `<section class="carte"><span class="rail-titre">Nouveau</span>${nouveaux.slice(0, 4).map((o) => `<a class="rail-outil" href="${esc(o.fichier)}" data-outil="${esc(o.id)}"><span class="lo-emoji" style="--h:${teinte(o.matiere)}" aria-hidden="true">${esc(o.emoji || "📝")}</span><span><b>${esc(o.titre)}</b><small>${esc([o.type, anneeDe(place(o).annee)?.nom].filter(Boolean).join(" · "))}</small></span></a>`).join("")}</section>` : ""}
   </aside>`;
@@ -341,22 +372,25 @@ function brancherDernierOutil(racine = vue) {
   racine.querySelectorAll("[data-outil]").forEach((a) => a.addEventListener("click", () => { try { localStorage.setItem("dernier-outil", a.dataset.outil); } catch {} }));
 }
 
+const dateDuJour = () => { const d = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }); return d.charAt(0).toUpperCase() + d.slice(1); };
+
 function vueAccueil() {
   const r = rendu;
   const u = C.utilisateur();
   const prenom = u?.nom ? String(u.nom).trim().split(/\s+/)[0] : "";
   vue.innerHTML = `<div class="page">
     <div class="page-corps">
-      <header class="page-tete"><h1>${prenom ? "Bonjour " + esc(prenom) : "Bonjour"}</h1><p class="sub">Ton plan du jour : 3 étapes courtes, tu peux t'arrêter après chacune.</p></header>
+      <header class="page-tete"><span class="page-sur">${dateDuJour()}</span><h1>${prenom ? "Bonjour, " + esc(prenom) : "Bonjour"}</h1><p class="sub">Trois étapes courtes pour aujourd'hui, à enchaîner ou à faire séparément.</p></header>
       ${carteAnnonce()}${carteBienvenue()}
       ${blocPlan()}
       ${blocMaitrise()}
-      <section class="bloc" aria-labelledby="t-cours"><div class="bloc-tete"><h2 id="t-cours">Tes cours</h2><a class="lien" href="#cours">Tout voir</a></div>${cartesAnnees()}</section>
+      <section class="bloc" aria-labelledby="t-cours"><div class="bloc-tete"><h2 id="t-cours">Mes cours</h2><a class="lien" href="#cours">Tout voir</a></div>${cartesAnnees()}</section>
     </div>
     ${railAujourdhui()}
   </div>`;
   $("#fermer-annonce")?.addEventListener("click", () => { try { localStorage.setItem("annonce-vue", CAT.annonce.id); } catch {} $("#annonce").remove(); });
   $("#fermer-bienvenue")?.addEventListener("click", () => { try { localStorage.setItem("bienvenue-vue", "1"); } catch {} $("#bienvenue").remove(); });
+  $("#hero-inscription")?.addEventListener("click", () => { modeInscription = true; });
   vue.querySelectorAll("[data-etape]").forEach((a) => a.addEventListener("click", () => marquerPlan(+a.dataset.etape)));
   brancherDernierOutil();
   remplirNotionDuJour(r);
@@ -365,7 +399,7 @@ function vueAccueil() {
 /* ---------- Mes cours : toutes les années ---------- */
 function vueCours() {
   vue.innerHTML = `<div class="page"><div class="page-corps">
-    <header class="page-tete"><h1>Mes cours</h1><p class="sub">Choisis une année : ses matières et leurs outils (fiches, cartes, QCM).</p></header>
+    <header class="page-tete"><h1>Mes cours</h1><p class="sub">Choisissez une année pour accéder à ses matières et à leurs outils : fiches, cartes et QCM.</p></header>
     ${cartesAnnees()}
   </div></div>`;
 }
@@ -378,7 +412,7 @@ function vueAnnee(id) {
   const tete = `<nav class="ariane" aria-label="Fil d'Ariane"><a href="#cours">Mes cours</a><span aria-hidden="true">›</span><span>${esc(a.nom)}</span></nav>
     <header class="page-tete"><h1><span class="pastille-annee" style="--c: ${couleurAnnee(a)};"></span>${esc(a.nom)}${a.sous ? ` <span class="titre-sous">· ${esc(a.sous)}</span>` : ""}</h1></header>`;
   const page = (html) => `<div class="page"><div class="page-corps">${tete}${html}</div></div>`;
-  if (a.verrou) { vue.innerHTML = page(`<div class="vide">${ICONE_VERROU}<h2>${esc(a.nom)} est verrouillé</h2><p>Ce parcours ouvrira plus tard.</p></div>`); return; }
+  if (a.verrou) { vue.innerHTML = page(`<div class="vide">${ICONE_VERROU}<h2>${esc(a.nom)} est verrouillé</h2><p>Ce parcours sera ouvert prochainement.</p></div>`); return; }
   const outils = outilsAnnee(a);
   const matieres = matieresAnnee(a).slice();
   if (outils.some((o) => !place(o).matiere)) matieres.push(AUTRES);
@@ -436,17 +470,17 @@ function vueRevoir() {
   const tous = C.revisionsLocales();
   const total = Object.keys(tous).length;
   vue.innerHTML = `<div class="page"><div class="page-corps">
-    <header class="page-tete"><h1>À revoir</h1><p class="sub">La répétition espacée te repropose chaque question juste avant que tu l'oublies : le lendemain, puis 2, 4, 7, 15 et 30 jours si tu réponds juste. Jamais plus de 20 par jour.</p></header>
+    <header class="page-tete"><h1>À revoir</h1><p class="sub">La répétition espacée repropose chaque question juste avant qu'elle ne soit oubliée : le lendemain, puis après 2, 4, 7, 15 et 30 jours tant que la réponse est juste. Au maximum 20 questions par jour.</p></header>
     ${dus.length ? `<div class="carte bandeau-action"><span><b>${pluriel(dus.length, "question")} pour aujourd'hui</b><small>≈ ${Math.max(1, Math.round(dus.length * 0.5))} min</small></span><a class="btn btn-primary" href="${lienRevision("revoir")}">${ICONE_JOUER}Commencer</a></div>${listeParOutil(dus, "revoir")}`
-      : vide(ICONE_REVOIR, "Rien à revoir aujourd'hui", total ? "Tout est à jour. Reviens demain, ou avance dans un cours." : "Fais des QCM dans un outil : les questions reviendront ici au bon moment.")}
+      : vide(ICONE_REVOIR, "Rien à revoir aujourd'hui", total ? "Tout est à jour. Revenez demain, ou avancez dans un cours." : "Faites des QCM dans un outil : les questions reviendront ici au bon moment.")}
   </div></div>`;
 }
 function vueErreurs() {
   const err = C.erreurs();
   vue.innerHTML = `<div class="page"><div class="page-corps">
-    <header class="page-tete"><h1>Mes erreurs</h1><p class="sub">Chaque question ratée arrive ici. Elle en sort dès que tu la réussis, ou si tu choisis « Je la connais ».</p></header>
+    <header class="page-tete"><h1>Mes erreurs</h1><p class="sub">Chaque question manquée arrive ici. Elle en sort dès qu'elle est réussie, ou avec le choix « Je la connais ».</p></header>
     ${err.length ? `<div class="carte bandeau-action"><span><b>${pluriel(err.length, "question")} à refaire</b><small>avec la correction de chaque proposition</small></span><a class="btn btn-primary" href="${lienRevision("erreurs")}">${ICONE_JOUER}Tout refaire</a></div>${listeParOutil(err, "erreurs")}`
-      : vide(ICONE_ERREUR, "Aucune erreur pour l'instant", "Les questions que tu rates dans les QCM arrivent ici toutes seules.")}
+      : vide(ICONE_ERREUR, "Aucune erreur pour l'instant", "Les questions manquées dans les QCM s'ajoutent ici automatiquement.")}
   </div></div>`;
 }
 
@@ -461,15 +495,16 @@ function ouvrirPalette() {
     const entrees = [
       ...outilsVisibles().map((o) => ({ titre: o.titre, sous: [o.type, o.matiere, anneeDe(place(o).annee)?.nom].filter(Boolean).join(" · "), href: o.fichier, ico: esc(o.emoji || "📝"), outil: o.id })),
       ...CAT.matieres.filter((x) => anneeDe(x.annee) && !anneeDe(x.annee).verrou).map((x) => ({ titre: x.complet || x.nom, sous: `Matière · ${anneeDe(x.annee).nom}${x.prof ? " · " + x.prof : ""}`, href: "#" + x.annee, ico: visuel(x, "📚") })),
-      ...CAT.annees.filter((a) => !a.verrou).map((a) => ({ titre: `${a.nom}${a.sous ? " · " + a.sous : ""}`, sous: "Année", href: "#" + a.id, ico: "📅" })),
+      ...CAT.annees.filter((a) => !a.verrou).map((a) => ({ titre: `${a.nom}${a.sous ? " · " + a.sous : ""}`, sous: "Année", href: "#" + a.id, ico: ICONES.calendrier })),
       ...outilsVisibles().flatMap((o) => (o.categories || []).filter(([id]) => !(CAT.masques[o.id] || []).includes(id))
         .map(([, nom]) => ({ titre: nom, sous: `Catégorie · ${o.titre}`, href: o.fichier, ico: esc(o.emoji || "📝"), outil: o.id }))),
       ...(LEXIQUE || []).map((t) => ({ titre: t.t, sous: "Lexique · " + String(t.d || "").slice(0, 70), href: "outils/me-revision.html#lexique", ico: "Aa", outil: "me-revision" })),
-      { titre: "À revoir", sous: "Page · répétition espacée", href: "#revoir", ico: "↻" },
-      { titre: "Mes erreurs", sous: "Page", href: "#erreurs", ico: "✗" },
-      { titre: "Favoris", sous: "Page", href: "#favoris", ico: "♡" },
-      { titre: "Réglages", sous: "Page · thème, taille du texte, QCM", href: "#reglages", ico: "⚙" },
-      { titre: "Profil", sous: "Page", href: "#profil", ico: "👤" },
+      { titre: "À revoir", sous: "Page · répétition espacée", href: "#revoir", ico: ICONE_REVOIR },
+      { titre: "Mes erreurs", sous: "Page", href: "#erreurs", ico: ICONE_ERREUR },
+      { titre: "Favoris", sous: "Page", href: "#favoris", ico: ICONE.coeur },
+      { titre: "Réglages", sous: "Page · thème, taille du texte, QCM", href: "#reglages", ico: ICONES.reglages },
+      { titre: "Profil", sous: "Page · compte et progression", href: "#profil", ico: ICONE.user },
+      { titre: "À propos", sous: "Page · le site, vos données", href: "#a-propos", ico: ICONES.info },
     ];
     let sel = 0, vus = [];
     const dessiner = () => {
@@ -568,7 +603,7 @@ const quand = (t) => depuis(t).replace("il y a ", "");
 function ouvrirCommentaires(o) {
   const u = C.utilisateur();
   if (!C.comptesActifs) return toast("Les comptes ne sont pas encore disponibles");
-  if (!u) { toast("Connecte-toi pour lire et écrire des commentaires"); location.hash = "#profil"; return; }
+  if (!u) { toast("Connectez-vous pour lire et écrire des commentaires"); location.hash = "#profil"; return; }
   let arret = () => {};
   let admin = false;
   C.estAdmin().then((a) => { admin = a; });
@@ -576,13 +611,13 @@ function ouvrirCommentaires(o) {
     <div class="com-liste" id="com-liste"><p class="vide-mini">Chargement…</p></div>
     <form class="com-form" id="com-form">
       ${petitAvatar(u)}
-      <input class="champ" id="com-texte" maxlength="500" placeholder="Ajoute un commentaire…" autocomplete="off" enterkeyhint="send" aria-label="Ton commentaire">
+      <input class="champ" id="com-texte" maxlength="500" placeholder="Ajouter un commentaire…" autocomplete="off" enterkeyhint="send" aria-label="Votre commentaire">
       <button class="lien" type="submit">Publier</button>
     </form>`, (m) => {
     m.classList.add("modal-com");
     const liste = $("#com-liste", m), champ = $("#com-texte", m);
     const dessiner = (coms) => {
-      if (!coms.length) { liste.innerHTML = `<div class="com-vide">${ICONE_BULLE}<b>Pas encore de commentaire</b><p>Lance la discussion : une astuce, une question, une erreur repérée.</p></div>`; return; }
+      if (!coms.length) { liste.innerHTML = `<div class="com-vide">${ICONE_BULLE}<b>Pas encore de commentaire</b><p>Partagez une astuce, posez une question ou signalez une erreur.</p></div>`; return; }
       liste.innerHTML = coms.map((c) => `<div class="com" data-id="${esc(c.id)}">
         ${petitAvatar({ nom: c.nom, photo: c.photo, avatar: c.avatar })}
         <div class="com-corps"><p><b>${esc(c.nom)}</b> ${esc(c.texte)}</p>
@@ -630,7 +665,7 @@ function vueRecherche() {
     recherche = champ.value;
     const q = sansAccents(recherche.trim());
     const liste = outilsVisibles().filter((o) => !q || sansAccents(`${o.titre} ${o.matiere} ${o.description}`).includes(q));
-    $("#resultats").innerHTML = liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>` : vide(ICONE.loupe, "Aucun résultat", "Essaie un autre mot-clé.");
+    $("#resultats").innerHTML = liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>` : vide(ICONE.loupe, "Aucun résultat", "Essayez un autre mot-clé.");
     brancherLignes();
   };
   champ.addEventListener("input", maj);
@@ -642,8 +677,8 @@ function vueRecherche() {
 function vueFavoris() {
   const fav = C.favorisLocaux();
   const liste = outilsVisibles().filter((o) => fav.has(o.id));
-  vue.innerHTML = `<div class="page"><div class="page-corps"><header class="page-tete"><h1>Favoris</h1><p class="sub">Les outils que tu as marqués d'un ♡.</p></header>` + (liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>`
-    : vide(ICONE.coeur, "Aucun favori", "Touche ♡ sur un outil pour le retrouver ici.")) + `</div></div>`;
+  vue.innerHTML = `<div class="page"><div class="page-corps"><header class="page-tete"><h1>Favoris</h1><p class="sub">Les outils marqués d'un cœur, à portée de main.</p></header>` + (liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>`
+    : vide(ICONE.coeur, "Aucun favori", "Le bouton en forme de cœur, sur chaque outil, l'ajoute à cette liste.")) + `</div></div>`;
   brancherLignes();
 }
 
@@ -673,55 +708,47 @@ function blocActivite() {
     d.setDate(d.getDate() + 1);
   }
   const max = Math.max(1, ...jours.map((j) => j.n));
-  return `<div class="activite">
+  return `<section class="carte activite" aria-label="Activité de la semaine">
     <div class="activite-haut">
-      <div class="serie">${serie ? "🔥" : "💤"} <b>${serie}</b> jour${serie > 1 ? "s" : ""} d'affilée</div>
-      <div class="objectif">Objectif du jour <b>${Math.min(ajd, objectif)}/${objectif}</b>${ajd >= objectif ? " ✅" : ""}
+      <div class="serie${serie ? "" : " zero"}">${ICONES.flamme}<span><b>${serie}</b> jour${serie > 1 ? "s" : ""} de suite</span></div>
+      <div class="objectif">Objectif du jour <b>${Math.min(ajd, objectif)}/${objectif}</b>${ajd >= objectif ? " · atteint" : ""}
         <span class="jauge"><i style="width:${Math.min(100, Math.round((ajd / objectif) * 100))}%"></i></span></div>
     </div>
     <div class="semaine" aria-label="QCM terminés ces 7 derniers jours">
       ${jours.map((j) => `<div class="jour${j.n ? "" : " vide-jour"}${j.ajd ? " ajd" : ""}" title="${j.n} QCM">
         <i style="height:${j.n ? Math.max(14, Math.round((j.n / max) * 100)) : 6}%"></i><span>${j.lettre}</span></div>`).join("")}
     </div>
-  </div>`;
+  </section>`;
 }
 
 function vueProfil() {
   const u = C.utilisateur();
   const st = statsLocales();
-  const joues = OUTILS.filter((o) => C.scoreLocal(o.id));
-  const stats = `<div class="stats">
-      <div><b>${st.faits}</b><span>QCM faits</span></div>
-      <div><b>${st.reussite == null ? "–" : st.reussite + " %"}</b><span>réussite</span></div>
-      <div><b>${st.favoris}</b><span>favoris</span></div>
+  const joues = outilsVisibles().filter((o) => C.scoreLocal(o.id));
+  const stats = `<div class="stat-cartes">
+      <div class="carte stat-carte"><b>${st.faits}</b><span>QCM terminé${st.faits > 1 ? "s" : ""}</span></div>
+      <div class="carte stat-carte"><b>${st.reussite == null ? "–" : st.reussite + " %"}</b><span>de réussite</span></div>
+      <div class="carte stat-carte"><b>${st.favoris}</b><span>favori${st.favoris > 1 ? "s" : ""}</span></div>
     </div>`;
-  const mesQcm = `<h2 class="titre-section">${ICONE.grille} ${u ? "Mes QCM" : "Sur cet appareil"}</h2>`
-    + (joues.length ? grille(joues) : `<p class="vide-mini">Fais un QCM : il apparaîtra ici avec ton meilleur score.</p>`);
-  const barre = `<div class="profil-barre"><b>Profil</b><a class="icon-btn" href="#reglages" aria-label="Réglages">${ICONE.menu}</a></div>`;
-
+  const mesQcm = `<section class="bloc" aria-labelledby="t-mes-qcm"><div class="bloc-tete"><h2 id="t-mes-qcm">${u ? "Mes QCM" : "Sur cet appareil"}</h2></div>
+      ${joues.length ? `<div class="lignes">${joues.map(ligneOutil).join("")}</div>` : `<p class="sub">Les QCM terminés apparaîtront ici, avec le meilleur score de chacun.</p>`}</section>`;
+  const tete = `<header class="page-tete page-tete-ligne"><div><h1>Profil</h1>${u ? `<p class="sub">Compte, progression et activité.</p>` : ""}</div>
+      <a class="btn" href="#reglages">${ICONES.reglages}Réglages</a></header>`;
+  const page = (html) => { vue.innerHTML = `<div class="page"><div class="page-corps">${tete}${html}</div></div>`; };
   if (!u) {
-    vue.innerHTML = `<div class="profil">${barre}
-      ${C.comptesActifs ? formulaireConnexion() : `<div class="connexion"><span class="logo">EO<span>Pour les nuls</span></span><p>Les comptes arrivent très bientôt. En attendant, ta progression est gardée sur cet appareil.</p></div>`}
-      <div class="profil-tete local">${avatar(null)}${stats}</div>
-      ${blocActivite()}
-      ${mesQcm}
-    </div>`;
+    page(`${C.comptesActifs ? formulaireConnexion() : `<div class="carte connexion"><h2>Comptes bientôt disponibles</h2><p>En attendant, la progression est enregistrée sur cet appareil.</p></div>`}
+      ${stats}${blocActivite()}${mesQcm}`);
     if (C.comptesActifs) brancherConnexion();
+    brancherLignes();
     return;
   }
-
-  vue.innerHTML = `<div class="profil">${barre}
-    <div class="profil-tete">${avatar(u)}${stats}</div>
-    <p class="profil-nom">${esc(u.nom)}</p>
-    ${u.email ? `<p class="profil-mail">${esc(u.email)}</p>` : ""}
-    <div class="profil-actions">
-      <button class="btn" type="button" id="btn-modifier">Modifier le profil</button>
-      <a class="btn" href="#reglages">Réglages</a>
-    </div>
-    ${blocActivite()}
-    ${mesQcm}
-  </div>`;
+  page(`<section class="carte profil-carte">${avatar(u)}
+      <div class="profil-id"><b>${esc(u.nom)}</b>${u.email ? `<span>${esc(u.email)}</span>` : ""}</div>
+      <button class="btn" type="button" id="btn-modifier">${ICONES.crayon}Modifier le profil</button>
+    </section>
+    ${stats}${blocActivite()}${mesQcm}`);
   $("#btn-modifier").onclick = modalProfil;
+  brancherLignes();
 }
 
 function modalProfil() {
@@ -758,7 +785,7 @@ function modalProfil() {
     $("#photo-importer", m).onclick = async () => {
       const f = await choisirFichier();
       if (!f) return;
-      try { await C.majImage(f); toast("Photo mise à jour ✓"); modalProfil(); }
+      try { await C.majImage(f); toast("Photo mise à jour"); modalProfil(); }
       catch (err) { toast(C.messageErreur(err)); }
     };
     $("#photo-retirer", m)?.addEventListener("click", async () => { await C.majImage(null); toast("Photo retirée"); modalProfil(); });
@@ -774,25 +801,29 @@ function modalProfil() {
   });
 }
 
+const LOGO_GOOGLE = `<svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>`;
+
 function formulaireConnexion() {
   const ins = modeInscription;
-  return `<div class="connexion">
-    <span class="logo">EO<span>Pour les nuls</span></span>
-    <p>Connecte-toi pour retrouver ta progression sur tous tes appareils.</p>
-    <button class="btn btn-plein" type="button" id="btn-google">Continuer avec Google</button>
-    ${navigateurIntegre ? `<p class="astuce">Pour Google, ouvre d'abord le site dans Chrome ou Safari (menu ⋮ → « Ouvrir dans le navigateur »).</p>` : ""}
-    <div class="sep">OU</div>
+  return `<section class="carte connexion" aria-labelledby="t-connexion">
+    <h2 id="t-connexion">${ins ? "Créer un compte" : "Se connecter"}</h2>
+    <p>${ins ? "Votre progression, vos favoris et vos révisions vous suivront sur tous vos appareils." : "Retrouvez votre progression, vos favoris et vos révisions sur tous vos appareils."}</p>
+    <button class="btn btn-plein btn-google" type="button" id="btn-google">${LOGO_GOOGLE}Continuer avec Google</button>
+    ${navigateurIntegre ? `<p class="astuce">Pour utiliser Google, ouvrez d'abord le site dans Chrome ou Safari (menu ⋮ → « Ouvrir dans le navigateur »).</p>` : ""}
+    <div class="sep">ou</div>
     <form id="form-email" novalidate>
-      ${ins ? `<input class="champ" name="nom" placeholder="Prénom ou pseudo" maxlength="40" autocomplete="nickname">` : ""}
-      <input class="champ" name="email" type="email" placeholder="Adresse e-mail" autocomplete="email" inputmode="email">
-      <input class="champ" name="mdp" type="password" placeholder="Mot de passe${ins ? " (6 caractères min.)" : ""}" autocomplete="${ins ? "new-password" : "current-password"}">
+      ${ins ? `<label class="champ-lab" for="cx-nom">Prénom ou pseudo</label><input class="champ" id="cx-nom" name="nom" maxlength="40" autocomplete="nickname">` : ""}
+      <label class="champ-lab" for="cx-email">Adresse e-mail</label>
+      <input class="champ" id="cx-email" name="email" type="email" placeholder="nom@exemple.fr" autocomplete="email" inputmode="email">
+      <span class="champ-lab-ligne"><label class="champ-lab" for="cx-mdp">Mot de passe</label>${ins ? "" : `<button class="lien" type="button" id="btn-oubli">Mot de passe oublié ?</button>`}</span>
+      <input class="champ" id="cx-mdp" name="mdp" type="password"${ins ? ` placeholder="6 caractères minimum"` : ""} autocomplete="${ins ? "new-password" : "current-password"}">
       <button class="btn btn-primary btn-plein" type="submit">${ins ? "Créer mon compte" : "Se connecter"}</button>
     </form>
     <p class="erreur" id="erreur" role="alert" hidden></p>
-    ${ins ? "" : `<button class="lien" type="button" id="btn-oubli">Mot de passe oublié ?</button>`}
     <p class="bascule">${ins ? "Déjà un compte ?" : "Pas encore de compte ?"}
-      <button class="lien" type="button" id="btn-bascule">${ins ? "Se connecter" : "Inscris-toi"}</button></p>
-  </div>`;
+      <button class="lien" type="button" id="btn-bascule">${ins ? "Se connecter" : "Créer un compte"}</button></p>
+  </section>
+  <p class="note connexion-note">Sans compte, la progression reste enregistrée sur cet appareil.</p>`;
 }
 
 function brancherConnexion() {
@@ -811,7 +842,7 @@ function brancherConnexion() {
   $("#btn-oubli")?.addEventListener("click", async () => {
     const email = form.email.value.trim();
     if (!email) return erreur({ code: "app/email-requis" });
-    try { await C.motDePasseOublie(email); toast("Si un compte existe, un e-mail t'a été envoyé"); }
+    try { await C.motDePasseOublie(email); toast("Si un compte existe pour cette adresse, un e-mail de réinitialisation vient d'être envoyé"); }
     catch (e) { erreur(e); }
   });
   form.onsubmit = async (ev) => {
@@ -833,7 +864,7 @@ function brancherConnexion() {
 /* ---------- Réglages ---------- */
 let invitInstall = null;
 window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); invitInstall = e; majInviteInstall(); });
-window.addEventListener("appinstalled", () => { invitInstall = null; noterInvite(true); fermerInviteInstall(); toast("Appli installée ✓"); });
+window.addEventListener("appinstalled", () => { invitInstall = null; noterInvite(true); fermerInviteInstall(); toast("Application installée"); });
 const estInstallee = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const surIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
@@ -861,22 +892,22 @@ function fermerInviteInstall() {
 }
 function contenuInvite() {
   if (navigateurIntegre) return {
-    texte: "Pour l'installer, ouvre d'abord le site dans ton navigateur : menu <b>⋯</b> → « Ouvrir dans le navigateur ».",
+    texte: "Pour l'installer, ouvrez d'abord le site dans votre navigateur : menu <b>⋯</b> → « Ouvrir dans le navigateur ».",
     bouton: `<button class="btn btn-primary" type="button" data-inv="copier">Copier le lien</button>`,
   };
   if (surApple) return {
-    texte: safariIOS ? "Ajoute-la à ton écran d'accueil en 3 gestes :" : "Ajoute-la à ton écran d'accueil (si tu ne trouves pas, ouvre le site dans Safari) :",
+    texte: safariIOS ? "Ajoutez-la à votre écran d'accueil en trois étapes :" : "Ajoutez-la à votre écran d'accueil (si l'option n'apparaît pas, ouvrez le site dans Safari) :",
     etapes: [
-      `Touche <span class="inv-ico">${ICONE_PARTAGE}</span> <b>Partager</b>${safariIOS ? (surIPad ? " en haut" : " en bas de Safari") : ""}`,
-      `Choisis <span class="inv-ico">${ICONE_AJOUT}</span> <b>Sur l'écran d'accueil</b> (fais défiler si besoin)`,
-      `Touche <b>Ajouter</b> en haut à droite`,
+      `Touchez <span class="inv-ico">${ICONE_PARTAGE}</span> <b>Partager</b>${safariIOS ? (surIPad ? " en haut" : " en bas de Safari") : ""}`,
+      `Choisissez <span class="inv-ico">${ICONE_AJOUT}</span> <b>Sur l'écran d'accueil</b> (faites défiler si besoin)`,
+      `Touchez <b>Ajouter</b> en haut à droite`,
     ],
     fleche: safariIOS && !surIPad,
   };
-  if (invitInstall) return { texte: "Une icône sur ton écran d'accueil, en plein écran, même hors connexion.", bouton: `<button class="btn btn-primary" type="button" data-inv="installer">Installer</button>` };
+  if (invitInstall) return { texte: "Une icône sur votre écran d'accueil, en plein écran, même hors connexion.", bouton: `<button class="btn btn-primary" type="button" data-inv="installer">Installer</button>` };
   return {
-    texte: "Ajoute-la à ton écran d'accueil :",
-    etapes: [`Ouvre le menu <b>⋮</b> du navigateur`, `Touche <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>`],
+    texte: "Ajoutez-la à votre écran d'accueil :",
+    etapes: [`Ouvrez le menu <b>⋮</b> du navigateur`, `Touchez <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>`],
   };
 }
 function dessinerInvite(el) {
@@ -884,7 +915,7 @@ function dessinerInvite(el) {
   el.classList.toggle("avec-fleche", !!c.fleche);
   el.innerHTML = `<img class="inv-icone" src="icones/icone-192.png" alt="" width="52" height="52">
     <div class="inv-corps">
-      <b>Installe EOPour les nuls sur ton téléphone</b>
+      <b>Installer EOPour les nuls sur votre téléphone</b>
       <p>${c.texte}</p>
       ${c.etapes ? `<ol class="inv-etapes">${c.etapes.map((e) => `<li>${e}</li>`).join("")}</ol>` : ""}
       <div class="inv-btns">${c.bouton || ""}<button class="btn" type="button" data-inv="plus-tard">Plus tard</button></div>
@@ -893,7 +924,7 @@ function dessinerInvite(el) {
   el.querySelectorAll("[data-inv]").forEach((b) => (b.onclick = async () => {
     const a = b.dataset.inv;
     if (a === "plus-tard") { noterInvite(false); return fermerInviteInstall(); }
-    if (a === "copier") { try { await navigator.clipboard.writeText(lienSite()); toast("Lien copié 📋"); } catch { toast(lienSite()); } return; }
+    if (a === "copier") { try { await navigator.clipboard.writeText(lienSite()); toast("Lien copié"); } catch { toast(lienSite()); } return; }
     if (a === "installer" && invitInstall) {
       invitInstall.prompt();
       const choix = await invitInstall.userChoice.catch(() => null);
@@ -918,7 +949,7 @@ function proposerInstallation() {
     el.id = "invite-install";
     el.className = "invite-install";
     el.setAttribute("role", "dialog");
-    el.setAttribute("aria-label", "Installer l'appli");
+    el.setAttribute("aria-label", "Installer l'application");
     dessinerInvite(el);
     document.body.append(el);
   };
@@ -927,25 +958,25 @@ function proposerInstallation() {
 }
 
 async function installer() {
-  if (estInstallee()) return toast("L'appli est déjà installée ✓");
+  if (estInstallee()) return toast("L'application est déjà installée");
   if (invitInstall) {
     invitInstall.prompt();
     await invitInstall.userChoice.catch(() => {});
     invitInstall = null;
     return;
   }
-  ouvrirModal(`<h3>Installer l'appli</h3>
+  ouvrirModal(`<h3>Installer l'application</h3>
     <p>${surIOS
-      ? "Dans Safari, touche le bouton Partager (le carré avec une flèche), puis « Sur l'écran d'accueil »."
-      : "Ouvre le menu du navigateur (⋮), puis « Installer l'application » ou « Ajouter à l'écran d'accueil »."}</p>
+      ? "Dans Safari, touchez le bouton Partager (le carré avec une flèche), puis « Sur l'écran d'accueil »."
+      : "Ouvrez le menu du navigateur (⋮), puis « Installer l'application » ou « Ajouter à l'écran d'accueil »."}</p>
     <div class="modal-btns"><button class="btn btn-primary" type="button" data-fermer>OK</button></div>`);
 }
 
 function modalSuppression() {
   const google = C.compteViaGoogle();
-  ouvrirModal(`<h3>Supprimer ton compte ?</h3>
-    <p>Ton compte et toute la progression enregistrée dessus seront effacés définitivement.
-      ${google ? "Google va te demander de confirmer que c'est bien toi." : "Entre ton mot de passe pour confirmer."}</p>
+  ouvrirModal(`<h3>Supprimer votre compte ?</h3>
+    <p>Votre compte et toute la progression qui y est enregistrée seront effacés définitivement.
+      ${google ? "Google vous demandera de confirmer votre identité." : "Saisissez votre mot de passe pour confirmer."}</p>
     <form id="form-suppr">
       ${google ? "" : `<input class="champ" name="mdp" type="password" placeholder="Mot de passe" autocomplete="current-password">`}
       <p class="erreur" id="erreur-suppr" role="alert" hidden></p>
@@ -979,22 +1010,22 @@ const ACTIONS = {
   profil: modalProfil,
   uid: async () => {
     const u = C.utilisateur();
-    try { await navigator.clipboard.writeText(u.uid); toast("ID copié"); } catch { toast(u.uid); }
+    try { await navigator.clipboard.writeText(u.uid); toast("Identifiant copié"); } catch { toast(u.uid); }
   },
-  sortir: async () => { await C.deconnexion(); toast("Déconnecté"); location.hash = "#profil"; },
+  sortir: async () => { await C.deconnexion(); toast("Déconnexion effectuée"); location.hash = "#profil"; },
   reset: () => confirmer(
-    "Réinitialiser ta progression ?",
-    `Tes meilleurs scores et tes jours d'activité seront effacés${C.utilisateur() ? ", ici et sur ton compte" : ""}. Tes favoris sont conservés.`,
+    "Réinitialiser votre progression ?",
+    `Vos meilleurs scores, vos révisions et vos jours d'activité seront effacés${C.utilisateur() ? ", sur cet appareil et sur votre compte" : ""}. Vos favoris sont conservés.`,
     "Réinitialiser",
     async () => {
       const ok = await C.reinitialiserProgression();
-      toast(ok ? "Progression réinitialisée" : "Effacée sur cet appareil (compte injoignable)");
+      toast(ok ? "Progression réinitialisée" : "Progression effacée sur cet appareil (compte injoignable)");
       route();
     }),
   supprimer: modalSuppression,
   installer,
   partager: () => partager("EOPour les nuls", lienSite()),
-  defauts: () => { R.reinitialiser(); toast("Réglages par défaut remis"); route(); },
+  defauts: () => { R.reinitialiser(); toast("Réglages par défaut rétablis"); route(); },
 };
 
 function vueReglages() {
@@ -1010,71 +1041,70 @@ function vueReglages() {
 
   let compte;
   if (u) {
-    compte = `<div class="ligne"><span class="ligne-ico" aria-hidden="true">👤</span>${texte(esc(u.nom), esc(u.email || ""))}</div>
-      ${action("profil", "✏️", "Modifier le profil", "Nom et avatar")}
-      ${action("uid", "🆔", "ID du compte", `${esc(u.uid)} · toucher pour copier`)}
-      ${action("sortir", "🚪", "Se déconnecter")}`;
+    compte = `<div class="ligne"><span class="ligne-ico" aria-hidden="true">${ICONE.user}</span>${texte(esc(u.nom), esc(u.email || ""))}</div>
+      ${action("profil", ICONES.crayon, "Modifier le profil", "Nom, photo et avatar")}
+      ${action("uid", ICONES.badge, "Identifiant du compte", `${esc(u.uid)} · copier`)}
+      ${action("sortir", ICONES.sortie, "Se déconnecter")}`;
   } else if (C.comptesActifs) {
-    compte = `<a class="ligne" href="#profil"><span class="ligne-ico" aria-hidden="true">👤</span>${texte("Se connecter ou créer un compte", "Pour retrouver ta progression sur tous tes appareils")}<span class="chevron" aria-hidden="true">›</span></a>`;
+    compte = `<a class="ligne" href="#profil"><span class="ligne-ico" aria-hidden="true">${ICONE.user}</span>${texte("Se connecter ou créer un compte", "Pour retrouver votre progression sur tous vos appareils")}<span class="chevron" aria-hidden="true">›</span></a>`;
   } else {
-    compte = `<div class="ligne"><span class="ligne-ico" aria-hidden="true">👤</span>${texte("Comptes bientôt disponibles")}</div>`;
+    compte = `<div class="ligne"><span class="ligne-ico" aria-hidden="true">${ICONE.user}</span>${texte("Comptes bientôt disponibles")}</div>`;
   }
 
-  vue.innerHTML = `
-  <div class="profil-barre" style="margin: 0; padding: 0 8px 0 4px;">
-    <a class="icon-btn" href="#profil" aria-label="Retour au profil">${ICONE.retour}</a><b>Réglages</b><span style="width: 44px;"></span>
-  </div>
+  vue.innerHTML = `<div class="page"><div class="page-corps">
+  <nav class="ariane" aria-label="Fil d'Ariane"><a href="#profil">Profil</a><span aria-hidden="true">›</span><span>Réglages</span></nav>
+  <header class="page-tete"><h1>Réglages</h1><p class="sub">Apparence, options des QCM, compte et données.</p></header>
   <div class="reglages">
     <h2>Compte</h2>
     <div class="groupe">${compte}</div>
 
     <h2>Apparence</h2>
     <div class="groupe">
-      <div class="ligne colonne">${texte("Thème", "Auto suit le réglage clair ou sombre du téléphone.")}${seg("theme", [["clair", "Clair"], ["papier", "Papier"], ["menthe", "Menthe"], ["auto", "Auto"], ["sombre", "Sombre"], ["oled", "OLED"], ["nuit", "Nuit bleue"]]).replace('class="segmente"', 'class="segmente grille-themes"')}</div>
-      <div class="ligne colonne">${texte("Taille du texte", "Glisse pour agrandir ou réduire tout le texte du site.")}
+      <div class="ligne colonne">${texte("Thème", "« Auto » suit le réglage clair ou sombre de l'appareil.")}${seg("theme", [["clair", "Clair"], ["papier", "Papier"], ["menthe", "Menthe"], ["auto", "Auto"], ["sombre", "Sombre"], ["oled", "OLED"], ["nuit", "Nuit bleue"]]).replace('class="segmente"', 'class="segmente grille-themes"')}</div>
+      <div class="ligne colonne">${texte("Taille du texte", "Agrandit ou réduit tout le texte du site.")}
         <div class="curseur"><span aria-hidden="true" style="font-size: .8rem;">A</span><input type="range" id="taille-texte" min="85" max="140" step="5" value="${r.texte}" aria-label="Taille du texte"><span aria-hidden="true" style="font-size: 1.35rem;">A</span><output id="taille-val">${r.texte} %</output></div></div>
-      ${inter("animations", "✨", "Animations")}
+      ${inter("animations", ICONES.etincelle, "Animations")}
     </div>
 
     <h2>QCM</h2>
     <div class="groupe">
-      <div class="ligne colonne">${texte("Correction", "« À la fin » = mode examen : tu découvres tout à la fin, avec la correction détaillée.")}
+      <div class="ligne colonne">${texte("Correction", "« À la fin » correspond au mode examen : toute la correction détaillée s'affiche à la fin de la série.")}
         ${seg("correction", [["immediate", "Après chaque question"], ["fin", "À la fin"]])}</div>
       <div class="ligne colonne">${texte("Chrono par question", "À zéro, la question est validée telle quelle.")}
         ${seg("chrono", [[0, "Sans"], [30, "30 s"], [60, "60 s"], [90, "90 s"]])}</div>
-      ${inter("melangerQuestions", "🔀", "Mélanger les questions")}
-      ${inter("melangerChoix", "🔤", "Mélanger les propositions")}
-      ${inter("vibrations", "📳", "Vibrations", "Bonne ou mauvaise réponse (Android)")}
+      ${inter("melangerQuestions", ICONES.melanger, "Mélanger les questions")}
+      ${inter("melangerChoix", ICONES.liste, "Mélanger les propositions")}
+      ${inter("vibrations", ICONES.vibreur, "Vibrations", "Bonne ou mauvaise réponse (Android)")}
     </div>
 
-    <h2>Mode fun</h2>
+    <h2>Mode ludique</h2>
     <div class="groupe">
-      ${inter("fun", "🎉", "Mode fun", "Série de jours 🔥, objectif du jour, graphique de la semaine. Désactivé : seulement l'essentiel.")}
-      ${r.fun !== false ? `<div class="ligne colonne">${texte("QCM à terminer par jour", "Affiché dans ton profil, avec ta série de jours.")}
+      ${inter("fun", ICONES.trophee, "Mode ludique", "Série de jours, objectif quotidien et graphique de la semaine. Désactivé : uniquement l'essentiel.")}
+      ${r.fun !== false ? `<div class="ligne colonne">${texte("QCM à terminer par jour", "Affiché dans votre profil, avec votre série de jours.")}
         ${seg("objectif", [[1, "1"], [3, "3"], [5, "5"], [10, "10"]])}</div>` : ""}
     </div>
 
     <h2>Progression</h2>
     <div class="groupe">
-      ${action("reset", "↺", "Réinitialiser ma progression", `Scores et jours d'activité${u ? ", aussi sur ton compte" : ""}`, "danger")}
-      ${u ? action("supprimer", "🗑️", "Supprimer mon compte", "Compte et données, définitivement", "danger") : ""}
+      ${action("reset", ICONE_REVOIR, "Réinitialiser ma progression", `Scores, révisions et jours d'activité${u ? ", aussi sur votre compte" : ""}`, "danger")}
+      ${u ? action("supprimer", ICONES.poubelle, "Supprimer mon compte", "Compte et données, définitivement", "danger") : ""}
     </div>
 
     <h2>Application</h2>
     <div class="groupe">
-      ${action("installer", "📲", "Installer l'appli", estInstallee() ? "Déjà installée ✓" : "Icône sur l'écran d'accueil, en plein écran")}
-      ${action("partager", "📤", "Partager le site")}
-      ${action("defauts", "⚙️", "Remettre les réglages par défaut")}
+      ${action("installer", ICONES.installer, "Installer l'application", estInstallee() ? "Déjà installée" : "Icône sur l'écran d'accueil, en plein écran")}
+      ${action("partager", ICONE_PARTAGE, "Partager le site")}
+      ${action("defauts", ICONES.reglages, "Rétablir les réglages par défaut")}
     </div>
 
     <h2>À propos</h2>
     <div class="groupe">
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
-        "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 13 · site de révision entre étudiants")}</div>
+      <a class="ligne" href="#a-propos"><span class="ligne-ico" aria-hidden="true">${ICONES.info}</span>${texte("À propos du site", "Fonctionnement, contenus, données et confidentialité")}<span class="chevron" aria-hidden="true">›</span></a>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">${ICONE_VERROU}</span>${texte("Vos données", "Sans compte, tout reste sur cet appareil. Avec un compte, la progression est enregistrée dans une base hébergée à Paris et seul l'administrateur du site voit la liste des membres. Tout peut être effacé depuis cette page.")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true"><span class="marque-eo marque-eo-mini">EO</span></span>${texte("EOPour les nuls", "Version 14 · plateforme de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
-  </div>`;
+  </div></div></div>`;
 
   vue.querySelectorAll("[data-reglage]").forEach((b) => (b.onclick = () => {
     const cle = b.dataset.reglage;
@@ -1092,6 +1122,37 @@ function vueReglages() {
     if (b.dataset.inter === "fun") vueReglages();
   }));
   vue.querySelectorAll("[data-action]").forEach((b) => (b.onclick = () => ACTIONS[b.dataset.action]?.()));
+}
+
+/* ---------- À propos : le site, son fonctionnement, les données ---------- */
+function vueAPropos() {
+  const point = (ico, titre, texte) => `<li class="carte ap-point">${ico}<b>${titre}</b><span>${texte}</span></li>`;
+  vue.innerHTML = `<div class="page"><div class="page-corps">
+    <header class="page-tete"><h1>À propos</h1><p class="sub">EOPour les nuls est une plateforme de révision entre étudiants en ostéopathie, de la P1 à la P5, sur téléphone comme sur ordinateur.</p></header>
+    <section class="bloc" aria-labelledby="t-ap-offre"><h2 id="t-ap-offre" class="ap-h2">Ce que propose le site</h2>
+      <ul class="ap-points">
+        ${point(ICONES.livre, "Cours structurés", "Fiches en blocs, cartes de mémorisation, lexique et schémas, rangés par année et par matière.")}
+        ${point(ICONES.qcm, "QCM corrigés", "Annales et variantes, avec l'explication de chaque proposition, en mode entraînement ou examen.")}
+        ${point(ICONE_REVOIR, "Répétition espacée", "Chaque question revient juste avant d'être oubliée, sans dépasser 20 questions par jour.")}
+        ${point(ICONES.graphique, "Suivi de la progression", "Maîtrise par catégorie, meilleurs scores et erreurs à refaire.")}
+      </ul></section>
+    <section class="bloc" aria-labelledby="t-ap-revision"><h2 id="t-ap-revision" class="ap-h2">Fonctionnement de la révision</h2>
+      <div class="carte ap-texte">
+        <p>Chaque réponse est enregistrée. Une question manquée revient le lendemain et s'ajoute à « Mes erreurs » ; une question réussie revient après 2, 4, 7, 15 puis 30 jours.</p>
+        <p>Après chaque correction, les choix « Bientôt », « Dans quelques jours » et « Je la connais » ajustent ce rythme. Le plan du jour, sur la page Aujourd'hui, rassemble les questions à revoir, le dernier cours ouvert et les erreurs à refaire.</p>
+      </div></section>
+    <section class="bloc" aria-labelledby="t-ap-contenus"><h2 id="t-ap-contenus" class="ap-h2">Contenus</h2>
+      <div class="carte ap-texte">
+        <p>Les fiches et les QCM sont rédigés pour la révision, à partir des cours et des annales. Ils ne remplacent pas les supports officiels : en cas de doute, le cours fait foi.</p>
+        <p>Une erreur repérée ? Un commentaire sous l'outil concerné permet de la signaler.</p>
+      </div></section>
+    <section class="bloc" aria-labelledby="t-ap-donnees"><h2 id="t-ap-donnees" class="ap-h2">Données et confidentialité</h2>
+      <div class="carte ap-texte">
+        <p>Sans compte, la progression reste sur cet appareil. Avec un compte, le nom, l'adresse e-mail et la photo sont gérés par Firebase (Google) ; les scores, révisions, favoris et jours d'activité sont stockés dans une base hébergée à Paris.</p>
+        <p>Seul l'administrateur du site voit la liste des membres et leur progression. La progression peut être réinitialisée et le compte supprimé à tout moment, depuis les Réglages.</p>
+      </div></section>
+    <p class="note ap-version">EOPour les nuls · version 14</p>
+  </div></div>`;
 }
 
 /* ---------- Admin ---------- */
@@ -1115,7 +1176,7 @@ function ligneMembre(m) {
   const serie = C.serieJours(activiteDe(m));
   return `<li><button class="membre" type="button" data-uid="${esc(m.uid)}">${avatar({ nom: m.nom || "?", photo: m.photo, avatar: m.avatar })}
     <div><b>${esc(m.nom || "Sans nom")}</b>
-    <small>${sc.length} QCM${t ? ` · ${Math.round((b / t) * 100)} % de réussite` : ""}${serie ? ` · 🔥 ${serie}` : ""} · ${depuis(enMs(m.vuLe))}</small></div>
+    <small>${sc.length} QCM${t ? ` · ${Math.round((b / t) * 100)} % de réussite` : ""}${serie ? ` · série de ${serie} j` : ""} · ${depuis(enMs(m.vuLe))}</small></div>
     <span class="chevron" aria-hidden="true">›</span></button></li>`;
 }
 
@@ -1218,7 +1279,7 @@ function vueStats(onglets, liste) {
       <span class="ligne-ico" aria-hidden="true">${esc(o.emoji || "📝")}</span>
       <span class="ligne-txt"><b>${esc(o.titre)}</b><small>${s.n} membre${s.n > 1 ? "s" : ""} · réussite moyenne ${p} %</small><span class="jauge"><i style="width:${p}%"></i></span></span></div>`; }).join("")
       : `<div class="ligne"><span class="ligne-txt"><small>Aucun score enregistré pour l'instant.</small></span></div>`}</div>
-    <h2>Plus longues séries 🔥</h2>
+    <h2>Plus longues séries</h2>
     <div class="groupe">${series.length ? series.map(({ m, s }) => `<button class="ligne" type="button" data-uid="${esc(m.uid)}">${petitAvatar({ nom: m.nom || "?", photo: m.photo, avatar: m.avatar })}
       <span class="ligne-txt"><b>${esc(m.nom || "Sans nom")}</b><small>${s} jour${s > 1 ? "s" : ""} d'affilée</small></span><span class="chevron" aria-hidden="true">›</span></button>`).join("")
       : `<div class="ligne"><span class="ligne-txt"><small>Personne n'a de série en cours.</small></span></div>`}</div>
@@ -1272,11 +1333,11 @@ function ficheMembre(m) {
   const moi = C.utilisateur()?.uid === m.uid;
   const cree = enMs(m.creeLe);
   ouvrirModal(`<div class="fiche-tete">${avatar({ nom: m.nom || "?", photo: m.photo, avatar: m.avatar })}
-      <div><h3>${esc(m.nom || "Sans nom")}</h3><small>${cree ? `Inscrit le ${new Date(cree).toLocaleDateString("fr-FR")}` : "Date d'inscription inconnue"} · vu ${depuis(enMs(m.vuLe))}</small></div></div>
+      <div><h3>${esc(m.nom || "Sans nom")}</h3><small>${cree ? `Inscription le ${new Date(cree).toLocaleDateString("fr-FR")}` : "Date d'inscription inconnue"} · vu ${depuis(enMs(m.vuLe))}</small></div></div>
     <div class="stat-tuiles petites">
       <div class="stat-tuile"><b>${scores.length}</b><span>QCM</span></div>
       <div class="stat-tuile"><b>${r < 0 ? "—" : Math.round(r * 100) + " %"}</b><span>réussite</span></div>
-      <div class="stat-tuile"><b>${serie}</b><span>série 🔥</span></div>
+      <div class="stat-tuile"><b>${serie}</b><span>jours de suite</span></div>
       <div class="stat-tuile"><b>${Array.isArray(m.favoris) ? m.favoris.length : 0}</b><span>favoris</span></div>
     </div>
     <p class="sub fiche-sous">Parties sur 14 jours</p>
@@ -1321,7 +1382,7 @@ async function televerserImage(cote, nom) {
   toast("Envoi de l'image…");
   try {
     const id = await C.televerserMedia(f, { cote, nom });
-    toast("Image ajoutée ✓");
+    toast("Image ajoutée");
     return id;
   } catch (e) {
     toast(C.messageErreur(e));
@@ -1342,7 +1403,7 @@ const ICO = {
   envoyer: svg('<path d="M12 20V9M7 14l5-5 5 5M5 4h14"/>'),
 };
 const btnAdm = (act, id, ico, label, classe = "") => `<button class="icon-btn adm-ico ${classe}" type="button" data-adm="${act}" data-id="${esc(id)}" aria-label="${esc(label)}" title="${esc(label)}">${ico}</button>`;
-const optAnnees = (sel) => CAT.annees.map((x) => `<option value="${esc(x.id)}"${x.id === sel ? " selected" : ""}>${esc(x.nom)}${x.verrou ? " 🔒" : ""}</option>`).join("") + `<option value="-"${sel === "-" ? " selected" : ""}>Aucune (hors accueil)</option>`;
+const optAnnees = (sel) => CAT.annees.map((x) => `<option value="${esc(x.id)}"${x.id === sel ? " selected" : ""}>${esc(x.nom)}${x.verrou ? " (verrouillée)" : ""}</option>`).join("") + `<option value="-"${sel === "-" ? " selected" : ""}>Aucune (hors accueil)</option>`;
 const optMat = (an, sel) => `<option value="">Autres</option>` + CAT.matieres.filter((m) => m.annee === an).map((m) => `<option value="${esc(m.id)}"${m.id === sel ? " selected" : ""}>${esc(m.emoji || "")} ${esc(m.nom)}</option>`).join("");
 const TYPES_PERSO = { qcm: "QCM", fiche: "Fiche / schéma" };
 
@@ -1360,7 +1421,7 @@ function vueOrganisation(onglets) {
     const imgs = (CAT.images || {})[o.id] || {};
     const alerte = p.cache ? "Caché : n'apparaît nulle part"
       : p.annee === "-" ? "Hors accueil : seulement dans la recherche"
-      : an?.verrou ? `⚠️ ${an.nom} est verrouillée : personne ne voit cet outil`
+      : an?.verrou ? `${an.nom} est verrouillée : cet outil n'est visible par personne`
       : `Affiché en ${an ? an.nom : "?"} › ${p.matiere ? p.matiere.nom : "Autres"}`;
     return `<div class="ligne colonne adm-outil${p.cache ? " adm-cache" : ""}" data-outil="${esc(o.id)}">
       <div class="adm-outil-tete"><span class="lo-emoji" style="--h:${teinte(o.matiere)}" aria-hidden="true">${esc(o.emoji || "📝")}</span>
@@ -1372,13 +1433,13 @@ function vueOrganisation(onglets) {
       </div>
       <div class="adm-puces">
         <button class="puce" type="button" data-champ="visible" aria-pressed="${!p.cache}">${ICO.oeil} ${p.cache ? "Caché" : "Visible"}</button>
-        <button class="puce" type="button" data-champ="nouveau" aria-pressed="${p.nouveau}">✨ Badge « Nouveau »</button>
+        <button class="puce" type="button" data-champ="nouveau" aria-pressed="${p.nouveau}">${ICONES.etoile} Badge « Nouveau »</button>
         ${o.perso ? `<a class="puce" href="#edit-${esc(o.id)}">${ICO.crayon} Modifier le contenu</a>` : `<button class="puce" type="button" data-champ="affichage">${ICO.crayon} Titre et emoji</button>`}
-        <button class="puce" type="button" data-champ="commentaires">💬 Commentaires</button>
+        <button class="puce" type="button" data-champ="commentaires">${ICONE_BULLE} Commentaires</button>
         <a class="puce" href="${esc(o.fichier)}" target="_blank" rel="noopener">↗ Ouvrir</a>
         <button class="puce danger" type="button" data-champ="supprimer">${ICO.poubelle} Supprimer</button>
       </div>
-      ${(o.categories || []).length ? `<span class="sub adm-cat-titre">Catégories : touche pour masquer ou afficher, 🖼 pour changer l'image</span>
+      ${(o.categories || []).length ? `<span class="sub adm-cat-titre">Catégories : le nom masque ou affiche la catégorie, 🖼 change son image</span>
       <div class="adm-cats">${o.categories.map(([cid, nom]) => { const off = (CAT.masques[o.id] || []).includes(cid); return `<span class="adm-cat-paire"><button type="button" class="adm-cat${off ? " off" : ""}" data-cat="${esc(cid)}" aria-pressed="${!off}">${esc(nom)}</button><button type="button" class="adm-cat-img" data-catimg="${esc(cid)}" aria-label="Image de ${esc(nom)}" title="Image de ${esc(nom)}">${imgs[cid] ? `<img data-media="${esc(imgs[cid])}" alt="">` : "🖼"}</button></span>`; }).join("")}</div>` : ""}
     </div>`;
   };
@@ -1386,11 +1447,11 @@ function vueOrganisation(onglets) {
 
   vue.innerHTML = `<h1 class="titre-vue">Admin</h1>${onglets}
   <div class="reglages admin-org">
-    <p class="note adm-note">${catPublie ? "Chaque changement est publié tout de suite pour tous les membres." : "Organisation tirée de outils.js : ton premier changement la publiera pour tous les membres."}</p>
+    <p class="note adm-note">${catPublie ? "Chaque changement est publié tout de suite pour tous les membres." : "Organisation tirée de outils.js : le premier changement la publiera pour tous les membres."}</p>
 
     <h2>Annonce</h2>
     <div class="groupe">
-      ${ann ? `<div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">📣</span><span class="ligne-txt"><b>${esc(ann.titre || "Annonce")}</b><small>${esc(ann.texte)}</small></span>
+      ${ann ? `<div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${ICONES.megaphone}</span><span class="ligne-txt"><b>${esc(ann.titre || "Annonce")}</b><small>${esc(ann.texte)}</small></span>
         ${btnAdm("annonce", "", ICO.crayon, "Modifier l'annonce")}${btnAdm("suppr-annonce", "", ICO.poubelle, "Retirer l'annonce", "danger")}</div>`
       : `<button class="ligne" type="button" data-adm="annonce" data-id=""><span class="ligne-ico" aria-hidden="true">${ICO.megaphone}</span><span class="ligne-txt"><b>Écrire une annonce</b><small>Un message en haut de l'accueil pour tout le monde</small></span><span class="chevron" aria-hidden="true">›</span></button>`}
     </div>
@@ -1398,21 +1459,21 @@ function vueOrganisation(onglets) {
     <h2>Années</h2>
     <div class="stories adm-annees" role="group" aria-label="Choisir l'année à organiser">
       ${CAT.annees.map((x) => `<button class="story${x.id === anneeAdmin ? " actif" : ""}" type="button" data-adm="voir-annee" data-id="${esc(x.id)}" aria-pressed="${x.id === anneeAdmin}">
-        <span class="story-ring"><span class="story-bulle adm-bulle">${x.image ? `<img class="visuel" data-media="${esc(x.image)}" alt="">` : esc(x.nom)}</span></span><span class="story-nom">${x.verrou ? "🔒 " : ""}${esc(x.nom)}</span></button>`).join("")}
+        <span class="story-ring"><span class="story-bulle adm-bulle">${x.image ? `<img class="visuel" data-media="${esc(x.image)}" alt="">` : esc(x.nom)}</span></span><span class="story-nom">${x.verrou ? ICONE_VERROU : ""}${esc(x.nom)}</span></button>`).join("")}
       <button class="story" type="button" data-adm="ajout-annee" data-id=""><span class="story-ring adm-plus"><span class="story-bulle">${ICO.plus}</span></span><span class="story-nom">Ajouter</span></button>
     </div>
     ${a ? `<div class="groupe">
-      <div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${a.verrou ? "🔒" : "📅"}</span>
+      <div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${a.verrou ? ICONE_VERROU : ICONES.calendrier}</span>
         <span class="ligne-txt"><b>${esc(a.nom)}</b><small>${esc(a.sous || "")}${a.verrou ? " · verrouillée" : ""}</small></span>
         ${CAT.annees.indexOf(a) ? btnAdm("monter-annee", a.id, ICO.haut, "Monter " + a.nom) : ""}${btnAdm("modifier-annee", a.id, ICO.crayon, "Modifier " + a.nom)}${btnAdm("suppr-annee", a.id, ICO.poubelle, "Supprimer " + a.nom, "danger")}</div>
-      <button class="ligne" type="button" role="switch" data-adm="verrou" data-id="${esc(a.id)}" aria-checked="${!!a.verrou}"><span class="ligne-ico" aria-hidden="true">🔒</span><span class="ligne-txt"><b>Verrouiller</b><small>Bulle grisée avec un cadenas : ni la page ni ses outils ne s'ouvrent</small></span><span class="interrupteur"></span></button>
+      <button class="ligne" type="button" role="switch" data-adm="verrou" data-id="${esc(a.id)}" aria-checked="${!!a.verrou}"><span class="ligne-ico" aria-hidden="true">${ICONE_VERROU}</span><span class="ligne-txt"><b>Verrouiller</b><small>Bulle grisée avec un cadenas : ni la page ni ses outils ne s'ouvrent</small></span><span class="interrupteur"></span></button>
     </div>
 
     <h2>Matières de ${esc(a.nom)}</h2>
     <div class="groupe">
       ${matieres.map(ligneMat).join("") || `<div class="ligne"><span class="ligne-txt"><small>Aucune matière pour l'instant.</small></span></div>`}
       <button class="ligne" type="button" data-adm="ajout-mat" data-id="${esc(a.id)}"><span class="ligne-ico" aria-hidden="true">${ICO.plus}</span><span class="ligne-txt"><b>Ajouter une matière</b></span><span class="chevron" aria-hidden="true">›</span></button>
-      <button class="ligne" type="button" data-adm="nouvel-outil" data-id="${esc(a.id)}"><span class="ligne-ico" aria-hidden="true">📝</span><span class="ligne-txt"><b>Créer un outil en ${esc(a.nom)}</b><small>QCM, fiche ou schéma, écrit ici sans toucher au code</small></span><span class="chevron" aria-hidden="true">›</span></button>
+      <button class="ligne" type="button" data-adm="nouvel-outil" data-id="${esc(a.id)}"><span class="ligne-ico" aria-hidden="true">${ICONES.qcm}</span><span class="ligne-txt"><b>Créer un outil en ${esc(a.nom)}</b><small>QCM, fiche ou schéma, écrit ici sans toucher au code</small></span><span class="chevron" aria-hidden="true">›</span></button>
     </div>` : ""}
 
     <h2>Outils</h2>
@@ -1435,7 +1496,7 @@ function vueOrganisation(onglets) {
     const c = copieCat();
     const id = b.dataset.restaurer;
     c.outils[id] = { ...(c.outils[id] || {}), supprime: false, cache: true };
-    publierCat(c, "Outil restauré (caché : rends-le visible quand tu veux)");
+    publierCat(c, "Outil restauré (caché : à rendre visible depuis cette page)");
   }));
   vue.querySelectorAll(".adm-outil").forEach((el) => {
     const id = el.dataset.outil;
@@ -1464,7 +1525,7 @@ function vueOrganisation(onglets) {
       const liste = new Set(c.masques[id] || []);
       const cid = b.dataset.cat;
       if (liste.has(cid)) liste.delete(cid); else liste.add(cid);
-      if (liste.size >= (o.categories || []).length) return toast("Garde au moins une catégorie visible");
+      if (liste.size >= (o.categories || []).length) return toast("Au moins une catégorie doit rester visible");
       c.masques[id] = [...liste];
       publierCat(c, liste.has(cid) ? "Catégorie masquée" : "Catégorie affichée");
     }));
@@ -1542,7 +1603,7 @@ function formAnnee(a) {
       if (a) Object.assign(c.annees.find((x) => x.id === a.id), { nom, sous, image });
       else {
         let id = slug(nom), n = 2;
-        while (c.annees.some((x) => x.id === id) || ["accueil", "recherche", "favoris", "profil", "reglages", "admin"].includes(id) || /^(dm|edit)-/.test(id)) id = slug(nom) + "-" + n++;
+        while (c.annees.some((x) => x.id === id) || ["accueil", "cours", "revoir", "erreurs", "recherche", "favoris", "profil", "reglages", "admin", "a-propos"].includes(id) || /^(dm|edit)-/.test(id)) id = slug(nom) + "-" + n++;
         c.annees.push({ id, nom, sous, image, verrou: false });
         anneeAdmin = id;
       }
@@ -1596,8 +1657,8 @@ function formNouvelOutil(annee, matiere) {
     <form id="form-nouvel" class="adm-form">
       <span class="sub">Genre</span>
       <div class="segmente" role="group" aria-label="Genre d'outil">
-        <button type="button" data-type="qcm" aria-pressed="true">🧪 QCM</button>
-        <button type="button" data-type="fiche" aria-pressed="false">🗂️ Fiche / schéma</button>
+        <button type="button" data-type="qcm" aria-pressed="true">QCM</button>
+        <button type="button" data-type="fiche" aria-pressed="false">Fiche / schéma</button>
       </div>
       <label class="sub" for="no-titre">Titre</label>
       <input class="champ" id="no-titre" maxlength="60" required placeholder="ex. QCM Rachis lombaire">
@@ -1609,7 +1670,7 @@ function formNouvelOutil(annee, matiere) {
         <label>Année<select class="champ" id="no-annee">${optAnnees(annee || CAT.annees[0]?.id)}</select></label>
         <label>Matière<select class="champ" id="no-mat"></select></label>
       </div>
-      <p class="note adm-note">L'outil reste caché tant que tu ne l'as pas rendu visible depuis l'éditeur.</p>
+      <p class="note adm-note">L'outil reste caché tant qu'il n'est pas rendu visible depuis l'éditeur.</p>
       <div class="modal-btns">
         <button class="btn btn-primary" type="submit">Créer et écrire le contenu</button>
         <button class="btn" type="button" data-fermer>Annuler</button>
@@ -1657,14 +1718,14 @@ function placerOutil(annee, matiere) {
       const c = copieCat();
       c.outils[b.dataset.placer] = { ...(c.outils[b.dataset.placer] || {}), annee, matiere: matiere || null, cache: false, supprime: false };
       fermerModal();
-      publierCat(c, "Outil placé ✓").then(() => route());
+      publierCat(c, "Outil placé").then(() => route());
     }));
   });
 }
 
 /** Outil de outils.js : sa page reste dans le code, mais il disparaît du site (restaurable depuis la corbeille). */
 function mettreALaCorbeille(o) {
-  confirmer(`Supprimer « ${o.titre} » ?`, "Il disparaît de l'accueil, de la recherche et des favoris de tout le monde. Tu pourras le restaurer depuis la Corbeille, en bas de cette page.", "Supprimer", () => {
+  confirmer(`Supprimer « ${o.titre} » ?`, "Il disparaît de l'accueil, de la recherche et des favoris de tous les membres. Il reste restaurable depuis la Corbeille, en bas de cette page.", "Supprimer", () => {
     const c = copieCat();
     const p = place(o);
     c.outils[o.id] = { ...(c.outils[o.id] || {}), annee: p.annee, matiere: p.matiere ? p.matiere.id : null, supprime: true };
@@ -1704,7 +1765,7 @@ function actionAdmin(act, id) {
     case "verrou": { const a = c.annees.find((x) => x.id === id); a.verrou = !a.verrou; publierCat(c, a.verrou ? `${a.nom} verrouillée` : `${a.nom} déverrouillée`); break; }
     case "suppr-annee": {
       const a = anneeDe(id);
-      confirmer(`Supprimer ${a.nom} ?`, `Ses matières sont supprimées aussi. Ses outils ne sont pas effacés : ils restent dans la recherche et tu pourras les replacer (Outils ▸ Année).`, "Supprimer", async () => {
+      confirmer(`Supprimer ${a.nom} ?`, `Ses matières sont supprimées aussi. Ses outils ne sont pas effacés : ils restent dans la recherche et pourront être replacés (Outils ▸ Année).`, "Supprimer", async () => {
         const d = copieCat();
         d.annees = d.annees.filter((x) => x.id !== id);
         d.matieres = d.matieres.filter((m) => m.annee !== id);
@@ -1726,7 +1787,7 @@ function actionAdmin(act, id) {
     }
     case "suppr-mat": {
       const m = matiereDe(id);
-      confirmer(`Supprimer ${m.nom} ?`, `Ses outils ne sont pas effacés : ils passent dans « Autres » de la même année, et tu peux les replacer.`, "Supprimer", async () => {
+      confirmer(`Supprimer ${m.nom} ?`, `Ses outils ne sont pas effacés : ils passent dans « Autres » de la même année et peuvent être replacés.`, "Supprimer", async () => {
         const d = copieCat();
         d.matieres = d.matieres.filter((x) => x.id !== id);
         for (const o of OUTILS) { const p = place(o); if (p.matiere?.id === id) d.outils[o.id] = { ...(d.outils[o.id] || {}), annee: p.annee, matiere: null, cache: p.cache }; }
@@ -1777,7 +1838,7 @@ async function vueEditeur(id) {
   vue.innerHTML = `<p class="vide-mini">Chargement…</p>`;
   if (!(await C.estAdmin())) { if (r === rendu) location.hash = "#accueil"; return; }
   const p = CAT.outils[id];
-  if (!p || !p.perso) { vue.innerHTML = vide(ICONE.grille, "Outil introuvable", "Il a peut-être été supprimé. Retourne dans Admin ▸ Organisation."); return; }
+  if (!p || !p.perso) { vue.innerHTML = vide(ICONE.grille, "Outil introuvable", "Il a peut-être été supprimé (Admin ▸ Organisation)."); return; }
   if (!brouillon || brouillon.id !== id) {
     const d = (await C.contenu(id)) || {};
     if (r !== rendu) return;
@@ -1803,7 +1864,7 @@ function dessinerEditeur() {
         <button class="icon-btn adm-ico" type="button" data-ed="choix-suppr" data-k="${k}" aria-label="Retirer la proposition ${"ABCDEFGH"[k]}">${ICONE.fermer}</button></div>`).join("")}
         ${q.choix.length < 8 ? `<button class="lien ed-ajout" type="button" data-ed="choix-ajout">+ Ajouter une proposition</button>` : ""}
       </div>
-      <p class="sub ed-aide">Touche la lettre des propositions justes (en vert).</p>
+      <p class="sub ed-aide">Lettre en vert = proposition juste (un clic pour basculer).</p>
       <textarea class="champ" data-f="explication" rows="2" maxlength="3000" placeholder="Correction (facultatif) : pourquoi c'est juste">${esc(q.explication)}</textarea>
       <div class="ed-image">${q.image ? `<img data-media="${esc(q.image)}" alt=""><button class="btn" type="button" data-ed="q-img-suppr">Retirer l'image</button>` : `<button class="btn" type="button" data-ed="q-img">${ICO.image} Ajouter une image (schéma)</button>`}</div>
     </div>`;
@@ -1824,14 +1885,14 @@ function dessinerEditeur() {
         <div class="ed-meta-ligne"><input class="champ ed-emoji" data-m="emoji" maxlength="8" value="${esc(b.emoji)}" aria-label="Emoji">
           <input class="champ" data-m="titre" maxlength="60" value="${esc(b.titre)}" placeholder="Titre" aria-label="Titre"></div>
         <input class="champ" data-m="description" maxlength="140" value="${esc(b.description)}" placeholder="Description courte (facultatif)" aria-label="Description">
-        <button class="ligne" type="button" role="switch" data-ed="visible" aria-checked="${!p.cache}"><span class="ligne-txt"><b>Visible par les membres</b><small>${p.cache ? "Caché pour l'instant : seul toi peux l'ouvrir" : "Affiché dans sa matière et dans la recherche"}</small></span><span class="interrupteur"></span></button>
+        <button class="ligne" type="button" role="switch" data-ed="visible" aria-checked="${!p.cache}"><span class="ligne-txt"><b>Visible par les membres</b><small>${p.cache ? "Caché pour l'instant : seul l'admin peut l'ouvrir" : "Affiché dans sa matière et dans la recherche"}</small></span><span class="interrupteur"></span></button>
       </div>
       ${b.type === "qcm" ? `
         <h2>${b.questions.length} question${b.questions.length > 1 ? "s" : ""}</h2>
         <div class="ed-liste">${b.questions.map(carteQ).join("")}</div>
         <div class="ed-ajouts">
           <button class="btn btn-primary" type="button" data-ed="q-ajout">${ICO.plus} Ajouter une question</button>
-          <button class="btn" type="button" data-ed="import">📋 Coller des questions en texte</button>
+          <button class="btn" type="button" data-ed="import">Coller des questions en texte</button>
         </div>`
       : `<h2>${b.blocs.length} bloc${b.blocs.length > 1 ? "s" : ""}</h2>
         <div class="ed-liste">${b.blocs.map(carteB).join("")}</div>
@@ -1888,7 +1949,7 @@ async function actionEditeur(el) {
     case "visible": {
       const c = copieCat();
       c.outils[b.id] = { ...c.outils[b.id], cache: !c.outils[b.id].cache };
-      try { appliquerCatalogue(await C.enregistrerCatalogue(c)); toast(c.outils[b.id].cache ? "Outil caché" : "Outil visible ✓"); } catch (e) { toast(C.messageErreur(e)); }
+      try { appliquerCatalogue(await C.enregistrerCatalogue(c)); toast(c.outils[b.id].cache ? "Outil caché" : "Outil visible"); } catch (e) { toast(C.messageErreur(e)); }
       dessinerEditeur();
       break;
     }
@@ -1910,7 +1971,7 @@ E: huméro-ulnaire, huméro-radiale, radio-ulnaire sup.
 A) proposition
 B) proposition
 Réponse : B</pre>
-    <textarea class="champ" id="imp-txt" rows="10" placeholder="Colle tes questions ici"></textarea>
+    <textarea class="champ" id="imp-txt" rows="10" placeholder="Coller les questions ici"></textarea>
     <p class="sub" id="imp-lu"></p>
     <div class="modal-btns">
       <button class="btn btn-primary" type="button" data-ok disabled>Ajouter</button>
@@ -1928,21 +1989,21 @@ Réponse : B</pre>
       brouillon.sale = true;
       fermerModal();
       dessinerEditeur();
-      toast("Questions ajoutées : vérifie-les puis enregistre");
+      toast("Questions ajoutées : vérifiez-les, puis enregistrez");
     };
   });
 }
 
 async function enregistrerBrouillon() {
   const b = brouillon;
-  if (!b.titre.trim()) return toast("Donne un titre à l'outil");
+  if (!b.titre.trim()) return toast("Ajoutez un titre à l'outil");
   const questions = [];
   for (const [i, q] of b.questions.entries()) {
     const garde = q.choix.map((c, k) => ({ c: c.trim(), bonne: q.bonnes.includes(k) })).filter((x) => x.c);
     if (!q.q.trim() && !garde.length) continue; // question vide : ignorée
-    if (!q.q.trim()) return toast(`Question ${i + 1} : écris l'énoncé`);
+    if (!q.q.trim()) return toast(`Question ${i + 1} : énoncé manquant`);
     if (garde.length < 2) return toast(`Question ${i + 1} : il faut au moins 2 propositions`);
-    if (!garde.some((x) => x.bonne)) return toast(`Question ${i + 1} : coche au moins une proposition juste`);
+    if (!garde.some((x) => x.bonne)) return toast(`Question ${i + 1} : au moins une proposition doit être juste`);
     questions.push({ q: q.q.trim(), choix: garde.map((x) => x.c), bonnes: garde.flatMap((x, k) => (x.bonne ? [k] : [])), explication: q.explication.trim(), image: q.image || "" });
   }
   const blocs = b.blocs.filter((x) => (x.v || "").trim());
@@ -1954,7 +2015,7 @@ async function enregistrerBrouillon() {
     b.questions = JSON.parse(JSON.stringify(questions));
     b.blocs = JSON.parse(JSON.stringify(blocs));
     b.sale = false;
-    toast("Enregistré ✓ — visible tout de suite" + (c.outils[b.id].cache ? " (une fois l'outil rendu visible)" : ""));
+    toast("Enregistré, visible immédiatement" + (c.outils[b.id].cache ? " (une fois l'outil rendu visible)" : ""));
     dessinerEditeur();
   } catch (e) {
     toast(C.messageErreur(e) || "Enregistrement impossible");
@@ -1962,9 +2023,22 @@ async function enregistrerBrouillon() {
 }
 
 /* ---------- Navigation ---------- */
-const VUES = { accueil: vueAccueil, cours: vueCours, revoir: vueRevoir, erreurs: vueErreurs, recherche: vueRecherche, favoris: vueFavoris, profil: vueProfil, reglages: vueReglages, admin: vueAdmin };
-const LARGEUR_VUE = { profil: "etroite", reglages: "etroite", admin: "moyenne", edit: "moyenne" };
+const VUES = { accueil: vueAccueil, cours: vueCours, revoir: vueRevoir, erreurs: vueErreurs, recherche: vueRecherche, favoris: vueFavoris, profil: vueProfil, reglages: vueReglages, admin: vueAdmin, "a-propos": vueAPropos };
+const LARGEUR_VUE = { profil: "etroite", reglages: "etroite", admin: "moyenne", edit: "moyenne", "a-propos": "moyenne" };
+const TITRES_VUE = { accueil: "Aujourd'hui", cours: "Mes cours", revoir: "À revoir", erreurs: "Mes erreurs", recherche: "Recherche", favoris: "Favoris", profil: "Profil", reglages: "Réglages", admin: "Admin", "a-propos": "À propos" };
 let rendu = 0;
+/** Largeur de la page, et courte entrée en fondu quand on change de page
+ *  (pas quand la même page est redessinée, par ex. à l'arrivée du catalogue : elle clignoterait). */
+let routePrecedente = null;
+function classeVue(largeur, nom) {
+  const nouvelle = nom !== routePrecedente;
+  routePrecedente = nom;
+  const garder = !nouvelle && vue.classList.contains("entree");
+  vue.className = "vue vue-" + largeur + (garder ? " entree" : "");
+  if (!nouvelle) return;
+  void vue.offsetWidth;
+  vue.classList.add("entree");
+}
 
 function route() {
   rendu++;
@@ -1973,7 +2047,8 @@ function route() {
   arretVue = null;
   const nom = location.hash.slice(1) || "accueil";
   if (nom.startsWith("edit-")) {
-    vue.className = "vue vue-moyenne";
+    classeVue("moyenne", nom);
+    document.title = "Éditeur · EOPour les nuls";
     majBarreLaterale("admin");
     document.querySelectorAll(".tab").forEach((t) => {
       const actif = t.dataset.vue === "admin";
@@ -1985,7 +2060,8 @@ function route() {
   const annee = anneeDe(nom) ? nom : null;
   const cle = annee ? "cours" : Object.prototype.hasOwnProperty.call(VUES, nom) ? nom : "accueil";
   const onglet = cle === "reglages" ? "profil" : cle;
-  vue.className = "vue vue-" + (annee ? "large" : LARGEUR_VUE[cle] || "large");
+  classeVue(annee ? "large" : LARGEUR_VUE[cle] || "large", nom);
+  document.title = `${annee ? anneeDe(annee).nom : TITRES_VUE[cle]} · EOPour les nuls`;
   majBarreLaterale(annee || cle);
   if (annee) {
     document.querySelectorAll(".tab").forEach((t) => {
@@ -2027,16 +2103,16 @@ C.surChangement(async (u) => {
 
 /** Première connexion sur cet appareil : fun ou sobre ? (modifiable ensuite dans Réglages) */
 function demanderModeFun() {
-  ouvrirModal(`<h3>Comment tu veux réviser ?</h3>
-    <p class="sub">Tu pourras changer d'avis dans Réglages ▸ Mode fun.</p>
+  ouvrirModal(`<h3>Comment souhaitez-vous réviser ?</h3>
+    <p class="sub">Ce choix reste modifiable dans Réglages ▸ Mode ludique.</p>
     <div class="choix-mode">
-      <button class="choix-carte" type="button" data-fun="1"><span aria-hidden="true">🎉</span><b>Mode fun</b><small>Série de jours 🔥, objectif du jour, petites animations</small></button>
-      <button class="choix-carte" type="button" data-fun="0"><span aria-hidden="true">📚</span><b>Mode sobre</b><small>Juste les cours et les QCM, sans compteurs ni objectifs</small></button>
+      <button class="choix-carte" type="button" data-fun="1"><span aria-hidden="true">${ICONES.trophee}</span><b>Mode ludique</b><small>Série de jours, objectif quotidien et graphique de la semaine</small></button>
+      <button class="choix-carte" type="button" data-fun="0"><span aria-hidden="true">${ICONES.livre}</span><b>Mode sobre</b><small>Uniquement les cours et les QCM, sans compteur ni objectif</small></button>
     </div>`, (m) => {
     m.querySelectorAll("[data-fun]").forEach((b) => (b.onclick = () => {
       R.ecrire("fun", b.dataset.fun === "1");
       fermerModal();
-      toast(b.dataset.fun === "1" ? "Mode fun activé 🎉" : "Mode sobre activé");
+      toast(b.dataset.fun === "1" ? "Mode ludique activé" : "Mode sobre activé");
       route();
     }));
   });

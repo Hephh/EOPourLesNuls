@@ -120,7 +120,7 @@ function steps(){
   {t:'Comprendre',s:`la fiche en ${bs.length} blocs, avec schémas · ${bd} compris`,min:Math.max(5,Math.round(bs.length*1.2)),pct:bs.length?bd/bs.length:1,done:bs.length>0&&bd===bs.length,a:'go',v:'fiche'},
   {t:'Retenir',s:`${ts.length} cartes, une par une · ${kn} connues`,min:Math.max(3,Math.round(ts.length*.25)),pct:ts.length?kn/ts.length:1,done:ts.length>0&&kn>=ts.length*.8,a:'cards'},
   {t:'Tester',s:`${nq} QCM tirés au sort · ${seen} / ${p.length} déjà faits`,min:Math.max(3,Math.round(nq*.5)),pct:p.length?Math.min(1,seen/(p.length*.5)):1,done:p.length>0&&seen>=p.length*.5,a:'launch'},
-  {t:'Demain matin',s:wr||rv?`seulement ce que tu as raté : ${wr} QCM, ${rv} cartes`:'seulement ce que tu auras raté',min:5,pct:seen>0&&!wr&&!rv?1:0,done:seen>0&&!wr&&!rv,a:'tomorrow'}]}
+  {t:'Demain matin',s:wr||rv?`uniquement ce qui a été manqué : ${wr} QCM, ${rv} cartes`:'uniquement ce qui aura été manqué',min:5,pct:seen>0&&!wr&&!rv?1:0,done:seen>0&&!wr&&!rv,a:'tomorrow'}]}
 
 /* ---------- routes ---------- */
 const TABS=[['parcours','Parcours','route'],['fiche','Fiche','book'],['cartes','Cartes','cards'],['qcm','QCM','qcm'],['lexique','Lexique','abc']];
@@ -145,17 +145,17 @@ function vHub(){
  const bAll=blocsOf(ALL).filter(b=>bDone(b.id)).length,kAll=C.terms.filter(t=>known(t.id)).length,qOk=QS.filter(q=>P.q[q.id]&&P.q[q.id][2]>0).length;
  const story=st.map(x=>`<span><i style="width:${Math.round(x.pct*100)}%"></i></span>`).join('');
  const rows=st.map((x,i)=>`<li class="${x.done?'done':''}${i===next?' cur':''}"><button data-act="${x.a}"${x.v?` data-v="${x.v}"`:''}><span class="t">${x.min}<small>&nbsp;min</small></span><span class="w"><b>${x.t}</b><span>${x.s}</span></span><span class="ck2">${ic('check')}</span></button></li>`).join('');
- const cta=next<0?`<button class="mb ig wide" data-act="launch">${ic('play')}Tout est fait : une série de plus</button>`:`<button class="mb ig wide" data-act="${st[next].a}"${st[next].v?` data-v="${st[next].v}"`:''}>${ic('play')}${next===0?'Commencer':'Continuer'} : ${st[next].t.toLowerCase()}</button>`;
+ const cta=next<0?`<button class="mb ig wide" data-act="launch">${ic('play')}Parcours terminé : nouvelle série</button>`:`<button class="mb ig wide" data-act="${st[next].a}"${st[next].v?` data-v="${st[next].v}"`:''}>${ic('play')}${next===0?'Commencer':'Continuer'} : ${st[next].t.toLowerCase()}</button>`;
  const ess=s.map(ch=>(C.ess[ch]||[]).length?(s.length>1?`<li class="eh">${esc(chName(ch))}</li>`:'')+C.ess[ch].map(x=>`<li>${ntH(x)}</li>`).join(''):'').join('');
  const tr=traps(s);
  const prog=s.map(id=>{const m=mastery(id);return `<button class="prog-r" data-act="qcm-ch" data-id="${id}"><b>${esc(chName(id))}</b><span>${m} %</span><span class="meter"><i style="width:${m}%"></i></span></button>`}).join('');
  return `<section class="prof"><span class="ring on"><span class="face"><b>M.E.</b></span></span>
  <div class="pstats"><div><b>${bAll}</b><span>blocs compris</span></div><div><b>${kAll}</b><span>termes connus</span></div><div><b>${qOk}</b><span>QCM réussis</span></div></div>
- <div class="bio"><h2>Modèles explicatifs</h2><p>M. Boucherat · P2 · ${esc(C.meta.sub)}${cd!==null?` · <span class="cd">${cd>0?`<b>J-${cd}</b> avant le CC`:cd===0?'<b>Jour J</b>':'CC passé'}</span>`:` · <button class="tl" data-act="settings">ajoute la date de ton CC</button>`}</p></div></section>
- <section aria-label="Catégories"><div class="sec-h"><h3>Ce que je révise</h3></div>${bubbles(false)}<p class="selnote">${custom()?`Tu révises seulement : <b>${esc(topicLabel())}</b>. <button class="tl" data-act="alltopics">Tout réviser</button>`:'Touche une catégorie pour ne réviser qu\'elle, puis ajoutes-en d\'autres.'}</p></section>
+ <div class="bio"><h2>Modèles explicatifs</h2><p>M. Boucherat · P2 · ${esc(C.meta.sub)}${cd!==null?` · <span class="cd">${cd>0?`<b>J-${cd}</b> avant le CC`:cd===0?'<b>Jour J</b>':'CC passé'}</span>`:` · <button class="tl" data-act="settings">ajouter la date du CC</button>`}</p></div></section>
+ <section aria-label="Catégories"><div class="sec-h"><h3>Catégories à réviser</h3></div>${bubbles(false)}<p class="selnote">${custom()?`Révision limitée à : <b>${esc(topicLabel())}</b>. <button class="tl" data-act="alltopics">Tout réviser</button>`:'Sélectionnez une catégorie pour ne réviser qu\'elle, puis ajoutez-en d\'autres au besoin.'}</p></section>
  <div class="hub" style="margin-top:22px">
- <section class="card"><div class="sec-h"><h3>Ton parcours</h3><p>${st.reduce((a,x)=>a+(x.done?0:x.min),0)} min restantes</p></div><div class="storybar" aria-hidden="true">${story}</div><ol class="sched">${rows}</ol>${cta}</section>
- <section class="card"><div class="sec-h"><h3>Si tu n'as que 2 minutes</h3></div><ul class="ess">${ess}</ul></section>
+ <section class="card"><div class="sec-h"><h3>Parcours</h3><p>${st.reduce((a,x)=>a+(x.done?0:x.min),0)} min restantes</p></div><div class="storybar" aria-hidden="true">${story}</div><ol class="sched">${rows}</ol>${cta}</section>
+ <section class="card"><div class="sec-h"><h3>L'essentiel en 2 minutes</h3></div><ul class="ess">${ess}</ul></section>
  ${tr.length?`<section class="card"><div class="sec-h"><h3>Pièges des annales</h3><p>${tr.length}</p></div><div class="traps">${tr.map(t=>`<div class="trap"><p class="tg">${esc(chName(t.ch))}</p>${ntH(linkify(t.html))}</div>`).join('')}</div></section>`:''}
  <section class="card quick"><div class="sec-h"><h3>Entraînement rapide</h3></div><div class="seg" role="group" aria-label="Type de questions">${segSrc(pool('an').length,pool('mix').length,pool('cl').length)}</div>
  <button class="mb wide" data-act="launch"${!pool(P.prefs.src).length?' disabled':''}>${ic('play')}Lancer ${Math.min(P.prefs.n||999,pool(P.prefs.src).length)} QCM</button>
@@ -191,7 +191,7 @@ function vLexique(){
  if(LEX.term&&(!TERM[LEX.term]||!sel().includes(TERM[LEX.term].ch)))LEX.term=null;
  return `<div class="lex-tools">${bubbles(true)}<input type="search" id="lexq" placeholder="Chercher un terme, ex. arthrodie" value="${esc(LEX.q)}" aria-label="Chercher un terme">
  <div class="row"><div class="chips">${[['all','Tous',ts.length],['rev','À revoir',nr],['new','Jamais vus',nn]].map(([f,l,n])=>`<button class="chip" data-act="lexf" data-f="${f}" aria-pressed="${LEX.f===f}">${l} <span class="n">${n}</span></button>`).join('')}</div><button class="mb" data-act="cards">${ic('cards')}Réviser en cartes</button></div></div>
- <div class="lex"><div class="terms" id="terms">${lexList()}</div><div class="detail" id="detail">${LEX.term?termCard(TERM[LEX.term]):`<div class="empty">${ic('book')}<p>Choisis un terme pour voir sa définition et son schéma.</p></div>`}</div></div>`}
+ <div class="lex"><div class="terms" id="terms">${lexList()}</div><div class="detail" id="detail">${LEX.term?termCard(TERM[LEX.term]):`<div class="empty">${ic('book')}<p>Sélectionnez un terme pour afficher sa définition et son schéma.</p></div>`}</div></div>`}
 function termCard(t){
  const o={seen:new Set(),skip:[t.id]};const see=(t.see||[]).filter(id=>TERM[id]);const qs=QS.filter(q=>(q.t||[]).includes(t.id));
  return `<div class="tc">${HIST.length?`<button class="tback" data-act="tback">${ic('left')}${esc(TERM[HIST[HIST.length-1]].t)}</button>`:''}<h2>${esc(t.t)}</h2>${t.syn?`<p class="syn">${esc(t.syn)}</p>`:''}<p class="chap">${esc(CH[t.ch].name)}</p>
@@ -214,7 +214,7 @@ function vCartes(){
  const t=TERM[CARD.deck[CARD.i]];
  return `<div class="flash">${top}
  <div class="fl-card${CARD.flip?' flip':''}" role="button" tabindex="0" data-act="flip" aria-label="Retourner la carte"><div class="fl-in">
- <div class="fl-f"><span class="fl-ch">${esc(CH[t.ch].short||CH[t.ch].name)}</span><h2>${esc(t.t)}</h2><span class="tap">Touche pour voir la définition</span></div>
+ <div class="fl-f"><span class="fl-ch">${esc(CH[t.ch].short||CH[t.ch].name)}</span><h2>${esc(t.t)}</h2><span class="tap">Afficher la définition</span></div>
  <div class="fl-b"><h3>${esc(t.t)}</h3>${figFor(t)?`<div class="bigfig">${figFor(t)}</div>`:''}<p class="def">${nt(t.d,{skip:[t.id]})}</p>${t.r?`<div class="box ret"><h4>${ic('bulb')}Pour retenir</h4><p>${nt(t.r,{skip:[t.id]})}</p></div>`:''}</div>
  </div></div>
  <div class="fl-acts"><button class="mb nob" data-act="again">À revoir</button><button class="mb okb" data-act="know">Je savais</button></div></div>`}
@@ -231,12 +231,12 @@ function perfCats(){return ALL.map(ch=>{const qs=QS.filter(q=>q.ch===ch);let v=0
 function vSetup(){
  const p=poolF(P.prefs.src),n=P.prefs.n?Math.min(P.prefs.n,p.length):p.length,wr=wrongIds().length,an=pool('an').length,e=P.prefs.etat||'toutes';
  const seg=(k)=>SET[k].map(([v,l])=>`<button data-act="set" data-k="${k}" data-v="${v}" aria-pressed="${String(P.prefs[k])===String(v)}">${l}</button>`).join('');
- const segE=[['toutes','Toutes'],['jamais','Jamais vues'],['ratees','Ratées']].map(([v,l])=>`<button data-act="set" data-k="etat" data-v="${v}" aria-pressed="${e===v}">${l}</button>`).join('');
+ const segE=[['toutes','Toutes'],['jamais','Jamais vues'],['ratees','Manquées']].map(([v,l])=>`<button data-act="set" data-k="etat" data-v="${v}" aria-pressed="${e===v}">${l}</button>`).join('');
  const perf=perfCats().map(c=>{const pc=c.v?Math.round(c.ok/c.v*100):0,col=!c.v?'transparent':pc>=70?'var(--pri)':pc>=50?'color-mix(in srgb,var(--pri) 55%,var(--bg2))':'#e0763b';
   return `<div class="perf-l"><span><b>${esc(chName(c.ch))}</b><em>${c.v?`${c.ok}/${c.v} juste${c.ok>1?'s':''}`:'pas commencé'}</em></span><span class="perf-b" aria-hidden="true"><i style="width:${pc}%;background:${col}"></i></span></div>`}).join('');
  const lib=P.prefs.src==='an'?'annales':P.prefs.src==='cl'?'variantes et entraînement':'annales et variantes';
  return `<div class="qcompo">
- <section class="card qcompo-main" aria-labelledby="qc-t"><h2 class="qcompo-t" id="qc-t">Composer ta série</h2><p class="intro">Comme au CC : sélectionne la ou les bonnes réponses, et ne te fie pas aux pluriels de l'énoncé.</p>
+ <section class="card qcompo-main" aria-labelledby="qc-t"><h2 class="qcompo-t" id="qc-t">Composer une série</h2><p class="intro">Comme au CC : une ou plusieurs réponses justes par question. Ne vous fiez pas aux pluriels de l'énoncé.</p>
  <div class="field"><span class="lab">Catégories</span>${bubbles(true)}</div>
  <div class="qcompo-grille">
   <div class="field"><span class="lab">Questions</span><div class="seg" role="group">${segSrc(pool('an').length,pool('mix').length,pool('cl').length)}</div></div>
@@ -244,14 +244,14 @@ function vSetup(){
   <div class="field"><span class="lab">Nombre</span><div class="seg" role="group">${seg('n')}</div></div>
   <div class="field"><span class="lab">Correction</span><div class="seg" role="group">${seg('corr')}</div></div>
  </div>
- <div class="field"><span class="lab">Ordre</span><div class="seg" role="group">${seg('order')}</div><small class="muted">Intelligent : tes erreurs d'abord, puis les questions jamais vues, puis celles à revoir.</small></div>
+ <div class="field"><span class="lab">Ordre</span><div class="seg" role="group">${seg('order')}</div><small class="muted">Intelligent : d'abord les erreurs, puis les questions jamais vues, puis celles à revoir.</small></div>
  <div class="qcompo-pied"><p>${p.length?`<b>${p.length}</b> question${p.length>1?'s':''} disponible${p.length>1?'s':''} · ${lib} · ${esc(topicLabel())}`:'Aucune question avec ces filtres.'}</p>
   <button class="mb ig" data-act="launch"${n?'':' disabled'}>${ic('play')}${n?`Lancer ${n} question${n>1?'s':''}`:'Rien à lancer'}</button></div>
  </section>
- <aside class="qcompo-aside" aria-label="Tes résultats">
-  <section class="card"><h3 class="qcompo-h3">Réussite par catégorie</h3><div class="perf">${perf}</div><small class="muted">Selon ta dernière réponse à chaque question. Les QCM ratés reviennent aussi dans « À revoir » et « Mes erreurs » de l'accueil.</small></section>
+ <aside class="qcompo-aside" aria-label="Vos résultats">
+  <section class="card"><h3 class="qcompo-h3">Réussite par catégorie</h3><div class="perf">${perf}</div><small class="muted">D'après la dernière réponse à chaque question. Les QCM manqués reviennent aussi dans « À revoir » et « Mes erreurs » de l'accueil.</small></section>
   <div class="qquick"><button class="qq" data-act="wrong"${wr?'':' disabled'}><span class="ic">${ic('redo')}</span><span><b>Refaire mes erreurs</b><span>${wr} question${wr>1?'s':''}</span></span></button>
-  ${custom()?`<button class="qq" data-act="quick" data-v="an"${an?'':' disabled'}><span class="ic b">${ic('stamp')}</span><span><b>Annales de tes catégories</b><span>${an} sur ${ANT}</span></span></button><button class="qq" data-act="quickall"><span class="ic b">${ic('stamp')}</span><span><b>Les ${ANT} annales</b><span>tout le sujet du CC</span></span></button>`:`<button class="qq" data-act="quick" data-v="an"><span class="ic b">${ic('stamp')}</span><span><b>Les ${ANT} annales</b><span>les questions des sujets A et B</span></span></button>`}</div>
+  ${custom()?`<button class="qq" data-act="quick" data-v="an"${an?'':' disabled'}><span class="ic b">${ic('stamp')}</span><span><b>Annales des catégories choisies</b><span>${an} sur ${ANT}</span></span></button><button class="qq" data-act="quickall"><span class="ic b">${ic('stamp')}</span><span><b>Les ${ANT} annales</b><span>tout le sujet du CC</span></span></button>`:`<button class="qq" data-act="quick" data-v="an"><span class="ic b">${ic('stamp')}</span><span><b>Les ${ANT} annales</b><span>les questions des sujets A et B</span></span></button>`}</div>
   <section class="card legend-p">${legendInner()}</section>
  </aside></div>`}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
@@ -309,7 +309,7 @@ function settingsHtml(){const seg=(k,opts)=>`<div class="seg" role="group">${opt
  return `<h2 style="font-size:1.6rem;margin-bottom:16px">Réglages de M.E.</h2>
  <div class="field"><label for="tsize">Taille du texte</label><div class="tsz"><span aria-hidden="true">A</span><input type="range" id="tsize" min="85" max="140" step="5" value="${tpct()}"><span aria-hidden="true" style="font-size:1.4em">A</span><output id="tsval">${tpct()} %</output></div></div>
  <div class="field"><label for="cc">Date du CC de M.E.</label><input type="date" id="cc" value="${esc(P.prefs.cc)}"></div>
- <p class="muted">Thème et vibrations : dans les Réglages du site. Ta progression dans cet outil (blocs, cartes, QCM) est gardée sur cet appareil ; ton meilleur score et tes jours d'activité suivent ton compte.</p>
+ <p class="muted">Thème et vibrations : dans les Réglages du site. La progression dans cet outil (blocs, cartes, QCM) est enregistrée sur cet appareil ; le meilleur score et les jours d'activité suivent votre compte.</p>
  <button class="mb nob wide" data-act="reset">${resetArm?'Confirmer : tout effacer':'Effacer ma progression dans M.E.'}</button>`}
 let toastT=0;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2200)}
 
@@ -341,7 +341,7 @@ document.addEventListener('click',e=>{
  case'src':P.prefs.src=b.dataset.v;save();render();break;
  case'set':{const k=b.dataset.k,v=b.dataset.v;P.prefs[k]=k==='n'?+v:v;save();render();break}
  case'launch':launch(P.prefs.src);break;
- case'tomorrow':{const w=wrongIds();if(w.length)startQuiz(shuffle(w),'Mes erreurs');else if(termsSel().some(t=>toReview(t.id))){buildDeck('rev');go('cartes')}else toast('Rien à revoir pour l\'instant : fais d\'abord les QCM');break}
+ case'tomorrow':{const w=wrongIds();if(w.length)startQuiz(shuffle(w),'Mes erreurs');else if(termsSel().some(t=>toReview(t.id))){buildDeck('rev');go('cartes')}else toast('Rien à revoir pour l\'instant : commencez par les QCM');break}
  case'quick':{const src=b.dataset.v;const p=pool(src);startQuiz(src==='an'?orderIds(p,'course'):orderIds(p,P.prefs.order).slice(0,P.prefs.n||999),src==='an'?(custom()?'Annales · '+topicLabel():'Annales'):'Variantes');break}
  case'quickall':startQuiz(orderIds(QS.filter(q=>q.src==='an'),'course'),'Les '+ANT+' annales');break;
  case'wrong':startQuiz(shuffle(wrongIds()),'Mes erreurs');break;
