@@ -6,11 +6,11 @@
 <title>EOPour les nuls</title>
 <meta name="description" content="QCM et outils de révision ostéo, de P1 à P5 — sur téléphone comme sur PC.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=10"></script>
+<script src="reglages.js?v=11"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 <body class="app">
 
@@ -61,8 +61,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=10";
-import * as C from "./compte.js?v=10";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=11";
+import * as C from "./compte.js?v=11";
 
 const R = window.Reglages;
 
@@ -200,7 +200,7 @@ function place(o) {
   let m = matiereDe(p.matiere);
   if (p.matiere !== null && (!m || m.annee !== annee)) m = CAT.matieres.find((x) => x.annee === annee && x.nom === o.matiere) || null;
   if (m && m.annee !== annee) m = null;
-  return { annee, matiere: m, cache: !!p.cache, nouveau: !!p.nouveau };
+  return { annee, matiere: m, cache: !!p.cache || !!p.supprime, nouveau: !!p.nouveau, supprime: !!p.supprime };
 }
 const outilsVisibles = () => OUTILS.filter((o) => !place(o).cache);
 const outilsAnnee = (a) => outilsVisibles().filter((o) => place(o).annee === a.id);
@@ -265,8 +265,7 @@ function vueAccueil() {
   brancherLignes();
 }
 
-/* ---------- Une année : ses matières (bulles), puis les outils de la matière ---------- */
-const matiereChoisie = {};
+/* ---------- Une année : ses matières l'une sous l'autre, chacune avec ses outils ---------- */
 const AUTRES = { id: "_autres", nom: "Autres", emoji: "📦", complet: "Autres outils", prof: "" };
 
 function vueAnnee(id) {
@@ -281,29 +280,24 @@ function vueAnnee(id) {
   const matieres = matieresAnnee(a).slice();
   if (outils.some((o) => !place(o).matiere)) matieres.push(AUTRES);
   if (!matieres.length) {
-    vue.innerHTML = retour + vide(ICONE.grille, `Pas encore de matière en ${a.nom}`, "Les matières s'ajouteront ici au fil des cours.");
+    vue.innerHTML = retour + vide(ICONE.grille, `Pas encore de matière en ${a.nom}`, "Les matières s'ajouteront ici au fil des cours.")
+      + (jeSuisAdmin ? `<div class="admin-raccourcis"><span class="sub">Admin</span><a class="btn" href="#admin">Ajouter une matière dans Admin ▸ Organisation</a></div>` : "");
     return;
   }
-  let m = matieres.find((x) => x.id === matiereChoisie[id]) || matieres[0];
-  matiereChoisie[id] = m.id;
-  const liste = outils.filter((o) => (place(o).matiere?.id || AUTRES.id) === m.id);
-  vue.innerHTML = retour + `
-    <div class="stories" role="group" aria-label="Matières de ${esc(a.nom)}">
-      ${matieres.map((x) => `
-        <button class="story${x.id === m.id ? " actif" : ""}" type="button" data-m="${esc(x.id)}" aria-pressed="${x.id === m.id}">
-          <span class="story-ring"><span class="story-bulle">${visuel(x, "📚")}</span></span>
-          <span class="story-nom">${esc(x.nom)}</span>
-        </button>`).join("")}
-    </div>
-    <div class="matiere-tete">
-      <span class="mini-ring grand"><span>${visuel(m, "📚")}</span></span>
-      <div><h1>${esc(m.complet || m.nom)}</h1><p class="sub">${[m.complet ? m.nom : "", m.prof, `${liste.length} outil${liste.length > 1 ? "s" : ""}`].filter(Boolean).map(esc).join(" · ")}</p></div>
-    </div>
-    ${liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>` : `<p class="vide-mini">Pas encore d'outil dans cette matière.</p>`}
-    ${jeSuisAdmin ? `<div class="admin-raccourcis"><span class="sub">Admin</span><button class="btn" type="button" id="adm-placer">Placer un outil ici</button><button class="btn" type="button" id="adm-creer">Créer un outil ici</button></div>` : ""}`;
-  vue.querySelectorAll(".story").forEach((b) => (b.onclick = () => { matiereChoisie[id] = b.dataset.m; vueAnnee(id); }));
-  $("#adm-placer")?.addEventListener("click", () => placerOutil(id, m.id === AUTRES.id ? null : m.id));
-  $("#adm-creer")?.addEventListener("click", () => formNouvelOutil(id, m.id === AUTRES.id ? null : m.id));
+  vue.innerHTML = retour + matieres.map((m) => {
+    const liste = outils.filter((o) => (place(o).matiere?.id || AUTRES.id) === m.id);
+    return `<section class="matiere-bloc" aria-label="${esc(m.complet || m.nom)}">
+      <div class="matiere-tete">
+        <span class="mini-ring grand"><span>${visuel(m, "📚")}</span></span>
+        <div><h1>${esc(m.complet || m.nom)}</h1><p class="sub">${[m.complet ? m.nom : "", m.prof, `${liste.length} outil${liste.length > 1 ? "s" : ""}`].filter(Boolean).map(esc).join(" · ")}</p></div>
+      </div>
+      ${liste.length ? `<div class="lignes">${liste.map(ligneOutil).join("")}</div>` : `<p class="vide-mini">Pas encore d'outil dans cette matière.</p>`}
+      ${jeSuisAdmin ? `<div class="admin-raccourcis"><span class="sub">Admin · ${esc(m.nom)}</span><button class="btn" type="button" data-placer-m="${esc(m.id)}">Placer un outil ici</button><button class="btn" type="button" data-creer-m="${esc(m.id)}">Créer un outil ici</button></div>` : ""}
+    </section>`;
+  }).join("");
+  const mat = (x) => (x === AUTRES.id ? null : x);
+  vue.querySelectorAll("[data-placer-m]").forEach((b) => (b.onclick = () => placerOutil(id, mat(b.dataset.placerM))));
+  vue.querySelectorAll("[data-creer-m]").forEach((b) => (b.onclick = () => formNouvelOutil(id, mat(b.dataset.creerM))));
   brancherLignes();
 }
 
@@ -963,7 +957,7 @@ function vueReglages() {
     <div class="groupe">
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
         "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 10 · site de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 11 · site de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div>`;
@@ -1271,7 +1265,7 @@ function vueOrganisation(onglets) {
         ${o.perso ? `<a class="puce" href="#edit-${esc(o.id)}">${ICO.crayon} Modifier le contenu</a>` : `<button class="puce" type="button" data-champ="affichage">${ICO.crayon} Titre et emoji</button>`}
         <button class="puce" type="button" data-champ="commentaires">💬 Commentaires</button>
         <a class="puce" href="${esc(o.fichier)}" target="_blank" rel="noopener">↗ Ouvrir</a>
-        ${o.perso ? `<button class="puce danger" type="button" data-champ="supprimer">${ICO.poubelle} Supprimer</button>` : ""}
+        <button class="puce danger" type="button" data-champ="supprimer">${ICO.poubelle} Supprimer</button>
       </div>
       ${(o.categories || []).length ? `<span class="sub adm-cat-titre">Catégories : touche pour masquer ou afficher, 🖼 pour changer l'image</span>
       <div class="adm-cats">${o.categories.map(([cid, nom]) => { const off = (CAT.masques[o.id] || []).includes(cid); return `<span class="adm-cat-paire"><button type="button" class="adm-cat${off ? " off" : ""}" data-cat="${esc(cid)}" aria-pressed="${!off}">${esc(nom)}</button><button type="button" class="adm-cat-img" data-catimg="${esc(cid)}" aria-label="Image de ${esc(nom)}" title="Image de ${esc(nom)}">${imgs[cid] ? `<img data-media="${esc(imgs[cid])}" alt="">` : "🖼"}</button></span>`; }).join("")}</div>` : ""}
@@ -1311,7 +1305,11 @@ function vueOrganisation(onglets) {
     </div>` : ""}
 
     <h2>Outils</h2>
-    <div class="groupe">${OUTILS.map(ligneOut).join("")}</div>
+    <div class="groupe">${OUTILS.filter((o) => !place(o).supprime).map(ligneOut).join("")}</div>
+    ${OUTILS.some((o) => place(o).supprime) ? `<h2>Corbeille</h2>
+    <div class="groupe">${OUTILS.filter((o) => place(o).supprime).map((o) => `<div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${esc(o.emoji || "📝")}</span>
+      <span class="ligne-txt"><b>${esc(o.titre)}</b><small>Supprimé : n'apparaît plus nulle part</small></span>
+      <button class="btn" type="button" data-restaurer="${esc(o.id)}">Restaurer</button></div>`).join("")}</div>` : ""}
     <p class="note">Les outils « QCM » et « Fiche / schéma » se créent ici. Un outil d'un nouveau genre (une nouvelle page) passe par Claude Code.</p>
 
     <h2>Sauvegarde</h2>
@@ -1322,6 +1320,12 @@ function vueOrganisation(onglets) {
   </div>`;
 
   vue.querySelectorAll("[data-adm]").forEach((b) => (b.onclick = () => actionAdmin(b.dataset.adm, b.dataset.id)));
+  vue.querySelectorAll("[data-restaurer]").forEach((b) => (b.onclick = () => {
+    const c = copieCat();
+    const id = b.dataset.restaurer;
+    c.outils[id] = { ...(c.outils[id] || {}), supprime: false, cache: true };
+    publierCat(c, "Outil restauré (caché : rends-le visible quand tu veux)");
+  }));
   vue.querySelectorAll(".adm-outil").forEach((el) => {
     const id = el.dataset.outil;
     const o = OUTILS.find((x) => x.id === id);
@@ -1343,7 +1347,7 @@ function vueOrganisation(onglets) {
     $('[data-champ="nouveau"]', el).onclick = () => maj(() => ({ nouveau: !place(o).nouveau }), place(o).nouveau ? "Badge retiré" : "Badge « Nouveau » ajouté");
     $('[data-champ="affichage"]', el)?.addEventListener("click", () => formOutil(o));
     $('[data-champ="commentaires"]', el).onclick = () => ouvrirCommentaires(o);
-    $('[data-champ="supprimer"]', el)?.addEventListener("click", () => supprimerOutilPerso(o));
+    $('[data-champ="supprimer"]', el).onclick = () => (o.perso ? supprimerOutilPerso(o) : mettreALaCorbeille(o));
     el.querySelectorAll("[data-cat]").forEach((b) => (b.onclick = () => {
       const c = copieCat();
       const liste = new Set(c.masques[id] || []);
@@ -1540,10 +1544,20 @@ function placerOutil(annee, matiere) {
     <div class="modal-btns"><button class="btn" type="button" data-fermer>Annuler</button></div>`, (f) => {
     f.querySelectorAll("[data-placer]").forEach((b) => (b.onclick = () => {
       const c = copieCat();
-      c.outils[b.dataset.placer] = { ...(c.outils[b.dataset.placer] || {}), annee, matiere: matiere || null, cache: false };
+      c.outils[b.dataset.placer] = { ...(c.outils[b.dataset.placer] || {}), annee, matiere: matiere || null, cache: false, supprime: false };
       fermerModal();
       publierCat(c, "Outil placé ✓").then(() => route());
     }));
+  });
+}
+
+/** Outil de outils.js : sa page reste dans le code, mais il disparaît du site (restaurable depuis la corbeille). */
+function mettreALaCorbeille(o) {
+  confirmer(`Supprimer « ${o.titre} » ?`, "Il disparaît de l'accueil, de la recherche et des favoris de tout le monde. Tu pourras le restaurer depuis la Corbeille, en bas de cette page.", "Supprimer", () => {
+    const c = copieCat();
+    const p = place(o);
+    c.outils[o.id] = { ...(c.outils[o.id] || {}), annee: p.annee, matiere: p.matiere ? p.matiere.id : null, supprime: true };
+    return publierCat(c, "Outil supprimé (dans la corbeille)");
   });
 }
 

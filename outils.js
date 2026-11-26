@@ -23,7 +23,7 @@ export const OUTILS = [
     titre: "Révision M.E.",
     annee: "P2",
     matiere: "M.E.",
-    type: "Fiche, cartes, 78 QCM",
+    type: "Fiche, cartes, 61 QCM",
     description: "Coude, épaule, poignet-main, rachis thoracique, côtes : coche les catégories à réviser, puis suis le parcours.",
     fichier: "outils/me-revision.html",
     emoji: "🦴",

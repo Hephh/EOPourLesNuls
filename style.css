@@ -1019,3 +1019,6 @@ button.membre:hover { background: var(--bg-2); }
 }
 body:has(.invite-install.avec-fleche) .invite-install { bottom: calc(env(safe-area-inset-bottom) + 14px); }
 :root[data-anim="off"] .invite-install { animation: none; }
+
+/* ---------- Page d'une année : matières l'une sous l'autre ---------- */
+.matiere-bloc + .matiere-bloc { margin-top: 18px; padding-top: 8px; border-top: 1px solid var(--line-2); }
