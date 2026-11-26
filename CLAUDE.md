@@ -83,6 +83,10 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   activite{ "AAAA-MM-JJ": n }, creeLe, vuLe }`.
 - Admin = UID listé dans `estAdmin()` de `firestore.rules`. L'onglet Admin s'affiche quand les règles
   autorisent la lecture de tous les profils. Il a deux parties : Organisation et Membres.
+- Années protégées par mot de passe (Admin ▸ Organisation ▸ « Protéger par un mot de passe ») : `annee.mdp = { sel, hash }`
+  (PBKDF2-SHA-256, 150 000 tours, jamais le mot de passe en clair) ; déverrouillage gardé par appareil (`mdp-ok:<id>`),
+  l'admin voit tout. `ouverte(a)` / `fermeeParMdp(a)` ; `outilsVisibles()` exclut les outils d'une année fermée.
+  Limite : simple porte, les fichiers des outils restent publics par leur adresse.
 - Organisation (Admin ▸ Organisation) : années (ajouter, renommer, monter, verrouiller, supprimer), matières d'une
   année (nom, emoji, nom complet, enseignant), place et visibilité de chaque outil, catégories internes masquées
   (champ `categories` d'un outil dans `outils.js`). Tout est publié dans le document public `site/catalogue`

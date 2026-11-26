@@ -6,14 +6,14 @@
 <title>EOPour les nuls</title>
 <meta name="description" content="Plateforme de révision pour les études d'ostéopathie, de la P1 à la P5 : cours structurés, QCM corrigés et répétition espacée, sur téléphone comme sur ordinateur.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=15"></script>
+<script src="reglages.js?v=16"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body class="app">
 
@@ -47,8 +47,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=15";
-import * as C from "./compte.js?v=15";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=16";
+import * as C from "./compte.js?v=16";
 
 const R = window.Reglages;
 
@@ -200,7 +200,25 @@ function place(o) {
   if (m && m.annee !== annee) m = null;
   return { annee, matiere: m, cache: !!p.cache || !!p.supprime, nouveau: !!p.nouveau, supprime: !!p.supprime };
 }
-const outilsVisibles = () => OUTILS.filter((o) => !place(o).cache);
+/* ---------- Années protégées par un mot de passe ----------
+   a.mdp = { sel, hash } : PBKDF2-SHA-256 (150 000 tours) du mot de passe, jamais le mot de passe lui-même.
+   Une fois saisi, le déverrouillage reste sur l'appareil (clé « mdp-ok:<id> » = hash ; un nouveau mot de passe referme).
+   L'admin voit tout sans le saisir. Ce n'est qu'une porte : les fichiers des outils restent publics par leur adresse. */
+const aMdp = (a) => !!(a && a.mdp && typeof a.mdp.hash === "string" && typeof a.mdp.sel === "string");
+async function hacherMdp(mdp, sel) {
+  const enc = new TextEncoder();
+  const cle = await crypto.subtle.importKey("raw", enc.encode(mdp), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", salt: enc.encode(sel), iterations: 150000, hash: "SHA-256" }, cle, 256);
+  return [...new Uint8Array(bits)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+/** L'année se lit : ni verrouillée (« bientôt »), ni protégée sans le mot de passe. */
+function ouverte(a) {
+  if (!a || a.verrou) return false;
+  if (!aMdp(a) || jeSuisAdmin) return true;
+  try { return localStorage.getItem("mdp-ok:" + a.id) === a.mdp.hash; } catch { return false; }
+}
+const fermeeParMdp = (a) => aMdp(a) && !a.verrou && !ouverte(a);
+const outilsVisibles = () => OUTILS.filter((o) => { const p = place(o); return !p.cache && !fermeeParMdp(anneeDe(p.annee)); });
 const outilsAnnee = (a) => outilsVisibles().filter((o) => place(o).annee === a.id);
 const matieresAnnee = (a) => CAT.matieres.filter((m) => m.annee === a.id);
 /** Image de l'admin (médiathèque) si elle existe, sinon l'emoji. */
@@ -279,6 +297,7 @@ function blocMaitrise() {
 function cartesAnnees() {
   return `<div class="annees-cartes">${CAT.annees.map((a) => {
     if (a.verrou) return `<div class="annee-carte verrou"><span class="annee-carte-tete"><b>${esc(a.nom)}</b>${ICONE_VERROU}</span><small>${esc(a.sous || "Bientôt")}</small></div>`;
+    if (fermeeParMdp(a)) return `<a class="annee-carte protegee" href="#${esc(a.id)}" style="--c: ${couleurAnnee(a)};"><span class="annee-carte-tete"><b>${esc(a.nom)}</b>${ICONE_VERROU}</span><small>${esc(a.sous ? a.sous + " · " : "")}Accès par mot de passe</small></a>`;
     const mats = matieresAnnee(a), nbO = outilsAnnee(a).length;
     return `<a class="annee-carte" href="#${esc(a.id)}" style="--c: ${couleurAnnee(a)};">
       <span class="annee-carte-tete"><b>${a.image ? `<img class="visuel" data-media="${esc(a.image)}" alt="">` : esc(a.nom)}</b><small>${esc(a.sous || "")}</small></span>
@@ -372,6 +391,37 @@ function vueAnnee(id) {
     <header class="page-tete"><h1><span class="pastille-annee" style="--c: ${couleurAnnee(a)};"></span>${esc(a.nom)}${a.sous ? ` <span class="titre-sous">· ${esc(a.sous)}</span>` : ""}</h1></header>`;
   const page = (html) => `<div class="page"><div class="page-corps">${tete}${html}</div></div>`;
   if (a.verrou) { vue.innerHTML = page(`<div class="vide">${ICONE_VERROU}<h2>${esc(a.nom)} est verrouillé</h2><p>Ce parcours sera ouvert prochainement.</p></div>`); return; }
+  if (!ouverte(a)) {
+    vue.innerHTML = page(`<form class="carte acces-mdp" id="form-mdp">
+      <span class="acces-ico" aria-hidden="true">${ICONE_VERROU}</span>
+      <h2>Accès protégé</h2>
+      <p class="sub">${esc(a.nom)} est réservé aux personnes qui ont reçu le mot de passe.</p>
+      <label class="champ-lab" for="mdp-annee">Mot de passe</label>
+      <input class="champ" id="mdp-annee" type="password" autocomplete="off" required>
+      <p class="erreur" id="erreur-mdp" role="alert" hidden></p>
+      <button class="btn btn-primary" type="submit">Déverrouiller</button>
+    </form>`);
+    const champ = $("#mdp-annee"), err = $("#erreur-mdp");
+    champ.focus();
+    $("#form-mdp").onsubmit = async (e) => {
+      e.preventDefault();
+      const bouton = e.target.querySelector("button");
+      bouton.disabled = true;
+      try {
+        if ((await hacherMdp(champ.value.trim(), a.mdp.sel)) === a.mdp.hash) {
+          try { localStorage.setItem("mdp-ok:" + a.id, a.mdp.hash); } catch {}
+          toast(`${a.nom} déverrouillée sur cet appareil`);
+          route();
+          return;
+        }
+        err.textContent = "Mot de passe incorrect.";
+      } catch { err.textContent = "Vérification impossible sur ce navigateur."; }
+      err.hidden = false;
+      bouton.disabled = false;
+      champ.select();
+    };
+    return;
+  }
   const outils = outilsAnnee(a);
   const matieres = matieresAnnee(a).slice();
   if (outils.some((o) => !place(o).matiere)) matieres.push(AUTRES);
@@ -453,7 +503,7 @@ function ouvrirPalette() {
     const champ = $("#pal-q", m), liste = $("#pal-liste", m);
     const entrees = [
       ...outilsVisibles().map((o) => ({ titre: o.titre, sous: [o.type, o.matiere, anneeDe(place(o).annee)?.nom].filter(Boolean).join(" · "), href: o.fichier, ico: esc(o.emoji || "📝"), outil: o.id })),
-      ...CAT.matieres.filter((x) => anneeDe(x.annee) && !anneeDe(x.annee).verrou).map((x) => ({ titre: x.complet || x.nom, sous: `Matière · ${anneeDe(x.annee).nom}${x.prof ? " · " + x.prof : ""}`, href: "#" + x.annee, ico: visuel(x, "📚") })),
+      ...CAT.matieres.filter((x) => ouverte(anneeDe(x.annee))).map((x) => ({ titre: x.complet || x.nom, sous: `Matière · ${anneeDe(x.annee).nom}${x.prof ? " · " + x.prof : ""}`, href: "#" + x.annee, ico: visuel(x, "📚") })),
       ...CAT.annees.filter((a) => !a.verrou).map((a) => ({ titre: `${a.nom}${a.sous ? " · " + a.sous : ""}`, sous: "Année", href: "#" + a.id, ico: ICONES.calendrier })),
       ...outilsVisibles().flatMap((o) => (o.categories || []).filter(([id]) => !(CAT.masques[o.id] || []).includes(id))
         .map(([, nom]) => ({ titre: nom, sous: `Catégorie · ${o.titre}`, href: o.fichier, ico: esc(o.emoji || "📝"), outil: o.id }))),
@@ -509,6 +559,7 @@ function majBarreLaterale(actif) {
   if (!arbre) return;
   arbre.innerHTML = `<a class="arbre-titre${actif === "cours" ? " actif" : ""}" href="#cours">Mes cours</a>` + CAT.annees.map((a) => {
     if (a.verrou) return `<span class="arbre-annee verrou">${ICONE_VERROU}${esc(a.nom)} · bientôt</span>`;
+    if (fermeeParMdp(a)) return `<a class="arbre-annee protegee${actif === a.id ? " actif" : ""}" href="#${esc(a.id)}">${ICONE_VERROU}${esc(a.nom)}${a.sous ? `<small>${esc(a.sous)}</small>` : ""}</a>`;
     const mats = matieresAnnee(a);
     return `<a class="arbre-annee${actif === a.id ? " actif" : ""}" href="#${esc(a.id)}"${actif === a.id ? ` aria-current="page"` : ""}><i style="background: ${couleurAnnee(a)};"></i>${esc(a.nom)}${a.sous ? `<small>${esc(a.sous)}</small>` : ""}</a>`
       + mats.map((m) => `<a class="arbre-matiere" href="#${esc(a.id)}">${esc(m.nom)}</a>`).join("");
@@ -1060,7 +1111,7 @@ function vueReglages() {
     <div class="groupe">
       <a class="ligne" href="#a-propos"><span class="ligne-ico" aria-hidden="true">${ICONES.info}</span>${texte("À propos du site", "Fonctionnement, contenus, données et confidentialité")}<span class="chevron" aria-hidden="true">›</span></a>
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">${ICONE_VERROU}</span>${texte("Vos données", "Sans compte, tout reste sur cet appareil. Avec un compte, la progression est enregistrée dans une base hébergée à Paris et seul l'administrateur du site voit la liste des membres. Tout peut être effacé depuis cette page.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true"><span class="marque-eo marque-eo-mini">EO</span></span>${texte("EOPour les nuls", "Version 15 · plateforme de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true"><span class="marque-eo marque-eo-mini">EO</span></span>${texte("EOPour les nuls", "Version 16 · plateforme de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div></div></div>`;
@@ -1110,7 +1161,7 @@ function vueAPropos() {
         <p>Sans compte, la progression reste sur cet appareil. Avec un compte, le nom, l'adresse e-mail et la photo sont gérés par Firebase (Google) ; les scores, révisions, favoris et jours d'activité sont stockés dans une base hébergée à Paris.</p>
         <p>Seul l'administrateur du site voit la liste des membres et leur progression. La progression peut être réinitialisée et le compte supprimé à tout moment, depuis les Réglages.</p>
       </div></section>
-    <p class="note ap-version">EOPour les nuls · version 15</p>
+    <p class="note ap-version">EOPour les nuls · version 16</p>
   </div></div>`;
 }
 
@@ -1423,9 +1474,12 @@ function vueOrganisation(onglets) {
     </div>
     ${a ? `<div class="groupe">
       <div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${a.verrou ? ICONE_VERROU : ICONES.calendrier}</span>
-        <span class="ligne-txt"><b>${esc(a.nom)}</b><small>${esc(a.sous || "")}${a.verrou ? " · verrouillée" : ""}</small></span>
+        <span class="ligne-txt"><b>${esc(a.nom)}</b><small>${esc(a.sous || "")}${a.verrou ? " · verrouillée" : aMdp(a) ? " · mot de passe" : ""}</small></span>
         ${CAT.annees.indexOf(a) ? btnAdm("monter-annee", a.id, ICO.haut, "Monter " + a.nom) : ""}${btnAdm("modifier-annee", a.id, ICO.crayon, "Modifier " + a.nom)}${btnAdm("suppr-annee", a.id, ICO.poubelle, "Supprimer " + a.nom, "danger")}</div>
       <button class="ligne" type="button" role="switch" data-adm="verrou" data-id="${esc(a.id)}" aria-checked="${!!a.verrou}"><span class="ligne-ico" aria-hidden="true">${ICONE_VERROU}</span><span class="ligne-txt"><b>Verrouiller</b><small>Bulle grisée avec un cadenas : ni la page ni ses outils ne s'ouvrent</small></span><span class="interrupteur"></span></button>
+      ${aMdp(a) ? `<div class="ligne adm-ligne"><span class="ligne-ico" aria-hidden="true">${ICONE_VERROU}</span><span class="ligne-txt"><b>Mot de passe actif</b><small>Les membres le saisissent une fois par appareil ; vous accédez à tout sans le saisir</small></span>
+        ${btnAdm("mdp-annee", a.id, ICO.crayon, "Changer le mot de passe")}${btnAdm("suppr-mdp", a.id, ICO.poubelle, "Retirer le mot de passe", "danger")}</div>`
+      : `<button class="ligne" type="button" data-adm="mdp-annee" data-id="${esc(a.id)}"><span class="ligne-ico" aria-hidden="true">${ICONE_VERROU}</span><span class="ligne-txt"><b>Protéger par un mot de passe</b><small>La page et ses outils ne s'affichent qu'après la saisie du mot de passe</small></span><span class="chevron" aria-hidden="true">›</span></button>`}
     </div>
 
     <h2>Matières de ${esc(a.nom)}</h2>
@@ -1537,6 +1591,36 @@ function champImage(actuelle, cote, nom) {
 }
 
 /* Formulaires (fenêtre maison) */
+/** Admin : choisir (ou changer) le mot de passe d'une année. Seul son hash est publié. */
+function formMdpAnnee(a) {
+  ouvrirModal(`<h3>${aMdp(a) ? "Changer le mot de passe" : "Protéger par un mot de passe"}</h3>
+    <form id="form-mdp-annee" class="adm-form">
+      <p class="sub">${esc(a.nom)} ne s'affichera qu'après la saisie de ce mot de passe. Notez-le : il ne pourra pas être réaffiché, seulement remplacé.${aMdp(a) ? " Les appareils déjà déverrouillés devront saisir le nouveau." : ""}</p>
+      <label class="sub" for="mdp-nouveau">Mot de passe</label>
+      <input class="champ" id="mdp-nouveau" type="text" minlength="4" maxlength="64" autocomplete="off" required>
+      <p class="erreur" id="erreur-mdp-annee" role="alert" hidden></p>
+      <div class="modal-btns">
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+        <button class="btn" type="button" data-fermer>Annuler</button>
+      </div>
+    </form>`, (m) => {
+    $("#mdp-nouveau", m).focus();
+    $("#form-mdp-annee", m).onsubmit = async (e) => {
+      e.preventDefault();
+      const mdp = $("#mdp-nouveau", m).value.trim();
+      const err = $("#erreur-mdp-annee", m);
+      if (mdp.length < 4) { err.textContent = "4 caractères au minimum."; err.hidden = false; return; }
+      const sel = [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, "0")).join("");
+      let hash;
+      try { hash = await hacherMdp(mdp, sel); } catch { err.textContent = "Chiffrement impossible sur ce navigateur."; err.hidden = false; return; }
+      const c = copieCat();
+      c.annees.find((x) => x.id === a.id).mdp = { sel, hash };
+      fermerModal();
+      publierCat(c, `${a.nom} protégée par un mot de passe`);
+    };
+  });
+}
+
 function formAnnee(a) {
   const img = champImage(a?.image, 512, () => "année " + ($("#an-nom")?.value || ""));
   ouvrirModal(`<h3>${a ? "Modifier l'année" : "Ajouter une année"}</h3>
@@ -1722,6 +1806,16 @@ function actionAdmin(act, id) {
     case "modifier-annee": formAnnee(anneeDe(id)); break;
     case "monter-annee": monter(c.annees, c.annees.findIndex((x) => x.id === id)); publierCat(c, "Ordre des années modifié"); break;
     case "verrou": { const a = c.annees.find((x) => x.id === id); a.verrou = !a.verrou; publierCat(c, a.verrou ? `${a.nom} verrouillée` : `${a.nom} déverrouillée`); break; }
+    case "mdp-annee": formMdpAnnee(anneeDe(id)); break;
+    case "suppr-mdp": {
+      const a = anneeDe(id);
+      confirmer(`Retirer le mot de passe de ${a.nom} ?`, `${a.nom} redeviendra visible par tous les membres.`, "Retirer", async () => {
+        const d = copieCat();
+        delete d.annees.find((x) => x.id === id).mdp;
+        publierCat(d, "Mot de passe retiré");
+      });
+      break;
+    }
     case "suppr-annee": {
       const a = anneeDe(id);
       confirmer(`Supprimer ${a.nom} ?`, `Ses matières sont supprimées aussi. Ses outils ne sont pas effacés : ils restent dans la recherche et pourront être replacés (Outils ▸ Année).`, "Supprimer", async () => {

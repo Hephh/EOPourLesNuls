@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Révision · EOPour les nuls</title>
 <meta name="theme-color" content="#ffffff">
-<script src="../reglages.js?v=15"></script>
+<script src="../reglages.js?v=16"></script>
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icones/icone-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
-<link rel="stylesheet" href="../style.css?v=15">
+<link rel="stylesheet" href="../style.css?v=16">
 <style>
   /* Révision : « À revoir » (répétition espacée) et « Mes erreurs », toutes sources mélangées */
   .rv-tete { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 14px; padding: max(8px, env(safe-area-inset-top)) 16px 8px; background: var(--surface); border-bottom: 1px solid var(--line); }
@@ -81,7 +81,7 @@
 <div id="rv-page"><p class="rv-etat-page">Chargement…</p></div>
 
 <script type="module">
-import * as C from "../compte.js?v=15";
+import * as C from "../compte.js?v=16";
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);

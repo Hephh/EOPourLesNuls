@@ -5,7 +5,7 @@
      appareils dans Firestore (un document par membre : users/{uid}).
    Les pages n'écrivent jamais directement dans Firestore : elles passent ici.
    ===================================================================== */
-import { FIREBASE_CONFIG } from "./firebase-config.js?v=15";
+import { FIREBASE_CONFIG } from "./firebase-config.js?v=16";
 
 const CDN = "https://www.gstatic.com/firebasejs/13.4.0/";
 
@@ -489,7 +489,7 @@ export async function membres() {
 }
 
 /* ---------- Catalogue du site (modifiable par l'admin) ----------
-   Document public site/catalogue = { annees: [{ id, nom, sous, verrou }],
+   Document public site/catalogue = { annees: [{ id, nom, sous, verrou, mdp?: { sel, hash } }],
    matieres: [{ id, annee, nom, emoji, complet, prof }], outils: { <id>: { annee, matiere, cache } },
    masques: { <id d'outil>: [catégories masquées] } }. Absent : l'accueil suit outils.js. */
 const CLE_CATALOGUE = "catalogue";
