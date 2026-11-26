@@ -19,7 +19,7 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
   collées dans la console Firebase (Firestore Database → Règles → Publier).
 - `manifest.webmanifest`, `icones/` — appli installable (écran d'accueil).
 - `sw.js` — service worker « réseau d'abord » (hors-ligne). Rien à modifier quand le site change.
-- `404.html` — page d'erreur ; seule exception à la règle des chemins relatifs (chemins absolus `/EOPourLesNuls/…`).
+- `404.html` — page d'erreur ; seule exception à la règle des chemins relatifs (chemins absolus depuis la racine `/…`).
 - `outils/<id>.html` — un outil = une page (CSS/JS en ligne + `../reglages.js` + `../style.css` + `../compte.js`).
 - `outils/qcm-hemato-exemple.html` — modèle de QCM à copier (mode examen, chrono, vibrations déjà gérés).
 - `.nojekyll` — ne pas supprimer (GitHub Pages sert les fichiers tels quels).
@@ -34,7 +34,7 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
    tous deux de `../compte.js` (déjà fait dans le modèle).
 
 ## Règles
-- Chemins **relatifs** uniquement (site servi sous `/EOPourLesNuls/`), sauf `404.html`.
+- Chemins **relatifs** uniquement (le site reste ainsi déplaçable), sauf `404.html`.
 - Mobile d'abord : lisible à 360 px, zones tactiles ≥ 44 px, rien qui dépende du survol.
 - Couleurs : variables de `style.css` uniquement. Esprit réseau social, mais jamais le logo, le nom,
   les icônes ni les couleurs d'Instagram.
@@ -50,15 +50,19 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
 - Avant de finir : relire chaque page modifiée et vérifier qu'aucun lien n'est cassé.
 
 ## Comptes (Firebase, plan gratuit Spark)
-- Connexion Google (popup) + e-mail/mot de passe. Domaine autorisé dans Firebase Auth : `hephh.github.io`.
+- Connexion Google (popup) + e-mail/mot de passe. Domaines autorisés dans Firebase Auth : `eopourlesnuls.web.app` (et `hephh.github.io`, ancienne adresse).
 - Données : `users/{uid}` = `{ nom, photo, avatar, favoris[], scores{ <id>: {best, total} },
   activite{ "AAAA-MM-JJ": n }, creeLe, vuLe }`.
 - Admin = UID listé dans `estAdmin()` de `firestore.rules`. L'onglet Admin s'affiche quand les règles
   autorisent la lecture de tous les profils.
 
 ## Mise en ligne
-Site : https://hephh.github.io/EOPourLesNuls/ (respecter les majuscules).
-GitHub Pages, repo `Hephh/EOPourLesNuls`, branche `main`, racine : commit + push sur `main` → en ligne en ~1 min.
+Site : https://eopourlesnuls.web.app (Firebase Hosting, config `firebase.json`).
+Repo `Hephh/EOPourLesNuls`, branche `main`. Un push ne met PAS ce site à jour : après le push, demander au
+propriétaire de lancer dans Cloud Shell (https://shell.cloud.google.com/?show=terminal) :
+`cd ~/eo-deploy && git pull && firebase deploy --only hosting --project eopourlesnuls`
+(si Firebase refuse : `firebase login --no-localhost`, c'est lui qui saisit le code).
+Ancienne adresse https://hephh.github.io/EOPourLesNuls/ (GitHub Pages) : à désactiver sur sa demande.
 Cache : `reglages.js`, `style.css`, `outils.js`, `compte.js` et `firebase-config.js` sont chargés avec `?v=N`.
 Dès qu'un commit modifie l'un d'eux, remplacer `?v=N` par `?v=N+1` **dans tous les fichiers** (y compris `404.html` ;
 chercher `?v=`), sinon les visiteurs gardent l'ancienne version jusqu'à 10 min, avec des pages cassées.
