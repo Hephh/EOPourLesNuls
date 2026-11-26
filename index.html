@@ -6,11 +6,11 @@
 <title>EOPour les nuls</title>
 <meta name="description" content="QCM et outils de révision ostéo, de P1 à P5 — sur téléphone comme sur PC.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=9"></script>
+<script src="reglages.js?v=10"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=10">
 </head>
 <body class="app">
 
@@ -61,8 +61,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=9";
-import * as C from "./compte.js?v=9";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=10";
+import * as C from "./compte.js?v=10";
 
 const R = window.Reglages;
 
@@ -724,10 +724,95 @@ function brancherConnexion() {
 
 /* ---------- Réglages ---------- */
 let invitInstall = null;
-window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); invitInstall = e; });
-window.addEventListener("appinstalled", () => { invitInstall = null; toast("Appli installée ✓"); });
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); invitInstall = e; majInviteInstall(); });
+window.addEventListener("appinstalled", () => { invitInstall = null; noterInvite(true); fermerInviteInstall(); toast("Appli installée ✓"); });
 const estInstallee = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 const surIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+/* ---------- Proposition d'installation (1re visite sur téléphone) ----------
+   Android/Chrome : bouton « Installer » (invite native). iPhone/iPad : pas à pas Partager → Sur l'écran d'accueil.
+   « Plus tard » : reproposée au plus 3 fois, une semaine plus tard. Toujours dispo dans Réglages ▸ Installer l'appli. */
+const UA = navigator.userAgent;
+const surIPad = /Macintosh/.test(UA) && navigator.maxTouchPoints > 1;          // iPadOS se présente comme un Mac
+const surApple = surIOS || surIPad;
+const surAndroid = /Android/i.test(UA);
+const safariIOS = surApple && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(UA);
+const ICONE_PARTAGE = svg('<path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/>');
+const ICONE_AJOUT = svg('<rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/>');
+function etatInvite() { try { return JSON.parse(localStorage.getItem("install-propose")) || { n: 0, t: 0 }; } catch { return { n: 99, t: 0 }; } }
+function noterInvite(fini) {
+  const e = etatInvite();
+  try { localStorage.setItem("install-propose", JSON.stringify({ n: fini ? 99 : e.n + 1, t: Date.now() })); } catch {}
+}
+function fermerInviteInstall() {
+  const el = $("#invite-install");
+  if (!el) return;
+  el.classList.add("sortie");
+  setTimeout(() => el.remove(), 250);
+}
+function contenuInvite() {
+  if (navigateurIntegre) return {
+    texte: "Pour l'installer, ouvre d'abord le site dans ton navigateur : menu <b>⋯</b> → « Ouvrir dans le navigateur ».",
+    bouton: `<button class="btn btn-primary" type="button" data-inv="copier">Copier le lien</button>`,
+  };
+  if (surApple) return {
+    texte: safariIOS ? "Ajoute-la à ton écran d'accueil en 3 gestes :" : "Ajoute-la à ton écran d'accueil (si tu ne trouves pas, ouvre le site dans Safari) :",
+    etapes: [
+      `Touche <span class="inv-ico">${ICONE_PARTAGE}</span> <b>Partager</b>${safariIOS ? (surIPad ? " en haut" : " en bas de Safari") : ""}`,
+      `Choisis <span class="inv-ico">${ICONE_AJOUT}</span> <b>Sur l'écran d'accueil</b> (fais défiler si besoin)`,
+      `Touche <b>Ajouter</b> en haut à droite`,
+    ],
+    fleche: safariIOS && !surIPad,
+  };
+  if (invitInstall) return { texte: "Une icône sur ton écran d'accueil, en plein écran, même hors connexion.", bouton: `<button class="btn btn-primary" type="button" data-inv="installer">Installer</button>` };
+  return {
+    texte: "Ajoute-la à ton écran d'accueil :",
+    etapes: [`Ouvre le menu <b>⋮</b> du navigateur`, `Touche <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>`],
+  };
+}
+function dessinerInvite(el) {
+  const c = contenuInvite();
+  el.classList.toggle("avec-fleche", !!c.fleche);
+  el.innerHTML = `<img class="inv-icone" src="icones/icone-192.png" alt="" width="52" height="52">
+    <div class="inv-corps">
+      <b>Installe EOPour les nuls sur ton téléphone</b>
+      <p>${c.texte}</p>
+      ${c.etapes ? `<ol class="inv-etapes">${c.etapes.map((e) => `<li>${e}</li>`).join("")}</ol>` : ""}
+      <div class="inv-btns">${c.bouton || ""}<button class="btn" type="button" data-inv="plus-tard">Plus tard</button></div>
+    </div>
+    <button class="icon-btn inv-fermer" type="button" data-inv="plus-tard" aria-label="Fermer">${ICONE.fermer}</button>`;
+  el.querySelectorAll("[data-inv]").forEach((b) => (b.onclick = async () => {
+    const a = b.dataset.inv;
+    if (a === "plus-tard") { noterInvite(false); return fermerInviteInstall(); }
+    if (a === "copier") { try { await navigator.clipboard.writeText(lienSite()); toast("Lien copié 📋"); } catch { toast(lienSite()); } return; }
+    if (a === "installer" && invitInstall) {
+      invitInstall.prompt();
+      const choix = await invitInstall.userChoice.catch(() => null);
+      invitInstall = null;
+      noterInvite(choix?.outcome === "accepted");
+      fermerInviteInstall();
+    }
+  }));
+}
+/** L'invite Android arrive parfois après l'affichage : on remplace les étapes par le bouton. */
+function majInviteInstall() { const el = $("#invite-install"); if (el && surAndroid) dessinerInvite(el); }
+function proposerInstallation() {
+  if (estInstallee() || !(surApple || surAndroid)) return;
+  const e = etatInvite();
+  if (e.n >= 3 || Date.now() - e.t < 7 * 864e5) return;
+  const montrer = () => {
+    if (modal.open) return modal.addEventListener("close", () => setTimeout(montrer, 800), { once: true });
+    if ($("#invite-install") || estInstallee()) return;
+    const el = document.createElement("aside");
+    el.id = "invite-install";
+    el.className = "invite-install";
+    el.setAttribute("role", "dialog");
+    el.setAttribute("aria-label", "Installer l'appli");
+    dessinerInvite(el);
+    document.body.append(el);
+  };
+  setTimeout(montrer, 3000); // laisser d'abord découvrir l'accueil
+}
 
 async function installer() {
   if (estInstallee()) return toast("L'appli est déjà installée ✓");
@@ -874,7 +959,7 @@ function vueReglages() {
     <div class="groupe">
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">🔒</span>${texte("Données et confidentialité",
         "Sans compte, tout reste sur cet appareil. Avec un compte : ton nom, ton e-mail et ta photo Google sont gérés par Firebase (Google) ; tes scores, favoris et jours d'activité sont stockés dans une base hébergée à Paris. Seul l'admin du site voit la liste des membres et leur progression. Tu peux tout effacer ci-dessus.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 9 · site de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true">ℹ️</span>${texte("EOPour les nuls", "Version 10 · site de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div>`;
@@ -1841,6 +1926,7 @@ C.chargerCatalogue().then((c) => { appliquerCatalogue(c); if (location.hash !== 
 
 // Appli installable + hors-ligne (réseau d'abord)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+proposerInstallation();
 </script>
 </body>
 </html>

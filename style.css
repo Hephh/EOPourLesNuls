@@ -990,3 +990,32 @@ button.membre:hover { background: var(--bg-2); }
 .ed-barre .sub { flex: 1; font-size: .82rem; }
 .ed-suppr { display: block; margin: 16px auto 24px; color: var(--ko); }
 .ed-exemple { margin: 8px 0; padding: 10px 12px; border-radius: 10px; background: var(--bg-2); font-size: .8rem; white-space: pre-wrap; }
+
+/* ---------- Proposition d'installation (1re visite sur téléphone) ---------- */
+.invite-install {
+  position: fixed; left: 10px; right: 10px; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 10px); z-index: 40;
+  display: flex; gap: 12px; padding: 16px 44px 14px 14px; border: 1px solid var(--line); border-radius: 20px;
+  background: var(--surface); color: var(--text); box-shadow: 0 10px 40px rgba(0, 0, 0, .28);
+  animation: inv-entree .35s cubic-bezier(.2, .9, .3, 1.2);
+}
+.invite-install.sortie { animation: inv-sortie .25s ease-in forwards; }
+@keyframes inv-entree { from { transform: translateY(120%); opacity: 0; } }
+@keyframes inv-sortie { to { transform: translateY(120%); opacity: 0; } }
+@media (min-width: 600px) { .invite-install { left: auto; width: 380px; } }
+.inv-icone { flex: none; width: 52px; height: 52px; border-radius: 14px; }
+.inv-corps { min-width: 0; display: grid; gap: 6px; }
+.inv-corps p { margin: 0; color: var(--muted); font-size: .9rem; }
+.inv-corps p b { color: var(--text); }
+.inv-etapes { display: grid; gap: 6px; margin: 2px 0 0; padding-left: 1.3em; font-size: .9rem; }
+.inv-etapes li::marker { font-weight: 800; color: var(--accent-ink); }
+.inv-ico { display: inline-grid; place-items: center; width: 26px; height: 26px; margin: -4px 1px 0; vertical-align: middle; border-radius: 7px; background: var(--bg-2); color: var(--accent-ink); }
+.inv-ico svg { width: 17px; height: 17px; }
+.inv-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.inv-fermer { position: absolute; top: 4px; right: 4px; }
+/* iPhone (Safari) : flèche vers le bouton Partager, en bas au centre */
+.invite-install.avec-fleche::after {
+  content: ""; position: absolute; left: 50%; bottom: -9px; width: 16px; height: 16px; margin-left: -8px;
+  background: var(--surface); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); transform: rotate(45deg);
+}
+body:has(.invite-install.avec-fleche) .invite-install { bottom: calc(env(safe-area-inset-bottom) + 14px); }
+:root[data-anim="off"] .invite-install { animation: none; }
