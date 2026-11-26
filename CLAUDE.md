@@ -7,7 +7,7 @@ Le propriétaire débute : réponds en français et résume en une phrase ce que
 ## Structure
 - `index.html` — l'appli, design « tableau de bord » (maquette validée : version ultime, base A) : barre latérale sur
   ordinateur (Ctrl K, Aujourd'hui, À revoir, Mes erreurs, Favoris, arbre « Mes cours », Admin, Profil), barre du bas sur
-  téléphone. Vues `#accueil` (Aujourd'hui : plan du jour en 3 étapes, maîtrise par catégorie, cours, colonne de droite),
+  téléphone. Vues `#accueil` (Aujourd'hui : maîtrise par catégorie, cours, colonne de droite),
   `#cours`, `#p1`…`#p5` (matières l'une sous l'autre, outils en cartes), `#revoir`, `#erreurs`, `#recherche`, `#favoris`,
   `#profil`, `#reglages`, `#a-propos`, `#admin`, `#edit-<id>`. Recherche rapide Ctrl K (outils, matières, catégories, lexique M.E.).
   Nouveau visiteur (rien de commencé) : présentation du site en tête d'Aujourd'hui (`carteBienvenue`). Pied de page

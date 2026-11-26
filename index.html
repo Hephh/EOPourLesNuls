@@ -6,14 +6,14 @@
 <title>EOPour les nuls</title>
 <meta name="description" content="Plateforme de révision pour les études d'ostéopathie, de la P1 à la P5 : cours structurés, QCM corrigés et répétition espacée, sur téléphone comme sur ordinateur.">
 <meta name="theme-color" content="#ffffff">
-<script src="reglages.js?v=14"></script>
+<script src="reglages.js?v=15"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icones/icone-192.png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap">
-<link rel="stylesheet" href="style.css?v=14">
+<link rel="stylesheet" href="style.css?v=15">
 </head>
 <body class="app">
 
@@ -47,8 +47,8 @@
 <dialog id="modal" class="modal"></dialog>
 
 <script type="module">
-import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=14";
-import * as C from "./compte.js?v=14";
+import { OUTILS, MATIERES, ANNEES, INFOS_MATIERES } from "./outils.js?v=15";
+import * as C from "./compte.js?v=15";
 
 const R = window.Reglages;
 
@@ -207,7 +207,7 @@ const matieresAnnee = (a) => CAT.matieres.filter((m) => m.annee === a.id);
 const visuel = (x, defaut) => (x?.image ? `<img class="visuel" data-media="${esc(x.image)}" alt="">` : esc(x?.emoji || defaut));
 const ICONE_VERROU = svg('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>');
 
-/* ---------- Aujourd'hui : plan du jour, maîtrise, cours ---------- */
+/* ---------- Aujourd'hui : maîtrise, cours ---------- */
 /** Présentation du site pour un nouveau visiteur (rien de commencé sur cet appareil), jusqu'à ce qu'il la ferme. */
 function carteBienvenue() {
   try { if (localStorage.getItem("bienvenue-vue")) return ""; } catch {}
@@ -239,6 +239,8 @@ function carteAnnonce() {
     <button class="icon-btn" type="button" id="fermer-annonce" aria-label="Masquer l'annonce">${ICONE.fermer}</button></div>`;
 }
 
+try { for (const k of Object.keys(localStorage)) if (k.startsWith("plan:")) localStorage.removeItem(k); } catch {}
+
 function dernierOutil() {
   try { return outilsVisibles().find((o) => o.id === localStorage.getItem("dernier-outil")) || null; } catch { return null; }
 }
@@ -250,47 +252,6 @@ const lienRevision = (mode, outil) => "outils/revision.html?mode=" + mode + (out
 const ICONE_REVOIR = svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>');
 const ICONE_ERREUR = svg('<circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/>');
 const ICONE_JOUER = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
-
-function planFait() { try { return JSON.parse(localStorage.getItem("plan:" + C.jourCle())) || {}; } catch { return {}; } }
-function marquerPlan(i) {
-  const p = planFait();
-  p[i] = 1;
-  try {
-    localStorage.setItem("plan:" + C.jourCle(), JSON.stringify(p));
-    for (const k of Object.keys(localStorage)) if (k.startsWith("plan:") && k !== "plan:" + C.jourCle()) localStorage.removeItem(k);
-  } catch {}
-}
-
-function etapesDuJour() {
-  const dus = C.aRevoir(), err = C.erreurs(), dernier = dernierOutil(), fait = planFait();
-  const p = dernier ? place(dernier) : null;
-  return [
-    dus.length
-      ? { type: "À revoir", titre: pluriel(dus.length, "question"), duree: `≈ ${Math.max(1, Math.round(dus.length * 0.5))} min`, detail: "Les questions sur le point d'être oubliées, choisies par la répétition espacée (20 au maximum par jour).", href: lienRevision("revoir"), bouton: "Commencer", principal: true }
-      : { type: "À revoir", titre: "Rien pour aujourd'hui", duree: "", detail: "Faites quelques QCM : chaque question reviendra ici juste avant d'être oubliée.", href: "#cours", bouton: "Mes cours" },
-    dernier
-      ? { type: "Reprendre", titre: dernier.titre, duree: "", detail: [p.matiere ? p.matiere.complet || p.matiere.nom : "", anneeDe(p.annee)?.nom].filter(Boolean).join(" · "), href: dernier.fichier, bouton: "Continuer", outil: dernier.id, principal: !dus.length }
-      : { type: "Commencer", titre: "Choisir un cours", duree: "", detail: "Une année, une matière, puis un outil : fiche, cartes ou QCM.", href: "#cours", bouton: "Mes cours", principal: !dus.length },
-    err.length
-      ? { type: "Mes erreurs", titre: `${err.length} QCM à refaire`, duree: `≈ ${Math.max(1, Math.round(err.length * 0.6))} min`, detail: "Les questions manquées, avec leur correction. Elles quittent la liste dès qu'elles sont réussies.", href: lienRevision("erreurs"), bouton: "Refaire" }
-      : { type: "Mes erreurs", titre: "Aucune erreur", duree: "", detail: "Les questions manquées s'ajoutent ici automatiquement, pour être refaites plus tard.", href: "", bouton: "" },
-  ].map((e, i) => ({ ...e, fait: !!fait[i] }));
-}
-
-function blocPlan() {
-  const etapes = etapesDuJour();
-  const n = etapes.filter((e) => e.fait).length;
-  return `<section class="bloc" aria-labelledby="t-plan">
-    <div class="bloc-tete"><h2 id="t-plan">Plan du jour</h2><span class="sub">${n} étape${n > 1 ? "s" : ""} sur 3 terminée${n > 1 ? "s" : ""}</span></div>
-    <ol class="plan">${etapes.map((e, i) => `<li class="etape${e.fait ? " fait" : ""}">
-      <span class="etape-tete"><span class="etape-num" aria-hidden="true">${e.fait ? "✓" : i + 1}</span><span class="sub">${esc(e.duree)}</span></span>
-      <span class="etape-type">${esc(e.type)}</span>
-      <b class="etape-titre">${esc(e.titre)}</b>
-      <span class="etape-detail">${esc(e.detail)}</span>
-      ${e.bouton ? `<a class="btn${e.principal && !e.fait ? " btn-primary" : ""}" href="${esc(e.href)}" data-etape="${i}"${e.outil ? ` data-outil="${esc(e.outil)}"` : ""}>${e.principal && !e.fait ? ICONE_JOUER : ""}${esc(e.fait ? "Refaire" : e.bouton)}</a>` : ""}
-    </li>`).join("")}</ol>
-  </section>`;
-}
 
 /** Maîtrise par catégorie du dernier outil qui a des catégories (sinon le premier). */
 function blocMaitrise() {
@@ -380,9 +341,8 @@ function vueAccueil() {
   const prenom = u?.nom ? String(u.nom).trim().split(/\s+/)[0] : "";
   vue.innerHTML = `<div class="page">
     <div class="page-corps">
-      <header class="page-tete"><span class="page-sur">${dateDuJour()}</span><h1>${prenom ? "Bonjour, " + esc(prenom) : "Bonjour"}</h1><p class="sub">Trois étapes courtes pour aujourd'hui, à enchaîner ou à faire séparément.</p></header>
+      <header class="page-tete"><span class="page-sur">${dateDuJour()}</span><h1>${prenom ? "Bonjour, " + esc(prenom) : "Bonjour"}</h1></header>
       ${carteAnnonce()}${carteBienvenue()}
-      ${blocPlan()}
       ${blocMaitrise()}
       <section class="bloc" aria-labelledby="t-cours"><div class="bloc-tete"><h2 id="t-cours">Mes cours</h2><a class="lien" href="#cours">Tout voir</a></div>${cartesAnnees()}</section>
     </div>
@@ -391,7 +351,6 @@ function vueAccueil() {
   $("#fermer-annonce")?.addEventListener("click", () => { try { localStorage.setItem("annonce-vue", CAT.annonce.id); } catch {} $("#annonce").remove(); });
   $("#fermer-bienvenue")?.addEventListener("click", () => { try { localStorage.setItem("bienvenue-vue", "1"); } catch {} $("#bienvenue").remove(); });
   $("#hero-inscription")?.addEventListener("click", () => { modeInscription = true; });
-  vue.querySelectorAll("[data-etape]").forEach((a) => a.addEventListener("click", () => marquerPlan(+a.dataset.etape)));
   brancherDernierOutil();
   remplirNotionDuJour(r);
 }
@@ -1101,7 +1060,7 @@ function vueReglages() {
     <div class="groupe">
       <a class="ligne" href="#a-propos"><span class="ligne-ico" aria-hidden="true">${ICONES.info}</span>${texte("À propos du site", "Fonctionnement, contenus, données et confidentialité")}<span class="chevron" aria-hidden="true">›</span></a>
       <div class="ligne"><span class="ligne-ico" aria-hidden="true">${ICONE_VERROU}</span>${texte("Vos données", "Sans compte, tout reste sur cet appareil. Avec un compte, la progression est enregistrée dans une base hébergée à Paris et seul l'administrateur du site voit la liste des membres. Tout peut être effacé depuis cette page.")}</div>
-      <div class="ligne"><span class="ligne-ico" aria-hidden="true"><span class="marque-eo marque-eo-mini">EO</span></span>${texte("EOPour les nuls", "Version 14 · plateforme de révision entre étudiants")}</div>
+      <div class="ligne"><span class="ligne-ico" aria-hidden="true"><span class="marque-eo marque-eo-mini">EO</span></span>${texte("EOPour les nuls", "Version 15 · plateforme de révision entre étudiants")}</div>
     </div>
     <p class="note">Les réglages sont enregistrés sur cet appareil.</p>
   </div></div></div>`;
@@ -1139,7 +1098,7 @@ function vueAPropos() {
     <section class="bloc" aria-labelledby="t-ap-revision"><h2 id="t-ap-revision" class="ap-h2">Fonctionnement de la révision</h2>
       <div class="carte ap-texte">
         <p>Chaque réponse est enregistrée. Une question manquée revient le lendemain et s'ajoute à « Mes erreurs » ; une question réussie revient après 2, 4, 7, 15 puis 30 jours.</p>
-        <p>Après chaque correction, les choix « Bientôt », « Dans quelques jours » et « Je la connais » ajustent ce rythme. Le plan du jour, sur la page Aujourd'hui, rassemble les questions à revoir, le dernier cours ouvert et les erreurs à refaire.</p>
+        <p>Après chaque correction, les choix « Bientôt », « Dans quelques jours » et « Je la connais » ajustent ce rythme. Les pages « À revoir » et « Mes erreurs » rassemblent les questions à reprendre.</p>
       </div></section>
     <section class="bloc" aria-labelledby="t-ap-contenus"><h2 id="t-ap-contenus" class="ap-h2">Contenus</h2>
       <div class="carte ap-texte">
@@ -1151,7 +1110,7 @@ function vueAPropos() {
         <p>Sans compte, la progression reste sur cet appareil. Avec un compte, le nom, l'adresse e-mail et la photo sont gérés par Firebase (Google) ; les scores, révisions, favoris et jours d'activité sont stockés dans une base hébergée à Paris.</p>
         <p>Seul l'administrateur du site voit la liste des membres et leur progression. La progression peut être réinitialisée et le compte supprimé à tout moment, depuis les Réglages.</p>
       </div></section>
-    <p class="note ap-version">EOPour les nuls · version 14</p>
+    <p class="note ap-version">EOPour les nuls · version 15</p>
   </div></div>`;
 }
 
