@@ -730,6 +730,7 @@ const estInstallee = () => matchMedia("(display-mode: standalone)").matches || n
 const surIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 /* ---------- Proposition d'installation (1re visite sur téléphone) ----------
+   Proposée seulement à un membre connecté (après la création de son compte).
    Android/Chrome : bouton « Installer » (invite native). iPhone/iPad : pas à pas Partager → Sur l'écran d'accueil.
    « Plus tard » : reproposée au plus 3 fois, une semaine plus tard. Toujours dispo dans Réglages ▸ Installer l'appli. */
 const UA = navigator.userAgent;
@@ -796,7 +797,9 @@ function dessinerInvite(el) {
 }
 /** L'invite Android arrive parfois après l'affichage : on remplace les étapes par le bouton. */
 function majInviteInstall() { const el = $("#invite-install"); if (el && surAndroid) dessinerInvite(el); }
+let invitePrevue = false;
 function proposerInstallation() {
+  if (invitePrevue) return;
   if (estInstallee() || !(surApple || surAndroid)) return;
   const e = etatInvite();
   if (e.n >= 3 || Date.now() - e.t < 7 * 864e5) return;
@@ -811,6 +814,7 @@ function proposerInstallation() {
     dessinerInvite(el);
     document.body.append(el);
   };
+  invitePrevue = true;
   setTimeout(montrer, 3000); // laisser d'abord découvrir l'accueil
 }
 
@@ -1897,6 +1901,7 @@ C.surChangement(async (u) => {
   route();
   $('.tab[data-vue="admin"]').hidden = !jeSuisAdmin;
   if (u && R.lire().fun == null) demanderModeFun();
+  if (u) proposerInstallation(); // seulement une fois connecté (juste après la création du compte pour un nouveau membre)
 });
 
 /** Première connexion sur cet appareil : fun ou sobre ? (modifiable ensuite dans Réglages) */
@@ -1926,7 +1931,6 @@ C.chargerCatalogue().then((c) => { appliquerCatalogue(c); if (location.hash !== 
 
 // Appli installable + hors-ligne (réseau d'abord)
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-proposerInstallation();
 </script>
 </body>
 </html>
